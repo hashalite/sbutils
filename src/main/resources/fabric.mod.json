@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "sbutils",
+  "version": "${version}",
+  "name": "sbutils",
+  "description": "A utility mod for Skyblock.net.",
+  "authors": ["hashalite"],
+  "contact": {
+  },
+  "license": "MIT",
+  "icon": "assets/sbutils/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.xolt.sbutils.SbUtils"
+    ],
+    "modmenu": [
+      "net.xolt.sbutils.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "sbutils.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.11",
+    "fabric": "*",
+    "minecraft": "1.19.4"
+  }
+}

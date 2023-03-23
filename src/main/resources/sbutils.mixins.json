@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "net.xolt.sbutils.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "ClientConnectionMixin",
+    "ClientPlayerEntityMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "CreativeInventoryScreenMixin",
+    "GameRendererMixin",
+    "HandledScreenMixin",
+    "MessageHandlerMixin",
+    "MinecraftClientMixin",
+    "SocialInteractionsManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

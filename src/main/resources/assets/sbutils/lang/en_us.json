@@ -1,0 +1,376 @@
+{
+  "message.sbutils.changeBooleanSetting": "@ has been @.",
+  "message.sbutils.changeOtherSetting": "@ has been set to @.",
+  "message.sbutils.printBooleanSetting": "@ is currently @.",
+  "message.sbutils.printOtherSetting": "@ is currently set to @.",
+  "message.sbutils.enabled": "enabled",
+  "message.sbutils.disabled": "disabled",
+  "message.sbutils.online": "online",
+  "message.sbutils.offline": "offline",
+
+  "message.sbutils.autoAdvert.infoWithMinutes": "Sending advert @ in @ minutes and @ seconds.",
+  "message.sbutils.autoAdvert.infoJustSeconds": "Sending advert @ in @ seconds.",
+  "message.sbutils.autoAdvert.whitelist": "Current Auto Advert whitelist:",
+  "message.sbutils.autoAdvert.whitelistAddSuccess": "Successfully added user @ to the Auto Advert whitelist.",
+  "message.sbutils.autoAdvert.whitelistAddFail": "User @ is already in the Auto Advert whitelist.",
+  "message.sbutils.autoAdvert.whitelistDelSuccess": "Successfully removed user @ from the Auto Advert whitelist.",
+  "message.sbutils.autoAdvert.whitelistDelFail": "User @ is not in the Auto Advert whitelist.",
+  "message.sbutils.autoAdvert.whitelistNoUsers": "You don't have any whitelist users set.",
+  "message.sbutils.autoAdvert.noAdverts": "You don't have any advertisements set.",
+  "message.sbutils.autoAdvert.advertList": "Current advertisements:",
+  "message.sbutils.autoAdvert.addSuccess": "Advertisement successfully added. Current advertisements:",
+  "message.sbutils.autoAdvert.deleteSuccess": "Advertisement successfully removed. Current advertisements:",
+  "message.sbutils.autoAdvert.invalidIndex": "An advertisement with that index does not exist.",
+  "message.sbutils.autoAdvert.reset": "Reset Auto Advert timer and ad index.",
+  "message.sbutils.autoAdvert.noAds": "Disabling Auto Advert because @ is empty or doesn't exist.",
+
+  "message.sbutils.joinCommands.noGlobalCommands": "You don't have any global join commands set.",
+  "message.sbutils.joinCommands.globalCommandList": "Current global join commands:",
+  "message.sbutils.joinCommands.noAccountCommands": "You don't have any join commands set for the current account.",
+  "message.sbutils.joinCommands.accountCommandList": "Join commands for the current account:",
+  "message.sbutils.joinCommands.invalidIndex": "A join command with that index does not exist.",
+  "message.sbutils.joinCommands.addSuccess": "Join command successfully added. Current commands:",
+  "message.sbutils.joinCommands.deleteSuccess": "Join command successfully removed. Current commands:",
+
+  "message.sbutils.mentions.noAliasesSet": "You don't have any mention aliases set.",
+  "message.sbutils.mentions.aliases": "Current mention aliases:",
+  "message.sbutils.mentions.aliasAddSuccess": "Mentions will now match the alias @.",
+  "message.sbutils.mentions.aliasAddFail": "@ is already in the mention alias list.",
+  "message.sbutils.mentions.aliasDelSuccess": "Mentions will no longer match the alias @.",
+  "message.sbutils.mentions.aliasDelFail": "@ is not in the mention alias list.",
+
+  "message.sbutils.enchantAll.complete": "Enchanting complete.",
+  "message.sbutils.enchantAll.pleaseWait": "Please wait until the current item is finished enchanting.",
+  "message.sbutils.enchantAll.cancelInventoryInteract": "Cancelled /enchantall due to inventory interaction.",
+  "message.sbutils.enchantAll.cancelSlotSwitch": "Cancelled /enchantall due to switching slots.",
+  "message.sbutils.enchantAll.cooldown": "Enchant All cooldown initiated. Resuming in @ seconds.",
+  "message.sbutils.enchantAll.nothingEnchantable": "You don't have any enchantable items in your inventory.",
+  "message.sbutils.enchantAll.cantEnchantItem": "This item can't be enchanted.",
+
+  "message.sbutils.chatAppend.status": "@ is currently @ and set to @.",
+
+  "message.sbutils.chatFilter.status": "Chat filter status:",
+
+  "message.sbutils.chatLogger.status": "Chat logger status:",
+
+  "message.sbutils.autoMine.noPickaxe": "Disabling Auto Mine because you don't have any pickaxes to switch to, and Auto Fix isn't enabled.",
+
+  "message.sbutils.autoFix.infoWithMinutes": "Fixing next item in @ minutes and @ seconds.",
+  "message.sbutils.autoFix.infoJustSeconds": "Fixing next item in @ seconds.",
+  "message.sbutils.autoFix.reset": "Auto Fix has been reset.",
+  "message.sbutils.autoFix.fixingItem": "Fixing item...",
+  "message.sbutils.autoFix.currentlyFixing": "Auto Fix is currently fixing an item.",
+  "message.sbutils.autoFix.waiting": "Auto Fix is waiting for an item with a low enough durability.",
+  "message.sbutils.autoFix.maxTriesReached": "Fix command sent @ times with no response. Disabling Auto Fix.",
+
+  "message.sbutils.toolSaver.actionBlocked": "Action blocked due to item durability being too low.",
+
+  "message.sbutils.autoCommand.infoWithMinutes": "Sending next command in % minutes and % seconds.",
+  "message.sbutils.autoCommand.infoJustSeconds": "Sending next command in % seconds.",
+
+  "message.sbutils.autoLottery.buying": "Buying lottery tickets...",
+
+  "message.sbutils.autoPrivate.names": "Current Auto Private names:",
+  "message.sbutils.autoPrivate.nameAddSuccess": "Successfully added the name @ to Auto Private.",
+  "message.sbutils.autoPrivate.nameAddFail": "The name @ is already in the Auto Private list.",
+  "message.sbutils.autoPrivate.nameDelSuccess": "Successfully removed the name @ from Auto Private.",
+  "message.sbutils.autoPrivate.nameDelFail": "The name @ is not in the Auto Private list.",
+  "message.sbutils.autoPrivate.noNamesSet": "You don't have any Auto Private names set.",
+  "message.sbutils.autoPrivate.maxNamesSet": "You already have the maximum amount of Auto Private names set.",
+
+  "message.sbutils.autoSilk.invFull": "Disabling Auto Silk because your inventory is full.",
+  "message.sbutils.autoSilk.noLapis": "Disabling Auto Silk because you don't have any lapis in your inventory.",
+  "message.sbutils.autoSilk.notEnoughLapis": "Disabling Auto Silk because you don't have enough lapis in your inventory.",
+  "message.sbutils.autoSilk.noPickaxes": "Disabling Auto Silk because you don't have any pickaxes in your inventory.",
+  "message.sbutils.autoSilk.noBooks": "Disabling Auto Silk because you don't have any books in your inventory.",
+  "message.sbutils.autoSilk.notEnoughExperience": "Disabling Auto Silk because you don't have enough experience levels.",
+
+  "message.sbutils.autoCrate.crateTooFar": "Disabling Auto Crate because the crate is not within reach.",
+  "message.sbutils.autoCrate.inventoryFull": "Disabling Auto Crate because your inventory is full.",
+  "message.sbutils.autoCrate.finished": "Auto Crate finished.",
+  "message.sbutils.autoCrate.closeGui": "Disabling Auto Crate because you closed the crate gui.",
+
+  "message.sbutils.staffDetector.notification": "Staff member @ is now @.",
+  "message.sbutils.staffDetector.noStaff": "There are no longer any staff online.",
+
+  "message.sbutils.convert.header": "@ can be written as:",
+  "message.sbutils.convert.invalidCharacter": "Invalid character used in /convert.",
+
+  "message.sbutils.openFolder.folderOpened": "Opened mod directory.",
+  "message.sbutils.openFolder.cantOpen": "Unable to open mod directory.",
+
+
+
+  "category.sbutils.sbutils": "sbutils",
+  "key.sbutils.config": "Open Config GUI",
+  "key.sbutils.island": "/is",
+  "key.sbutils.ehome": "/ehome",
+  "key.sbutils.jump": "/jump",
+  "key.sbutils.back": "/back",
+  "key.sbutils.craft": "/wb",
+  "key.sbutils.echest": "/ec",
+
+
+
+  "text.sbutils.config.title": "sbutils Options",
+
+  "text.sbutils.config.group.regexFilters": "Regex Filters",
+  "text.sbutils.config.group.autoSettings": "Auto Settings",
+
+
+  "text.sbutils.config.category.default": "sbutils",
+
+  "text.sbutils.config.group.sbutils": "sbutils Settings",
+  "text.sbutils.config.option.messagePrefix": "Message Prefix",
+  "text.sbutils.config.option.messagePrefix.tooltip": "The prefix that appears before sbutils messages. The '@' will be replaced with 'sbutils'.",
+  "text.sbutils.config.option.sbutilsColor": "sbutils Color",
+  "text.sbutils.config.option.sbutilsColor.tooltip": "The color of the sbutils name in messages.",
+  "text.sbutils.config.option.messageColor": "Message Color",
+  "text.sbutils.config.option.messageColor.tooltip": "The color of sbutils messages.",
+  "text.sbutils.config.option.valueColor": "Value Color",
+  "text.sbutils.config.option.valueColor.tooltip": "The color of values in sbutils messages.",
+
+  "text.sbutils.config.option.color.darkRed": "Dark Red",
+  "text.sbutils.config.option.color.red": "Red",
+  "text.sbutils.config.option.color.gold": "Gold",
+  "text.sbutils.config.option.color.yellow": "Yellow",
+  "text.sbutils.config.option.color.darkGreen": "Dark Green",
+  "text.sbutils.config.option.color.green": "Green",
+  "text.sbutils.config.option.color.darkBlue": "Dark Blue",
+  "text.sbutils.config.option.color.blue": "Blue",
+  "text.sbutils.config.option.color.cyan": "Cyan",
+  "text.sbutils.config.option.color.aqua": "Aqua",
+  "text.sbutils.config.option.color.purple": "Purple",
+  "text.sbutils.config.option.color.pink": "Pink",
+  "text.sbutils.config.option.color.white": "White",
+  "text.sbutils.config.option.color.lightGray": "Light Gray",
+  "text.sbutils.config.option.color.darkGray": "Dark Gray",
+  "text.sbutils.config.option.color.black": "Black",
+
+
+  "text.sbutils.config.category.autoadvert": "Auto Advert",
+
+  "text.sbutils.config.group.autoAdvert": "Auto Advert Settings",
+  "text.sbutils.config.option.autoAdvert": "Auto Advert Enabled",
+  "text.sbutils.config.option.autoAdvert.tooltip": "Automatically sends messages from a file.",
+  "text.sbutils.config.option.advertFile": "Advert File",
+  "text.sbutils.config.option.advertFile.tooltip": "The txt file containing your advertisements.",
+  "text.sbutils.config.option.advertDelay": "Advert Delay",
+  "text.sbutils.config.option.advertDelay.tooltip": "The delay between messages. (Seconds)",
+  "text.sbutils.config.option.advertInitialDelay": "Advert Initial Delay",
+  "text.sbutils.config.option.advertInitialDelay.tooltip": "The delay between joining and sending an advert. (Seconds)",
+  "text.sbutils.config.option.advertUseWhitelist": "Use Advert Whitelist",
+  "text.sbutils.config.option.advertUseWhitelist.tooltip": "Only sends adverts from the account(s) specified in the whitelist.",
+  "text.sbutils.config.option.advertWhitelist": "Advert Whitelist",
+  "text.sbutils.config.option.advertWhitelist.tooltip": "A list of accounts that may send adverts if 'Use Advert Whitelist' is enabled.",
+
+
+  "text.sbutils.config.category.joincommands": "Join Commands",
+
+  "text.sbutils.config.group.joinCmds": "Join Command Settings",
+  "text.sbutils.config.option.joinCmdsEnabled": "Join Commands Enabled",
+  "text.sbutils.config.option.joinCmdsEnabled.tooltip": "Whether to send join commands.",
+  "text.sbutils.config.option.joinCmdInitialDelay": "Initial Delay",
+  "text.sbutils.config.option.joinCmdInitialDelay.tooltip": "The delay between joining the server and sending the commands.",
+  "text.sbutils.config.option.joinCmdDelay": "Delay",
+  "text.sbutils.config.option.joinCmdDelay.tooltip": "The delay between each command.",
+  "text.sbutils.config.option.joinCmdServers": "Servers",
+  "text.sbutils.config.option.joinCmdServers.tooltip": "A list of servers to send join commands on.",
+
+
+  "text.sbutils.config.category.mentions": "Mentions",
+
+  "text.sbutils.config.group.mentions": "Mentions Settings",
+  "text.sbutils.config.option.mentions": "Mentions Enabled",
+  "text.sbutils.config.option.mentions.tooltip": "Notifies you with a sound when something is mentioned in chat.",
+  "text.sbutils.config.option.mentionsCurrentAccount": "Current Account Mentions",
+  "text.sbutils.config.option.mentionsCurrentAccount.tooltip": "Notifies you when your username is mentioned in chat.",
+  "text.sbutils.config.option.mentionsAliases": "Aliases",
+  "text.sbutils.config.option.mentionsAliases.tooltip": "A list of strings you would like to be notified for.",
+
+
+  "text.sbutils.config.category.enchantall": "Enchant All",
+
+  "text.sbutils.config.group.enchantAll": "Enchant All Settings",
+  "text.sbutils.config.option.enchantDelay": "Enchant Delay",
+  "text.sbutils.config.option.enchantDelay.tooltip": "The delay between sending enchant commands. (Seconds)",
+  "text.sbutils.config.option.cooldownFrequency": "Cooldown Frequency",
+  "text.sbutils.config.option.cooldownFrequency.tooltip": "The number of commands to be executed before a cooldown is initiated. (To avoid spam kick)",
+  "text.sbutils.config.option.cooldownTime": "Cooldown Time",
+  "text.sbutils.config.option.cooldownTime.tooltip": "The length of the cooldown. (Seconds)",
+  "text.sbutils.config.option.excludeFrost": "Exclude Frost Walker",
+  "text.sbutils.config.option.excludeFrost.tooltip": "Excludes Frost Walker from /enchantall.",
+
+
+  "text.sbutils.config.category.chatappend": "Chat Append",
+
+  "text.sbutils.config.group.chatAppend": "Chat Append Settings",
+  "text.sbutils.config.option.addPrefix": "Add Prefix",
+  "text.sbutils.config.option.addPrefix.tooltip": "Adds the specified prefix to all the messages you send.",
+  "text.sbutils.config.option.chatPrefix": "Chat Prefix",
+  "text.sbutils.config.option.chatPrefix.tooltip": "The prefix to add to your messages.",
+  "text.sbutils.config.option.addSuffix": "Add Suffix",
+  "text.sbutils.config.option.addSuffix.tooltip": "Adds the specified suffix to all the messages you send.",
+  "text.sbutils.config.option.chatSuffix": "Chat Suffix",
+  "text.sbutils.config.option.chatSuffix.tooltip": "The suffix to add to your messages.",
+
+
+  "text.sbutils.config.category.chatfilters": "Chat Filters",
+
+  "text.sbutils.config.group.chatFilters": "Chat Filter Settings",
+  "text.sbutils.config.option.tipsFilterEnabled": "Filter Tips",
+  "text.sbutils.config.option.tipsFilterEnabled.tooltip": "Whether tip messages should be filtered from chat.",
+  "text.sbutils.config.option.advancementsFilterEnabled": "Filter Advancements",
+  "text.sbutils.config.option.advancementsFilterEnabled.tooltip": "Whether advancement messages should be filtered from chat.",
+  "text.sbutils.config.option.welcomeFilterEnabled": "Filter Welcome Messages",
+  "text.sbutils.config.option.welcomeFilterEnabled.tooltip": "Whether player welcome messages should be filtered from chat.",
+  "text.sbutils.config.option.friendJoinFilterEnabled": "Filter Friend Joins",
+  "text.sbutils.config.option.friendJoinFilterEnabled.tooltip": "Whether friend join messages should be filtered from chat.",
+  "text.sbutils.config.option.motdFilterEnabled": "Filter Island MOTDs",
+  "text.sbutils.config.option.motdFilterEnabled.tooltip": "Whether island MOTD messages should be filtered from chat.",
+  "text.sbutils.config.option.voteFilterEnabled": "Filter Votes",
+  "text.sbutils.config.option.voteFilterEnabled.tooltip": "Whether player vote messages should be filtered from chat.",
+  "text.sbutils.config.option.voteRewardFilterEnabled": "Filter Vote Rewards",
+  "text.sbutils.config.option.voteRewardFilterEnabled.tooltip": "Whether player vote reward messages should be filtered from chat.",
+  "text.sbutils.config.option.lotteryFilterEnabled": "Filter Lottery Messages",
+  "text.sbutils.config.option.lotteryFilterEnabled.tooltip": "Whether lottery messages should be filtered from chat.",
+  "text.sbutils.config.option.cratesFilterEnabled": "Filter Crate Messages",
+  "text.sbutils.config.option.cratesFilterEnabled.tooltip": "Whether crate opening messages should be filtered from chat.",
+  "text.sbutils.config.option.clearLagFilterEnabled": "Filter ClearLag Messages",
+  "text.sbutils.config.option.clearLagFilterEnabled.tooltip": "Whether ClearLag messages should be filtered from chat.",
+  "text.sbutils.config.option.perishedInVoidFilterEnabled": "Filter Perished In Void Messages",
+  "text.sbutils.config.option.perishedInVoidFilterEnabled.tooltip": "Whether 'perished in void' messages should be filtered from chat.",
+  "text.sbutils.config.option.skyChatFilterEnabled": "Filter SkyChats",
+  "text.sbutils.config.option.skyChatFilterEnabled.tooltip": "Whether SkyChat messages should be filtered from chat.",
+
+
+  "text.sbutils.config.category.chatlogger": "Chat Logger",
+
+  "text.sbutils.config.group.chatLogger": "Chat Logger Settings",
+  "text.sbutils.config.option.shopLoggerIncoming": "Log Incoming Transactions",
+  "text.sbutils.config.option.shopLoggerIncoming.tooltip": "Whether to log transaction messages from your shops.",
+  "text.sbutils.config.option.shopLoggerOutgoing": "Log Outgoing Transactions",
+  "text.sbutils.config.option.shopLoggerOutgoing.tooltip": "Whether to log transaction messages from other players' shops.",
+  "text.sbutils.config.option.msgLoggerIncoming": "Log Incoming Messages",
+  "text.sbutils.config.option.msgLoggerIncoming.tooltip": "Whether to log incoming private messages.",
+  "text.sbutils.config.option.msgLoggerOutgoing": "Log Outgoing Messages",
+  "text.sbutils.config.option.msgLoggerOutgoing.tooltip": "Whether to log outgoing private messages.",
+  "text.sbutils.config.option.visitLogger": "Log Visits",
+  "text.sbutils.config.option.visitLogger.tooltip": "Whether to log players visiting your island.",
+
+
+  "text.sbutils.config.category.automine": "Auto Mine",
+
+  "text.sbutils.config.group.autoMine": "Auto Mine Settings",
+  "text.sbutils.config.option.autoMine": "Auto Mine Enabled",
+  "text.sbutils.config.option.autoMine.tooltip": "Holds down left click.",
+  "text.sbutils.config.option.autoSwitch": "Auto Switch",
+  "text.sbutils.config.option.autoSwitch.tooltip": "Automatically switches to a new pickaxe when the current durability gets too low.",
+  "text.sbutils.config.option.switchDurability": "Switch Durability",
+  "text.sbutils.config.option.switchDurability.tooltip": "The durability to switch to a new pickaxe at.",
+
+
+  "text.sbutils.config.category.autofix": "Auto Fix",
+
+  "text.sbutils.config.group.autoFix": "Auto Fix Settings",
+  "text.sbutils.config.option.autoFix": "Auto Fix Enabled",
+  "text.sbutils.config.option.autoFix.tooltip": "Automatically fixes the most damaged items in your inventory over time.",
+  "text.sbutils.config.option.autoFixMode": "Fix Mode",
+  "text.sbutils.config.option.autoFixMode.hand": "Hand",
+  "text.sbutils.config.option.autoFixMode.all": "All",
+  "text.sbutils.config.option.autoFixMode.tooltip": "Which fix command to use.",
+  "text.sbutils.config.option.maxFixPercent": "Max Fix Percent",
+  "text.sbutils.config.option.maxFixPercent.tooltip": "The maximum durability percentage an item can have and be fixed.",
+  "text.sbutils.config.option.autoFixDelay": "Fix Delay",
+  "text.sbutils.config.option.autoFixDelay.tooltip": "The delay between fixes.",
+  "text.sbutils.config.option.fixRetryDelay": "Fix Retry Delay",
+  "text.sbutils.config.option.fixRetryDelay.tooltip": "How long to wait for a response before sending the fix command again.",
+  "text.sbutils.config.option.maxFixRetries": "Max Fix Retries",
+  "text.sbutils.config.option.maxFixRetries.tooltip": "The maximum amount of times to retry the fix command if the server isn't responding.",
+
+
+  "text.sbutils.config.category.toolsaver": "Tool Saver",
+
+  "text.sbutils.config.group.toolSaver": "Tool Saver Settings",
+  "text.sbutils.config.option.toolSaver": "Tool Saver Enabled",
+  "text.sbutils.config.option.toolSaver.tooltip": "Prevents usage of tools after a certain durability.",
+  "text.sbutils.config.option.toolSaverDurability": "Tool Durability",
+  "text.sbutils.config.option.toolSaverDurability.tooltip": "The durability to stop at.",
+
+
+  "text.sbutils.config.category.autocommand": "Auto Command",
+
+  "text.sbutils.config.group.autoCommand": "Auto Command Settings",
+  "text.sbutils.config.option.autoCommandEnabled": "Auto Command Enabled",
+  "text.sbutils.config.option.autoCommandEnabled.tooltip": "Repeatedly executes a command with a set delay.",
+  "text.sbutils.config.option.autoCommand": "Command",
+  "text.sbutils.config.option.autoCommand.tooltip": "The command to execute.",
+  "text.sbutils.config.option.autoCommandDelay": "Command Delay",
+  "text.sbutils.config.option.autoCommandDelay.tooltip": "The delay between each command.",
+
+
+  "text.sbutils.config.category.autoreply": "Auto Reply",
+
+  "text.sbutils.config.group.autoReply": "Auto Reply Settings",
+  "text.sbutils.config.option.autoReply": "Auto Reply Enabled",
+  "text.sbutils.config.option.autoReply.tooltip": "Automatically replies to private messages.",
+  "text.sbutils.config.option.autoResponse": "Auto Response",
+  "text.sbutils.config.option.autoResponse.tooltip": "The response to send to private messages.",
+  "text.sbutils.config.option.autoReplyDelay": "Reply Delay",
+  "text.sbutils.config.option.autoReplyDelay.tooltip": "The delay between responses if multiple people message you at once. (Seconds)",
+
+
+  "text.sbutils.config.category.autolottery": "Auto Lottery",
+
+  "text.sbutils.config.group.autoLottery": "Auto Lottery Settings",
+  "text.sbutils.config.option.autoLottery": "Auto Lottery Enabled",
+  "text.sbutils.config.option.autoLottery.tooltip": "Automatically buys lottery tickets when you log in and when the lottery ends.",
+  "text.sbutils.config.option.lotteryTickets": "Lottery Tickets",
+  "text.sbutils.config.option.lotteryTickets.tooltip": "The amount of lottery tickets to purchase. (Max. 2)",
+  "text.sbutils.config.option.grassCheckDelay": "Grass Check Delay",
+  "text.sbutils.config.option.grassCheckDelay.tooltip": "If you don't have enough grass in your inventory, how often it should check for more. (Seconds)",
+
+
+  "text.sbutils.config.category.autoprivate": "Auto Private",
+
+  "text.sbutils.config.group.autoPrivate": "Auto Private Settings",
+  "text.sbutils.config.option.autoPrivate": "Auto Private Enabled",
+  "text.sbutils.config.option.autoPrivate.tooltip": "Automatically writes private signs.",
+  "text.sbutils.config.option.autoPrivateNames": "Auto Private Names",
+  "text.sbutils.config.option.autoPrivateNames.tooltip": "Up to two names to put on private signs. Yours is included automatically.",
+
+
+  "text.sbutils.config.category.autosilk": "Auto Silk",
+
+  "text.sbutils.config.group.autoSilk": "Auto Silk Settings",
+  "text.sbutils.config.option.autoSilk": "Auto Silk Enabled",
+  "text.sbutils.config.option.autoSilk.tooltip": "Automatically enchants books and diamond pickaxes with Silk Touch.",
+  "text.sbutils.config.option.autoSilkDelay": "Auto Silk Delay",
+  "text.sbutils.config.option.autoSilkDelay.tooltip": "The delay between each enchanting action.",
+
+
+  "text.sbutils.config.category.autocrate": "Auto Crate",
+
+  "text.sbutils.config.group.autoCrate": "Auto Crate Settings",
+  "text.sbutils.config.option.autoCrate": "Auto Crate Enabled",
+  "text.sbutils.config.option.autoCrate.tooltip": "Opens crate keys automatically.",
+  "text.sbutils.config.option.crateMode": "Crate Mode",
+  "text.sbutils.config.option.crateMode.voter" : "Voter",
+  "text.sbutils.config.option.crateMode.common" : "Common",
+  "text.sbutils.config.option.crateMode.tooltip": "The type of crate to target.",
+  "text.sbutils.config.option.crateDelay": "Crate Delay",
+  "text.sbutils.config.option.crateDelay.tooltip": "After the current crate finishes, how long to wait before opening the next.",
+  "text.sbutils.config.option.crateDistance": "Crate Distance",
+  "text.sbutils.config.option.crateDistance.tooltip": "The maximum distance from the crate.",
+
+
+  "text.sbutils.config.category.staffdetector": "Staff Detector",
+
+  "text.sbutils.config.group.staffDetector": "Staff Detector Settings",
+  "text.sbutils.config.option.detectStaffJoin": "Detect Staff Join",
+  "text.sbutils.config.option.detectStaffJoin.tooltip": "Whether you should receive notifications when staff members join.",
+  "text.sbutils.config.option.detectStaffLeave": "Detect Staff Leave",
+  "text.sbutils.config.option.detectStaffLeave.tooltip": "Whether you should receive notifications when staff members leave.",
+  "text.sbutils.config.option.staffSound": "Play Sound",
+  "text.sbutils.config.option.staffSound.tooltip": "Whether to play sounds when staff members join."
+}
