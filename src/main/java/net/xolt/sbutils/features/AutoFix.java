@@ -142,7 +142,7 @@ public class AutoFix {
             return;
         }
 
-        if (findMostDamaged) {
+        if (findMostDamaged && !fixing) {
             itemPrevSlot = findMostDamaged();
             findMostDamaged = false;
         }
@@ -162,11 +162,7 @@ public class AutoFix {
             return;
         }
 
-        if (returnAndSwapBack) {
-            if (InvUtils.canSwapSlot(itemPrevSlot)) {
-                returnAndSwapBack();
-            }
-            returnAndSwapBack = false;
+        if (delayLeft() > 0) {
             return;
         }
 
@@ -176,7 +172,12 @@ public class AutoFix {
             reset();
         }
 
-        if (delayLeft() > 0) {
+        if (returnAndSwapBack) {
+            if (InvUtils.canSwapSlot(itemPrevSlot)) {
+                returnAndSwapBack();
+            }
+            fixing = false;
+            returnAndSwapBack = false;
             return;
         }
 
@@ -242,7 +243,6 @@ public class AutoFix {
                 returnAndSwapBack = true;
             }
             waitingForResponse = false;
-            fixing = false;
             tries = 0;
             return;
         }
@@ -254,7 +254,6 @@ public class AutoFix {
                 returnAndSwapBack = true;
             }
             waitingForResponse = false;
-            fixing = false;
             tries = 0;
         }
     }
@@ -301,7 +300,7 @@ public class AutoFix {
     }
 
     private static void returnAndSwapBack() {
-        if (MC.player == null) {
+        if (MC.player == null && itemPrevSlot != -1) {
             return;
         }
 
