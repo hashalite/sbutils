@@ -278,7 +278,7 @@ public class EnchantAll {
                 continue;
             }
             ItemStack itemStack = MC.player.getInventory().getStack(i);
-            if (getEnchantsForItem(itemStack, unenchanting).size() > 0) {
+            if (getEnchantsForItem(itemStack, unenchant).size() > 0) {
                 itemsToEnchant.put(itemStack.copy(), i);
             }
         }
@@ -299,7 +299,7 @@ public class EnchantAll {
         }
 
         currentItem = getNextItem();
-        enchantments = getEnchantsForItem(currentItem, unenchanting);
+        enchantments = getEnchantsForItem(currentItem, unenchant);
         enchanting = !unenchant;
         unenchanting = unenchant;
         selectedSlot = MC.player.getInventory().selectedSlot;
@@ -347,6 +347,7 @@ public class EnchantAll {
 
     private static List<Enchantment> getEnchantsForItem(ItemStack itemStack, boolean unenchant) {
         Item item = itemStack.getItem();
+
         Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.fromNbt(itemStack.getEnchantments());
 
         List<Enchantment> enchantments = new ArrayList<>();
@@ -362,6 +363,7 @@ public class EnchantAll {
                     enchantments.remove(enchantment);
                 }
             }
+
         } else {
             enchantments.addAll(itemsEnchants.keySet());
         }

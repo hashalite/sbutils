@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screen.ProgressScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
@@ -167,6 +166,7 @@ public class AutoFix {
             if (InvUtils.canSwapSlot(itemPrevSlot)) {
                 returnAndSwapBack();
             }
+            returnAndSwapBack = false;
             return;
         }
 
@@ -305,8 +305,6 @@ public class AutoFix {
             return;
         }
 
-        SbUtils.LOGGER.info("swapping item back to slot " + itemPrevSlot);
-
         InvUtils.swapToHotbar(itemPrevSlot, selectedSlot);
         MC.player.getInventory().selectedSlot = prevSelectedSlot;
     }
@@ -330,7 +328,6 @@ public class AutoFix {
     }
 
     public static void reset() {
-        enabled = false;
         fixing = false;
         waitingForResponse = false;
         findMostDamaged = true;
