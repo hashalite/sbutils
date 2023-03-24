@@ -7,7 +7,7 @@
   "authors": ["hashalite"],
   "contact": {
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "icon": "assets/sbutils/icon.png",
   "environment": "client",
   "entrypoints": {
