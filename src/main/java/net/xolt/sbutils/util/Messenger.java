@@ -103,9 +103,19 @@ public class Messenger {
         printSetting(setting, value, false);
     }
 
-    public static void printAutoAdvertInfo(boolean enabled, int adIndex, int remainingDelay) {
+    public static void printAutoAdvertInfo(boolean enabled, boolean serverNull, int adIndex, int remainingDelay, boolean userWhitelisted, boolean whitelistEnabled) {
         if (!enabled) {
             printSetting("text.sbutils.config.category.autoadvert", false);
+            return;
+        }
+
+        if (serverNull) {
+            printMessage("message.sbutils.autoAdvert.notOnSkyblock");
+            return;
+        }
+
+        if (whitelistEnabled && !userWhitelisted) {
+            printMessage("message.sbutils.autoAdvert.notWhitelisted");
             return;
         }
 
@@ -153,14 +163,7 @@ public class Messenger {
         MC.player.sendMessage(dcsAndRemainderText, false);
     }
 
-    public static void printListSetting(String message, String messageIfEmpty, List<String> list) {
-        if (list.size() < 1) {
-            if (messageIfEmpty.length() != 0) {
-                Messenger.printMessage(messageIfEmpty);
-            }
-            return;
-        }
-
+    public static void printListSetting(String message, List<String> list) {
         printMessage(message);
         printNumberedList(list);
     }

@@ -3,6 +3,13 @@ package net.xolt.sbutils.util;
 import java.util.regex.Pattern;
 
 public class RegexFilters {
+
+    // Auto Advert
+
+    public static final Pattern skyblockTitleFilter = Pattern.compile("\u00a7a\u00a7o\u00a7lSkyblock Survival");
+    public static final Pattern economyTitleFilter = Pattern.compile("\u00a7d\u00a7o\u00a7lSkyblock Economy");
+    public static final Pattern classicTitleFilter = Pattern.compile("\u00a76\u00a7o\u00a7lSkyblock Classic");
+
     
     // Chat Filters
 
@@ -46,7 +53,7 @@ public class RegexFilters {
 
     // Auto Crate
 
-    public static final Pattern voterKeyFilter = Pattern.compile("Click the Voting Crate to use this key");
+    public static final Pattern voterKeyFilter = Pattern.compile("Click the (Voting|Voter) Crate to use this key");
     public static final Pattern commonKeyFilter = Pattern.compile("Click the Common Crate to use this key");
     public static final Pattern voterCrateFilter = Pattern.compile("Voter");
     public static final Pattern commonCrateFilter = Pattern.compile("Common");

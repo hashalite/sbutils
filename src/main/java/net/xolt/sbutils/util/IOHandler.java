@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.features.AutoAdvert;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +61,7 @@ public class IOHandler {
     }
 
     public static String readAdFile(String filename) {
+        ensureFileExists(new File(autoAdvertDir + File.separator + filename));
         String ads;
         try {
             ads = Files.readString(new File(autoAdvertDir + File.separator + filename).toPath());
@@ -71,6 +73,7 @@ public class IOHandler {
     }
 
     public static String readGlobalJoinCmds() {
+        ensureFileExists(globalJoinCmdsFile);
         String globalJoinCmds;
         try {
             globalJoinCmds = Files.readString(globalJoinCmdsFile.toPath());
@@ -124,8 +127,8 @@ public class IOHandler {
         logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), visitLogFile);
     }
 
-    public static boolean writeAdverts(List<String> adverts) {
-        File advertFile = new File(autoAdvertDir + File.separator + ModConfig.INSTANCE.getConfig().advertFile + ".txt");
+    public static boolean writeAdverts(List<String> adverts, String adFile) {
+        File advertFile = new File(autoAdvertDir + File.separator + adFile);
 
         return overwriteFile(advertFile, adverts);
     }
@@ -172,7 +175,7 @@ public class IOHandler {
     }
 
     // Creates the provided file and its parent directories if they don't exist
-    private static void ensureFileExists(File file) {
+    public static void ensureFileExists(File file) {
         try {
             Files.createDirectories(file.getParentFile().toPath());
 

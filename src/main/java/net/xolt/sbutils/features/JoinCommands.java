@@ -36,7 +36,7 @@ public class JoinCommands {
                 })
                 .then(ClientCommandManager.literal("global")
                         .executes(context -> {
-                            Messenger.printListSetting("message.sbutils.joinCommands.globalCommandList", "message.sbutils.joinCommands.noGlobalCommands", getJoinCommands(true));
+                            Messenger.printListSetting("message.sbutils.joinCommands.globalCommandList", getJoinCommands(true));
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(ClientCommandManager.literal("add")
@@ -57,7 +57,7 @@ public class JoinCommands {
                                                 )))))
                 .then(ClientCommandManager.literal("account")
                         .executes(context -> {
-                            Messenger.printListSetting("message.sbutils.joinCommands.accountCommandList", "message.sbutils.joinCommands.noAccountCommands", getJoinCommands(false));
+                            Messenger.printListSetting("message.sbutils.joinCommands.accountCommandList", getJoinCommands(false));
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(ClientCommandManager.literal("add")
@@ -129,7 +129,7 @@ public class JoinCommands {
         joinCommands.add(command);
         IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
 
-        Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", "", joinCommands);
+        Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", joinCommands);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -149,7 +149,7 @@ public class JoinCommands {
         joinCommands.remove(index - 1);
         IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
 
-        Messenger.printListSetting("message.sbutils.joinCommands.deleteSuccess", "", joinCommands);
+        Messenger.printListSetting("message.sbutils.joinCommands.deleteSuccess", joinCommands);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -169,7 +169,7 @@ public class JoinCommands {
         joinCommands.add(index - 1, command);
         IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
 
-        Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", "", joinCommands);
+        Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", joinCommands);
 
         return Command.SINGLE_SUCCESS;
     }

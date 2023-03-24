@@ -28,7 +28,7 @@ public class AutoPrivate {
                 })
                 .then(ClientCommandManager.literal("names")
                         .executes(context -> {
-                            Messenger.printListSetting("message.sbutils.autoPrivate.names", "message.sbutils.autoPrivate.noNamesSet", ModConfig.INSTANCE.getConfig().autoPrivateNames);
+                            Messenger.printListSetting("message.sbutils.autoPrivate.names", ModConfig.INSTANCE.getConfig().autoPrivateNames);
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(ClientCommandManager.literal("add")

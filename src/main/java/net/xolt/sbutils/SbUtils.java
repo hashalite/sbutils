@@ -59,7 +59,6 @@ public class SbUtils implements ClientModInitializer {
         ModConfig.INSTANCE.load();
 
         EnchantAll.init();
-        AutoAdvert.init();
         AutoSilk.init();
         AutoFix.init();
         AutoReply.init();

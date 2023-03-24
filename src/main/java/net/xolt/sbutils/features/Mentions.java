@@ -13,6 +13,7 @@ import net.xolt.sbutils.util.Messenger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -47,7 +48,7 @@ public class Mentions {
                                 })))
                 .then(ClientCommandManager.literal("aliases")
                         .executes(context -> {
-                            Messenger.printListSetting("message.sbutils.mentions.aliases", "message.sbutils.mentions.noAliasesSet", ModConfig.INSTANCE.getConfig().mentionsAliases);
+                            Messenger.printListSetting("message.sbutils.mentions.aliases", ModConfig.INSTANCE.getConfig().mentionsAliases);
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(ClientCommandManager.literal("add")
@@ -86,11 +87,6 @@ public class Mentions {
     private static int onDelAliasCommand(String name) {
         List<String> names = new ArrayList<>(ModConfig.INSTANCE.getConfig().mentionsAliases);
 
-        if (names.size() == 0) {
-            Messenger.printMessage("message.sbutils.mentions.noAliasesSet");
-            return Command.SINGLE_SUCCESS;
-        }
-
         if (!names.contains(name)) {
             Messenger.printWithPlaceholders("message.sbutils.mentions.aliasDelFail", name);
             return Command.SINGLE_SUCCESS;
@@ -108,15 +104,15 @@ public class Mentions {
             return;
         }
 
-        String msgString = message.getString();
+        String msgString = message.getString().toLowerCase(Locale.ROOT);
 
-        if (ModConfig.INSTANCE.getConfig().mentionsCurrentAccount && msgString.contains(MC.player.getGameProfile().getName())) {
+        if (ModConfig.INSTANCE.getConfig().mentionsCurrentAccount && msgString.contains(MC.player.getGameProfile().getName().toLowerCase())) {
             playSound();
             return;
         }
 
         for (String alias : ModConfig.INSTANCE.getConfig().mentionsAliases) {
-            if (!alias.equals("") && msgString.contains(alias)) {
+            if (!alias.equals("") && msgString.contains(alias.toLowerCase())) {
                 playSound();
                 return;
             }

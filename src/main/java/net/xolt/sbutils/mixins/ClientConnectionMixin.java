@@ -13,6 +13,7 @@ public class ClientConnectionMixin {
 
     @Inject(method = "handleDisconnection", at = @At("HEAD"))
     private void onHandleDisconnection(CallbackInfo ci) {
+        AutoAdvert.resetServer();
         EnchantAll.reset();
         JoinCommands.reset();
         AutoSilk.reset();

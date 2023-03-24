@@ -102,12 +102,32 @@ public class ConfigGui {
                                 .controller(TickBoxController::new)
                                 .build())
                         .option(Option.createBuilder(String.class)
-                                .name(Text.translatable("text.sbutils.config.option.advertFile"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.advertFile.tooltip"))
+                                .name(Text.translatable("text.sbutils.config.option.skyblockAdFile"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.skyblockAdFile.tooltip"))
                                 .binding(
-                                        defaults.advertFile,
-                                        () -> config.advertFile,
-                                        (value) -> config.advertFile = value
+                                        defaults.skyblockAdFile,
+                                        () -> config.skyblockAdFile,
+                                        (value) -> config.skyblockAdFile = value
+                                )
+                                .controller(StringController::new)
+                                .build())
+                        .option(Option.createBuilder(String.class)
+                                .name(Text.translatable("text.sbutils.config.option.economyAdFile"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.economyAdFile.tooltip"))
+                                .binding(
+                                        defaults.economyAdFile,
+                                        () -> config.economyAdFile,
+                                        (value) -> config.economyAdFile = value
+                                )
+                                .controller(StringController::new)
+                                .build())
+                        .option(Option.createBuilder(String.class)
+                                .name(Text.translatable("text.sbutils.config.option.classicAdFile"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.classicAdFile.tooltip"))
+                                .binding(
+                                        defaults.classicAdFile,
+                                        () -> config.classicAdFile,
+                                        (value) -> config.classicAdFile = value
                                 )
                                 .controller(StringController::new)
                                 .build())

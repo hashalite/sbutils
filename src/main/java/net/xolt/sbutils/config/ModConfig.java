@@ -25,7 +25,9 @@ public class ModConfig {
     // Auto Advert Settings
 
     @ConfigEntry public boolean autoAdvert = false;
-    @ConfigEntry public String advertFile = "";
+    @ConfigEntry public String skyblockAdFile = "skyblock";
+    @ConfigEntry public String economyAdFile = "economy";
+    @ConfigEntry public String classicAdFile = "classic";
     @ConfigEntry public double advertDelay = 300.0;
     @ConfigEntry public double advertInitialDelay = 10.0;
     @ConfigEntry public boolean advertUseWhitelist = false;

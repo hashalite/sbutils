@@ -62,6 +62,11 @@ public class ClientPlayNetworkHandlerMixin {
         }
     }
 
+    @Inject(method = "onTitle", at = @At("HEAD"))
+    private void onTitle(TitleS2CPacket packet, CallbackInfo ci) {
+        AutoAdvert.processTitle(packet.getTitle());
+    }
+
     @ModifyVariable(method = "sendPacket", at = @At("HEAD"), argsOnly = true)
     private Packet<?> onSendPacket(Packet<?> packet) {
         if (packet instanceof ChatMessageC2SPacket) {

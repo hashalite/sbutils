@@ -194,7 +194,7 @@ public class AutoCrate {
 
         for (Entity entity : entities) {
             if (entity instanceof ArmorStandEntity && getCrateFilter().matcher(entity.getDisplayName().getString()).matches()) {
-                return new BlockPos((int)entity.getX(), (int)Math.round(entity.getY()) - 1, (int)entity.getZ());
+                return new BlockPos((int)Math.floor(entity.getX()), (int)Math.round(entity.getY()) - 1, (int)Math.floor(entity.getZ()));
             }
         }
         return null;
@@ -208,7 +208,7 @@ public class AutoCrate {
         NbtCompound itemNbt = itemStack.getNbt();
         NbtCompound displayNbt;
         if (itemNbt.contains(ItemStack.DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) {
-            displayNbt = itemNbt.getCompound("display");
+            displayNbt = itemNbt.getCompound(ItemStack.DISPLAY_KEY);
         } else {
             return false;
         }
