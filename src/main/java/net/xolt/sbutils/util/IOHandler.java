@@ -3,6 +3,7 @@ package net.xolt.sbutils.util;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
 import net.xolt.sbutils.config.ModConfig;
 
 import java.io.File;
@@ -18,14 +19,15 @@ import static net.xolt.sbutils.SbUtils.LOGGER;
 public class IOHandler {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("[YYYY-MM-dd HH:mm:ss] ");
     public static final File mcDirectory = FabricLoader.getInstance().getGameDir().toFile();
-    public static final File modDirectory = new File(mcDirectory + "\\sbutils");
-    public static final File autoAdvertDir = new File(modDirectory + "\\autoadvert");
-    public static final File joinCommandsDir = new File(modDirectory + "\\joincommands");
-    public static final File loggerDir = new File(modDirectory + "\\chatlogger");
-    public static final File globalJoinCmdsFile = new File(joinCommandsDir + "\\global.txt");
-    public static final File messageLogFile = new File(loggerDir + "\\messages.txt");
-    public static final File transactionLogFile = new File(loggerDir + "\\transactions.txt");
-    public static final File visitLogFile = new File(loggerDir + "\\visits.txt");
+
+    public static final File modDirectory = new File(mcDirectory + File.separator + "sbutils");
+    public static final File autoAdvertDir = new File(modDirectory + File.separator + "autoadvert");
+    public static final File joinCommandsDir = new File(modDirectory + File.separator + "joincommands");
+    public static final File loggerDir = new File(modDirectory + File.separator + "chatlogger");
+    public static final File globalJoinCmdsFile = new File(joinCommandsDir + File.separator + "global.txt");
+    public static final File messageLogFile = new File(loggerDir + File.separator + "messages.txt");
+    public static final File transactionLogFile = new File(loggerDir + File.separator + "transactions.txt");
+    public static final File visitLogFile = new File(loggerDir + File.separator + "visits.txt");
 
     public static boolean createAll() {
         return createDirectories() && createFiles();
@@ -60,7 +62,7 @@ public class IOHandler {
     public static String readAdFile(String filename) {
         String ads;
         try {
-            ads = Files.readString(new File(autoAdvertDir + "\\" + filename).toPath());
+            ads = Files.readString(new File(autoAdvertDir + File.separator + filename).toPath());
         } catch (IOException e) {
             LOGGER.error("Unable to read from sbutils/autoadvert/" + filename + ": " + e.getMessage());
             return null;
@@ -80,8 +82,8 @@ public class IOHandler {
     }
 
     public static String readJoinCmdsForAccount(GameProfile account) {
-        File nameFile = new File(joinCommandsDir + "\\" + account.getName() + ".txt");
-        File uuidFile = new File(joinCommandsDir + "\\" + account.getId().toString() + ".txt");
+        File nameFile = new File(joinCommandsDir + File.separator + account.getName() + ".txt");
+        File uuidFile = new File(joinCommandsDir + File.separator + account.getId().toString() + ".txt");
         boolean nameFilePresent = nameFile.exists();
         boolean uuidFilePresent = uuidFile.exists();
 
@@ -106,14 +108,8 @@ public class IOHandler {
         return cmdsForAccount;
     }
 
-    public static boolean openModDirectory() {
-        try {
-            Runtime.getRuntime().exec("explorer.exe " + modDirectory);
-            return true;
-        } catch (Exception e) {
-            LOGGER.error("Unable to open mod directory: " + e.getMessage());
-        }
-        return false;
+    public static void openModDirectory() {
+        Util.getOperatingSystem().open(modDirectory);
     }
 
     public static void logTransaction(Text message,long messageReceivedAt) {
@@ -129,14 +125,14 @@ public class IOHandler {
     }
 
     public static boolean writeAdverts(List<String> adverts) {
-        File advertFile = new File(autoAdvertDir + "\\" + ModConfig.INSTANCE.getConfig().advertFile + ".txt");
+        File advertFile = new File(autoAdvertDir + File.separator + ModConfig.INSTANCE.getConfig().advertFile + ".txt");
 
         return overwriteFile(advertFile, adverts);
     }
 
     public static boolean writeAccountCommands(GameProfile account, List<String> commands) {
-        File nameFile = new File(joinCommandsDir + "\\" + account.getName() + ".txt");
-        File uuidFile = new File(joinCommandsDir + "\\" + account.getId().toString() + ".txt");
+        File nameFile = new File(joinCommandsDir + File.separator + account.getName() + ".txt");
+        File uuidFile = new File(joinCommandsDir + File.separator + account.getId().toString() + ".txt");
 
         if (!nameFile.exists() && !uuidFile.exists()) {
             return overwriteFile(uuidFile, commands);

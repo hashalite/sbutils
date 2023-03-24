@@ -24,11 +24,8 @@ public class OpenFolder {
     }
 
     private static int onOpenFolderCommand() {
-        if (IOHandler.openModDirectory()) {
-            Messenger.printMessage("message.sbutils.openFolder.folderOpened");
-        } else {
-            Messenger.printMessage("message.sbutils.openFolder.cantOpen");
-        }
+        IOHandler.openModDirectory();
+        Messenger.printMessage("message.sbutils.openFolder.folderOpened");
 
         return Command.SINGLE_SUCCESS;
     }
