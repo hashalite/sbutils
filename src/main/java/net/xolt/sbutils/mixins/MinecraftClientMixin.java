@@ -3,8 +3,10 @@ package net.xolt.sbutils.mixins;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.hit.HitResult;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,6 +27,8 @@ public abstract class MinecraftClientMixin {
 
     @Shadow
     protected abstract void handleBlockBreaking(boolean breaking);
+
+    @Shadow @Nullable public HitResult crosshairTarget;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
@@ -64,6 +68,9 @@ public abstract class MinecraftClientMixin {
 
     @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
     public void onDoItemUse(CallbackInfo ci) {
+        if (AntiPlace.onHandleBlockPlace()) {
+            ci.cancel();
+        }
         if (ToolSaver.onHandleBlockBreaking()) {
             ci.cancel();
         }

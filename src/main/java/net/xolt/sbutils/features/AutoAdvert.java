@@ -376,6 +376,10 @@ public class AutoAdvert {
     }
 
     private static void sendAd() {
+        if (MC.getNetworkHandler() == null) {
+            return;
+        }
+
         MC.getNetworkHandler().sendChatMessage(prevAdList.get(adIndex));
     }
 

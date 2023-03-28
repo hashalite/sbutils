@@ -184,6 +184,8 @@
   "text.sbutils.config.group.mentions": "Mentions Settings",
   "text.sbutils.config.option.mentions": "Mentions Enabled",
   "text.sbutils.config.option.mentions.tooltip": "Notifies you with a sound when something is mentioned in chat.",
+  "text.sbutils.config.option.mentionSound": "Mention Sound",
+  "text.sbutils.config.option.mentionSound.tooltip": "The sound played when something is mentioned in chat.",
   "text.sbutils.config.option.mentionsCurrentAccount": "Current Account Mentions",
   "text.sbutils.config.option.mentionsCurrentAccount.tooltip": "Notifies you when your username is mentioned in chat.",
   "text.sbutils.config.option.mentionsAliases": "Aliases",
@@ -299,6 +301,15 @@
   "text.sbutils.config.option.toolSaverDurability.tooltip": "The durability to stop at.",
 
 
+  "text.sbutils.config.category.antiplace": "Anti Place",
+
+  "text.sbutils.config.group.antiPlace": "Anti Place Settings",
+  "text.sbutils.config.option.antiPlaceHeads": "Prevent Head Placement",
+  "text.sbutils.config.option.antiPlaceHeads.tooltip": "Prevents the placement of heads that have custom names.",
+  "text.sbutils.config.option.antiPlaceGrass": "Prevent Grass Placement",
+  "text.sbutils.config.option.antiPlaceGrass.tooltip": "Prevents the placement of grass blocks.",
+
+
   "text.sbutils.config.category.autocommand": "Auto Command",
 
   "text.sbutils.config.group.autoCommand": "Auto Command Settings",
@@ -372,6 +383,8 @@
   "text.sbutils.config.option.detectStaffJoin.tooltip": "Whether you should receive notifications when staff members join.",
   "text.sbutils.config.option.detectStaffLeave": "Detect Staff Leave",
   "text.sbutils.config.option.detectStaffLeave.tooltip": "Whether you should receive notifications when staff members leave.",
-  "text.sbutils.config.option.staffSound": "Play Sound",
-  "text.sbutils.config.option.staffSound.tooltip": "Whether to play sounds when staff members join."
+  "text.sbutils.config.option.playStaffSound": "Play Staff Sound",
+  "text.sbutils.config.option.playStaffSound.tooltip": "Whether to play sounds when staff members join/leave.",
+  "text.sbutils.config.option.staffDetectSound": "Staff Sound",
+  "text.sbutils.config.option.staffDetectSound.tooltip": "The sound played when staff join/leave."
 }

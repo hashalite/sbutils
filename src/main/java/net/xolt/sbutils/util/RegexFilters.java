@@ -48,7 +48,7 @@ public class RegexFilters {
     
     // Auto Lottery
     
-    public static final Pattern lotteryEndFilter = Pattern.compile("\\[SBLottery\\] Congratulations go to [\u00a7_a-zA-Z0-9]+ for winning [0-9]+ Grass with [0-9]+ tickets");
+    public static final Pattern lotteryEndFilter = Pattern.compile("\\[SBLottery\\] Congratulations go to [\u00a7_a-zA-Z0-9]+ for winning [0-9]+ Grass with [0-9]+ (ticket|tickets)");
 
 
     // Auto Crate

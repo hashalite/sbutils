@@ -26,6 +26,7 @@ public class ConfigGui {
                 .category(buildAutoMineCategory(defaults, config))
                 .category(buildAutoFixCategory(defaults, config))
                 .category(buildToolSaverCategory(defaults, config))
+                .category(buildAntiPlaceCategory(defaults, config))
                 .category(buildAutoCommandCategory(defaults, config))
                 .category(buildAutoReplyCategory(defaults, config))
                 .category(buildAutoLotteryCategory(defaults, config))
@@ -240,6 +241,16 @@ public class ConfigGui {
                                         (value) -> config.mentions = value
                                 )
                                 .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(ModConfig.NotifSound.class)
+                                .name(Text.translatable("text.sbutils.config.option.mentionSound"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.mentionSound.tooltip"))
+                                .binding(
+                                        defaults.mentionSound,
+                                        () -> config.mentionSound,
+                                        (value) -> config.mentionSound = value
+                                )
+                                .controller(EnumController::new)
                                 .build())
                         .option(Option.createBuilder(boolean.class)
                                 .name(Text.translatable("text.sbutils.config.option.mentionsCurrentAccount"))
@@ -689,6 +700,35 @@ public class ConfigGui {
                 .build();
     }
 
+    public static ConfigCategory buildAntiPlaceCategory(ModConfig defaults, ModConfig config) {
+        return ConfigCategory.createBuilder()
+                .name(Text.translatable("text.sbutils.config.category.antiplace"))
+                .group(OptionGroup.createBuilder()
+                        .name(Text.translatable("text.sbutils.config.group.antiPlace"))
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.antiPlaceHeads"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.antiPlaceHeads.tooltip"))
+                                .binding(
+                                        defaults.antiPlaceHeads,
+                                        () -> config.antiPlaceHeads,
+                                        (value) -> config.antiPlaceHeads = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.antiPlaceGrass"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.antiPlaceGrass.tooltip"))
+                                .binding(
+                                        defaults.antiPlaceGrass,
+                                        () -> config.antiPlaceGrass,
+                                        (value) -> config.antiPlaceGrass = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .build())
+                .build();
+    }
+
     public static ConfigCategory buildAutoCommandCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
                 .name(Text.translatable("text.sbutils.config.category.autocommand"))
@@ -940,14 +980,24 @@ public class ConfigGui {
                                 .controller(TickBoxController::new)
                                 .build())
                         .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.staffSound"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.staffSound.tooltip"))
+                                .name(Text.translatable("text.sbutils.config.option.playStaffSound"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.playStaffSound.tooltip"))
                                 .binding(
-                                        defaults.staffSound,
-                                        () -> config.staffSound,
-                                        (value) -> config.staffSound = value
+                                        defaults.playStaffSound,
+                                        () -> config.playStaffSound,
+                                        (value) -> config.playStaffSound = value
                                 )
                                 .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(ModConfig.NotifSound.class)
+                                .name(Text.translatable("text.sbutils.config.option.staffDetectSound"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.staffDetectSound.tooltip"))
+                                .binding(
+                                        defaults.staffDetectSound,
+                                        () -> config.staffDetectSound,
+                                        (value) -> config.staffDetectSound = value
+                                )
+                                .controller(EnumController::new)
                                 .build())
                         .build())
                 .build();

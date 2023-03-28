@@ -6,10 +6,10 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
+import net.xolt.sbutils.util.NotifSoundArgumentType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,19 @@ public class Mentions {
                                 .then(ClientCommandManager.argument("alias", StringArgumentType.greedyString())
                                         .executes(context ->
                                             onDelAliasCommand(StringArgumentType.getString(context, "alias"))
-                                        )))));
+                                        ))))
+                .then(ClientCommandManager.literal("sound")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.mentionSound", ModConfig.INSTANCE.getConfig().mentionSound);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.argument("sound", NotifSoundArgumentType.notifSound())
+                                .executes(context ->{
+                                    ModConfig.INSTANCE.getConfig().mentionSound = NotifSoundArgumentType.getNotifSound(context, "sound");
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionSound", ModConfig.INSTANCE.getConfig().mentionSound);
+                                    return Command.SINGLE_SUCCESS;
+                                }))));
 
         dispatcher.register(ClientCommandManager.literal("ment")
                 .executes(context ->
@@ -124,6 +136,6 @@ public class Mentions {
             return;
         }
 
-        MC.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+        MC.player.playSound(ModConfig.INSTANCE.getConfig().mentionSound.getSound(), 1, 1);
     }
 }

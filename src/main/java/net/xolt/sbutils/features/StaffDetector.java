@@ -6,9 +6,9 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.sound.SoundEvents;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
+import net.xolt.sbutils.util.NotifSoundArgumentType;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.UUID;
@@ -58,6 +58,18 @@ public class StaffDetector {
                                     ModConfig.INSTANCE.save();
                                     Messenger.printChangedSetting("text.sbutils.config.option.detectStaffLeave", false);
                                     return Command.SINGLE_SUCCESS;
+                                })))
+                .then(ClientCommandManager.literal("sound")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.staffDetectSound", ModConfig.INSTANCE.getConfig().staffDetectSound);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.argument("sound", NotifSoundArgumentType.notifSound())
+                                .executes(context ->{
+                                    ModConfig.INSTANCE.getConfig().staffDetectSound = NotifSoundArgumentType.getNotifSound(context, "sound");
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.staffDetectSound", ModConfig.INSTANCE.getConfig().staffDetectSound);
+                                    return Command.SINGLE_SUCCESS;
                                 }))));
 
         dispatcher.register(ClientCommandManager.literal("sd")
@@ -73,8 +85,8 @@ public class StaffDetector {
         }
 
         Messenger.printStaffNotification(player, true);
-        if (ModConfig.INSTANCE.getConfig().staffSound) {
-            MC.player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), 1, 1);
+        if (ModConfig.INSTANCE.getConfig().playStaffSound) {
+            MC.player.playSound(ModConfig.INSTANCE.getConfig().staffDetectSound.getSound(), 1, 1);
         }
     }
 
@@ -92,8 +104,8 @@ public class StaffDetector {
 
         checkForNoStaff = true;
 
-        if (ModConfig.INSTANCE.getConfig().staffSound) {
-            MC.player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), 1, 1);
+        if (ModConfig.INSTANCE.getConfig().playStaffSound) {
+            MC.player.playSound(ModConfig.INSTANCE.getConfig().staffDetectSound.getSound(), 1, 1);
         }
     }
 

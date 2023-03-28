@@ -52,6 +52,7 @@ public class SbUtils implements ClientModInitializer {
             ChatAppend.registerCommand(dispatcher);
             AutoReply.registerCommand(dispatcher);
             AutoCommand.registerCommand(dispatcher);
+            AntiPlace.registerCommand(dispatcher);
         });
 
         registerKeybindings();

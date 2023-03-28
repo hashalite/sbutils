@@ -386,6 +386,10 @@ public class EnchantAll {
     }
 
     private static void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
+        if (MC.getNetworkHandler() == null) {
+            return;
+        }
+
         String enchantName = Registries.ENCHANTMENT.getId(enchantment).getPath().replaceAll("_", "");
         MC.getNetworkHandler().sendChatCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()));
     }

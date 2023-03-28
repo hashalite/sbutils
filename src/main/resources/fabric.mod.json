@@ -6,6 +6,8 @@
   "description": "A utility mod for Skyblock.net.",
   "authors": ["hashalite"],
   "contact": {
+    "homepage": "https://github.com/hashalite/sbutils-public",
+    "issues": "https://github.com/hashalite/sbutils-public/issues"
   },
   "license": "GPL-3.0",
   "icon": "assets/sbutils/icon.png",

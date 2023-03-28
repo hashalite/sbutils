@@ -238,8 +238,7 @@ public class JoinCommands {
     }
 
     private static void sendJoinCommand() {
-        ClientPlayNetworkHandler networkHandler = MC.getNetworkHandler();
-        if (networkHandler == null) {
+        if (MC.getNetworkHandler() == null) {
             return;
         }
 
@@ -248,7 +247,7 @@ public class JoinCommands {
             command = command.substring(1);
         }
 
-        networkHandler.sendChatCommand(command);
+        MC.getNetworkHandler().sendChatCommand(command);
         lastCommandSentAt = System.currentTimeMillis();
         commandIndex++;
 
