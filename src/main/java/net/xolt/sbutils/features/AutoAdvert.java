@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screen.ProgressScreen;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
@@ -168,7 +169,10 @@ public class AutoAdvert {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
-        Messenger.printListSetting("message.sbutils.autoAdvert.advertList", getAdList());
+
+        List<String> formattedAdList = getAdList().stream().map((ad) -> ad.replace('&', Formatting.FORMATTING_CODE_PREFIX)).toList();
+
+        Messenger.printListSetting("message.sbutils.autoAdvert.advertList", formattedAdList);
         return Command.SINGLE_SUCCESS;
     }
 

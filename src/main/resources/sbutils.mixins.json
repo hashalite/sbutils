@@ -5,6 +5,7 @@
   "client": [
     "ClientConnectionMixin",
     "ClientPlayerEntityMixin",
+    "ClientPlayerInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",
     "CreativeInventoryScreenMixin",
     "GameRendererMixin",

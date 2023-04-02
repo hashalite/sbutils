@@ -339,10 +339,22 @@ public class EnchantAll {
             return;
         }
 
-        if (itemsToEnchant.containsValue(slotIndex) || (actionType.equals(SlotActionType.SWAP) && itemsToEnchant.containsValue(button))) {
+        boolean conflicts = doesClickConflict(slotIndex);
+        if (!conflicts && actionType.equals(SlotActionType.SWAP)) {
+            conflicts = doesClickConflict(button);
+        }
+
+        if (conflicts) {
             reset();
             Messenger.printMessage("message.sbutils.enchantAll.cancelInventoryInteract", Formatting.RED);
         }
+    }
+
+    private static boolean doesClickConflict(int slotIndex) {
+        if (MC.player == null) {
+            return false;
+        }
+        return getEnchantsForItem(MC.player.getInventory().getStack(slotIndex), unenchanting).size() > 0 && (slotIndex == MC.player.getInventory().selectedSlot || itemsToEnchant.size() > 1);
     }
 
     private static List<Enchantment> getEnchantsForItem(ItemStack itemStack, boolean unenchant) {
