@@ -6,7 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.util.Formatting;
+import net.objecthunter.exp4j.ExpressionBuilder;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.LinkedHashMap;
@@ -71,8 +71,6 @@ public class Convert {
         return formatDouble(dcs) + "dc + " + stacks + "s + " + formatDouble(Math.round(items * 10.0) / 10.0);
     }
 
-
-
     private static String formatDouble(double input) {
         if (input == (long)input) {
             return String.format("%d", (long)input);
@@ -82,26 +80,12 @@ public class Convert {
     }
 
     private static Double parseInput(String input) {
-        String lowercase = input.toLowerCase();
-        String noSpaces = lowercase.replaceAll(" ", "");
-        String[] split = noSpaces.split("[,+]");
-        double total = 0.0;
-        for (String operand : split) {
-            for (String unit : units.keySet()) {
-                operand = operand.replaceAll(unit, "*" + units.get(unit));
-            }
-            String[] factors = operand.split("\\*");
-            double product = 1.0;
-            for (String factor : factors) {
-                try {
-                    product *= Double.parseDouble(factor);
-                } catch (NumberFormatException e) {
-                    Messenger.printMessage("message.sbutils.convert.invalidCharacter", Formatting.RED);
-                    return null;
-                }
-            }
-            total += product;
+        for (String unit : units.keySet()) {
+            input = input.replaceAll("(-?[0-9]+(.[0-9]+)?) *" + unit, "($1*" + units.get(unit) + ")");
         }
-        return total;
+
+        return new ExpressionBuilder(input)
+                .build()
+                .evaluate();
     }
 }

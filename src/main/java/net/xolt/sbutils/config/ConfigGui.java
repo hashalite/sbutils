@@ -242,6 +242,26 @@ public class ConfigGui {
                                 )
                                 .controller(TickBoxController::new)
                                 .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.excludeServerMsgs"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.excludeServerMsgs.tooltip"))
+                                .binding(
+                                        defaults.excludeServerMsgs,
+                                        () -> config.excludeServerMsgs,
+                                        (value) -> config.excludeServerMsgs = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.excludeSelfMsgs"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.excludeSelfMsgs.tooltip"))
+                                .binding(
+                                        defaults.excludeSelfMsgs,
+                                        () -> config.excludeSelfMsgs,
+                                        (value) -> config.excludeSelfMsgs = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
                         .option(Option.createBuilder(ModConfig.NotifSound.class)
                                 .name(Text.translatable("text.sbutils.config.option.mentionSound"))
                                 .tooltip(Text.translatable("text.sbutils.config.option.mentionSound.tooltip"))
@@ -249,6 +269,26 @@ public class ConfigGui {
                                         defaults.mentionSound,
                                         () -> config.mentionSound,
                                         (value) -> config.mentionSound = value
+                                )
+                                .controller(EnumController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.mentionHighlight"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.mentionHighlight.tooltip"))
+                                .binding(
+                                        defaults.mentionHighlight,
+                                        () -> config.mentionHighlight,
+                                        (value) -> config.mentionHighlight = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(ModConfig.Color.class)
+                                .name(Text.translatable("text.sbutils.config.option.highlightColor"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.highlightColor.tooltip"))
+                                .binding(
+                                        defaults.highlightColor,
+                                        () -> config.highlightColor,
+                                        (value) -> config.highlightColor = value
                                 )
                                 .controller(EnumController::new)
                                 .build())
@@ -556,6 +596,16 @@ public class ConfigGui {
                                         defaults.visitLogger,
                                         () -> config.visitLogger,
                                         (value) -> config.visitLogger = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.dpLogger"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.dpLogger.tooltip"))
+                                .binding(
+                                        defaults.dpLogger,
+                                        () -> config.dpLogger,
+                                        (value) -> config.dpLogger = value
                                 )
                                 .controller(TickBoxController::new)
                                 .build())

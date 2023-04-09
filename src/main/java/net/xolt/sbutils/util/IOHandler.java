@@ -4,8 +4,6 @@ import com.mojang.authlib.GameProfile;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
-import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.features.AutoAdvert;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +27,7 @@ public class IOHandler {
     public static final File messageLogFile = new File(loggerDir + File.separator + "messages.txt");
     public static final File transactionLogFile = new File(loggerDir + File.separator + "transactions.txt");
     public static final File visitLogFile = new File(loggerDir + File.separator + "visits.txt");
+    public static final File dpLogFile = new File(loggerDir + File.separator + "dp.txt");
 
     public static boolean createAll() {
         return createDirectories() && createFiles();
@@ -53,6 +52,7 @@ public class IOHandler {
             transactionLogFile.createNewFile();
             messageLogFile.createNewFile();
             visitLogFile.createNewFile();
+            dpLogFile.createNewFile();
         } catch (IOException e) {
             LOGGER.error("Unable to create file: " + e.getMessage());
             return false;
@@ -125,6 +125,10 @@ public class IOHandler {
 
     public static void logVisit(Text message,long messageReceivedAt) {
         logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), visitLogFile);
+    }
+
+    public static void logDpWinner(Text message, long messageReceivedAt) {
+        logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), dpLogFile);
     }
 
     public static boolean writeAdverts(List<String> adverts, String adFile) {

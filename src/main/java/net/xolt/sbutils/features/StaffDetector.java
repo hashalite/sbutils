@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
-import net.xolt.sbutils.util.NotifSoundArgumentType;
+import net.xolt.sbutils.util.command.NotifSoundArgumentType;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.UUID;

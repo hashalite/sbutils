@@ -48,7 +48,11 @@ public class ModConfig {
     // Mentions Settings
 
     @ConfigEntry public boolean mentions = false;
+    @ConfigEntry public boolean excludeServerMsgs = true;
+    @ConfigEntry public boolean excludeSelfMsgs = true;
     @ConfigEntry public NotifSound mentionSound = NotifSound.EXPERIENCE;
+    @ConfigEntry public boolean mentionHighlight = true;
+    @ConfigEntry public Color highlightColor = Color.GOLD;
     @ConfigEntry public boolean mentionsCurrentAccount = true;
     @ConfigEntry public List<String> mentionsAliases = List.of();
 
@@ -92,6 +96,7 @@ public class ModConfig {
     @ConfigEntry public boolean msgLoggerIncoming = false;
     @ConfigEntry public boolean msgLoggerOutgoing = false;
     @ConfigEntry public boolean visitLogger = false;
+    @ConfigEntry public boolean dpLogger = false;
 
 
     // Auto Mine Settings
@@ -172,7 +177,7 @@ public class ModConfig {
     @ConfigEntry public NotifSound staffDetectSound = NotifSound.BIT;
 
 
-    public enum Color implements NameableEnum {
+    public enum Color implements NameableEnum, StringIdentifiable {
         DARK_RED("text.sbutils.config.option.color.darkRed", Formatting.DARK_RED),
         RED("text.sbutils.config.option.color.red", Formatting.RED),
         GOLD("text.sbutils.config.option.color.gold", Formatting.GOLD),
@@ -196,6 +201,10 @@ public class ModConfig {
         Color(String name, Formatting formatting) {
             this.name = name;
             this.formatting = formatting;
+        }
+
+        public String asString() {
+            return getDisplayName().getString();
         }
 
         public Text getDisplayName() {

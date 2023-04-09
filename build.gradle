@@ -31,6 +31,9 @@ dependencies {
     modApi "dev.isxander:yet-another-config-lib:${project.yacl_version}"
     include "dev.isxander:yet-another-config-lib:${project.yacl_version}"
 
+    modApi group: 'net.objecthunter', name: 'exp4j', version: project.exp4j_version
+    include group: 'net.objecthunter', name: 'exp4j', version: project.exp4j_version
+
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
 }

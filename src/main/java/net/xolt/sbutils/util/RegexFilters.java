@@ -10,6 +10,11 @@ public class RegexFilters {
     public static final Pattern economyTitleFilter = Pattern.compile("\u00a7d\u00a7o\u00a7lSkyblock Economy");
     public static final Pattern classicTitleFilter = Pattern.compile("\u00a76\u00a7o\u00a7lSkyblock Classic");
 
+
+    // Mentions
+
+    public static final Pattern playerMsgFilter = Pattern.compile("((\u00a7[0-9a-fk-op])*\\[.*\\](\u00a7[0-9a-fk-op])* )+[\u00a7_a-zA-Z0-9]+: .*");
+
     
     // Chat Filters
 
@@ -38,6 +43,7 @@ public class RegexFilters {
     public static final Pattern incomingMsgFilter = Pattern.compile("\\[([\u00a7_a-zA-Z0-9]+) -> me\\] .*");
     public static final Pattern outgoingMsgFilter = Pattern.compile("\\[me -> [\u00a7_a-zA-Z0-9]+\\] .*");
     public static final Pattern visitFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ is now visiting your island\\.");
+    public static final Pattern dpWinnerFilter = Pattern.compile("(Winner #[0-9]+ is .*!)|(Dropping x[0-9]+ .*)");
     
     
     // Auto Fix

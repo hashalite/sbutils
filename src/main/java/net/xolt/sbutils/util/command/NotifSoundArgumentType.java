@@ -1,4 +1,4 @@
-package net.xolt.sbutils.util;
+package net.xolt.sbutils.util.command;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.argument.EnumArgumentType;

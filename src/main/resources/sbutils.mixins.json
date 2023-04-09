@@ -3,6 +3,7 @@
   "package": "net.xolt.sbutils.mixins",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "ChatHudMixin",
     "ClientConnectionMixin",
     "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",

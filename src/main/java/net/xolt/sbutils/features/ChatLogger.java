@@ -32,6 +32,9 @@ public class ChatLogger {
     private static List<ChatFilter> visitFilters = List.of(
             new ChatFilter("text.sbutils.config.option.visitLogger", List.of(RegexFilters.visitFilter), () -> ModConfig.INSTANCE.getConfig().visitLogger)
     );
+    private static List<ChatFilter> dpFilters = List.of(
+            new ChatFilter("text.sbutils.config.option.dpLogger", List.of(RegexFilters.dpWinnerFilter), () -> ModConfig.INSTANCE.getConfig().dpLogger)
+    );
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(ClientCommandManager.literal("chatlogger")
@@ -133,6 +136,25 @@ public class ChatLogger {
                                     ModConfig.INSTANCE.save();
                                     Messenger.printChangedSetting("text.sbutils.config.option.visitLogger", false);
                                     return Command.SINGLE_SUCCESS;
+                                })))
+                .then(ClientCommandManager.literal("dp")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.dpLogger", ModConfig.INSTANCE.getConfig().dpLogger);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.literal("true")
+                                .executes(context -> {
+                                    ModConfig.INSTANCE.getConfig().dpLogger = true;
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.dpLogger", true);
+                                    return Command.SINGLE_SUCCESS;
+                                }))
+                        .then(ClientCommandManager.literal("false")
+                                .executes(context -> {
+                                    ModConfig.INSTANCE.getConfig().dpLogger = false;
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.dpLogger", false);
+                                    return Command.SINGLE_SUCCESS;
                                 }))));
 
         dispatcher.register(ClientCommandManager.literal("logger")
@@ -164,6 +186,12 @@ public class ChatLogger {
         for (ChatFilter filter : visitFilters) {
             if (filter.matches(stringMessage) && filter.isEnabled()) {
                 IOHandler.logVisit(message, messageReceivedAt);
+            }
+        }
+
+        for (ChatFilter filter : dpFilters) {
+            if (filter.matches(stringMessage) && filter.isEnabled()) {
+                IOHandler.logDpWinner(message, messageReceivedAt);
             }
         }
     }
