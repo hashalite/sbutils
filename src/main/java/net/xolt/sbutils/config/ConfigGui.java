@@ -64,6 +64,16 @@ public class ConfigGui {
                                 .controller(EnumController::new)
                                 .build())
                         .option(Option.createBuilder(ModConfig.Color.class)
+                                .name(Text.translatable("text.sbutils.config.option.prefixColor"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.prefixColor.tooltip"))
+                                .binding(
+                                        defaults.prefixColor,
+                                        () -> config.prefixColor,
+                                        (value) -> config.prefixColor = value
+                                )
+                                .controller(EnumController::new)
+                                .build())
+                        .option(Option.createBuilder(ModConfig.Color.class)
                                 .name(Text.translatable("text.sbutils.config.option.messageColor"))
                                 .tooltip(Text.translatable("text.sbutils.config.option.messageColor.tooltip"))
                                 .binding(

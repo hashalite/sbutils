@@ -179,7 +179,7 @@ public class IOHandler {
     }
 
     // Creates the provided file and its parent directories if they don't exist
-    public static void ensureFileExists(File file) {
+    private static void ensureFileExists(File file) {
         try {
             Files.createDirectories(file.getParentFile().toPath());
 

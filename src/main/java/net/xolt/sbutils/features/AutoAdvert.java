@@ -16,7 +16,6 @@ import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
-import java.io.File;
 import java.util.*;
 
 import static net.xolt.sbutils.SbUtils.MC;
@@ -170,9 +169,7 @@ public class AutoAdvert {
             return Command.SINGLE_SUCCESS;
         }
 
-        List<String> formattedAdList = getAdList().stream().map((ad) -> ad.replace('&', Formatting.FORMATTING_CODE_PREFIX)).toList();
-
-        Messenger.printListSetting("message.sbutils.autoAdvert.advertList", formattedAdList);
+        Messenger.printListSetting("message.sbutils.autoAdvert.advertList", formatAdList(getAdList()));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -182,12 +179,11 @@ public class AutoAdvert {
             return Command.SINGLE_SUCCESS;
         }
         String adFile = getAdFile();
-        IOHandler.ensureFileExists(new File(IOHandler.autoAdvertDir + File.separator + adFile));
         List<String> adverts = getAdList();
         adverts.add(advert);
         IOHandler.writeAdverts(adverts, adFile);
 
-        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", adverts);
+        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAdList(adverts));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -198,7 +194,6 @@ public class AutoAdvert {
             return Command.SINGLE_SUCCESS;
         }
         String adFile = getAdFile();
-        IOHandler.ensureFileExists(new File(IOHandler.autoAdvertDir + File.separator + adFile));
         List<String> adverts = getAdList();
         if (index - 1 < 0 || index - 1 >= adverts.size()) {
             Messenger.printMessage("message.sbutils.autoAdvert.invalidIndex");
@@ -208,7 +203,7 @@ public class AutoAdvert {
         adverts.remove(index - 1);
         IOHandler.writeAdverts(adverts, adFile);
 
-        Messenger.printListSetting("message.sbutils.autoAdvert.deleteSuccess", adverts);
+        Messenger.printListSetting("message.sbutils.autoAdvert.deleteSuccess", formatAdList(adverts));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -219,7 +214,6 @@ public class AutoAdvert {
             return Command.SINGLE_SUCCESS;
         }
         String adFile = getAdFile();
-        IOHandler.ensureFileExists(new File(IOHandler.autoAdvertDir + File.separator + adFile));
         List<String> adverts = getAdList();
         if (index - 1 < 0 || index - 1 > adverts.size()) {
             Messenger.printMessage("message.sbutils.autoAdvert.invalidIndex");
@@ -229,7 +223,7 @@ public class AutoAdvert {
         adverts.add(index - 1, advert);
         IOHandler.writeAdverts(adverts, adFile);
 
-        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", adverts);
+        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAdList(adverts));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -289,6 +283,7 @@ public class AutoAdvert {
             Messenger.printWithPlaceholders("message.sbutils.autoAdvert.noAds", getAdFile());
             return;
         }
+
         adIndex = getUpdatedAdIndex(newAdList);
         prevAdList = newAdList;
         sendAd();
@@ -300,14 +295,10 @@ public class AutoAdvert {
         if (RegexFilters.skyblockTitleFilter.matcher(title.getString()).matches()) {
             currentServer = SbServer.SKYBLOCK;
             prevAdList = getAdList();
-        }
-
-        if (RegexFilters.economyTitleFilter.matcher(title.getString()).matches()) {
+        } else if (RegexFilters.economyTitleFilter.matcher(title.getString()).matches()) {
             currentServer = SbServer.ECONOMY;
             prevAdList = getAdList();
-        }
-
-        if (RegexFilters.classicTitleFilter.matcher(title.getString()).matches()) {
+        } else if (RegexFilters.classicTitleFilter.matcher(title.getString()).matches()) {
             currentServer = SbServer.CLASSIC;
             prevAdList = getAdList();
         }
@@ -333,6 +324,11 @@ public class AutoAdvert {
     }
 
     private static List<String> getAdList() {
+        String adFile = getAdFile();
+        if (adFile == null) {
+            return new ArrayList<>();
+        }
+
         String adListString = IOHandler.readAdFile(getAdFile());
 
         if (adListString == null || adListString.length() == 0) {
@@ -340,6 +336,10 @@ public class AutoAdvert {
         }
 
         return new ArrayList<>(Arrays.asList(adListString.split("[\\r\\n]+")));
+    }
+
+    private static List<String> formatAdList(List<String> ads) {
+        return ads.stream().map((ad) -> ad.replaceAll("&([0-9a-fk-or])", Formatting.FORMATTING_CODE_PREFIX + "$1")).toList();
     }
 
     private static String getAdFile() {

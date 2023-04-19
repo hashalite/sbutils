@@ -30,7 +30,7 @@ public class Messenger {
         }
 
         MutableText sbutilsText = Text.literal("sbutils").formatted(ModConfig.INSTANCE.getConfig().sbutilsColor.getFormatting());
-        MutableText prefix = insertPlaceholders(Text.literal(ModConfig.INSTANCE.getConfig().messagePrefix + " ").formatted(getMessageColor()), sbutilsText);
+        MutableText prefix = insertPlaceholders(Text.literal(ModConfig.INSTANCE.getConfig().messagePrefix + " ").formatted(ModConfig.INSTANCE.getConfig().prefixColor.getFormatting()), sbutilsText);
 
         MC.player.sendMessage(prefix.append(message));
     }

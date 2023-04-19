@@ -122,6 +122,8 @@
   "text.sbutils.config.option.messagePrefix.tooltip": "The prefix that appears before sbutils messages. The '@' will be replaced with 'sbutils'.",
   "text.sbutils.config.option.sbutilsColor": "sbutils Color",
   "text.sbutils.config.option.sbutilsColor.tooltip": "The color of the sbutils name in messages.",
+  "text.sbutils.config.option.prefixColor": "Prefix Color",
+  "text.sbutils.config.option.prefixColor.tooltip": "The color of the characters surrounding 'sbutils' in the message prefix.",
   "text.sbutils.config.option.messageColor": "Message Color",
   "text.sbutils.config.option.messageColor.tooltip": "The color of sbutils messages.",
   "text.sbutils.config.option.valueColor": "Value Color",

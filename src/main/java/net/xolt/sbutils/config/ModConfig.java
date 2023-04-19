@@ -21,6 +21,7 @@ public class ModConfig {
 
     @ConfigEntry public String messagePrefix = "[@]";
     @ConfigEntry public Color sbutilsColor = Color.YELLOW;
+    @ConfigEntry public Color prefixColor = Color.AQUA;
     @ConfigEntry public Color messageColor = Color.AQUA;
     @ConfigEntry public Color valueColor = Color.WHITE;
 

@@ -13,7 +13,7 @@ public class RegexFilters {
 
     // Mentions
 
-    public static final Pattern playerMsgFilter = Pattern.compile("((\u00a7[0-9a-fk-op])*\\[.*\\](\u00a7[0-9a-fk-op])* )+[\u00a7_a-zA-Z0-9]+: .*");
+    public static final Pattern playerMsgFilter = Pattern.compile("((\u00a7[0-9a-fk-or])*\\[.*\\](\u00a7[0-9a-fk-or])* )*[\u00a7_a-zA-Z0-9]+: .*");
 
     
     // Chat Filters

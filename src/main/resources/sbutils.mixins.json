@@ -12,8 +12,7 @@
     "GameRendererMixin",
     "HandledScreenMixin",
     "MessageHandlerMixin",
-    "MinecraftClientMixin",
-    "SocialInteractionsManagerMixin"
+    "MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

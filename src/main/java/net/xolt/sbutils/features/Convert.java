@@ -81,7 +81,7 @@ public class Convert {
 
     private static Double parseInput(String input) {
         for (String unit : units.keySet()) {
-            input = input.replaceAll("(-?[0-9]+(.[0-9]+)?) *" + unit, "($1*" + units.get(unit) + ")");
+            input = input.replaceAll("([0-9]+(.[0-9]+)?) *" + unit, "($1*" + units.get(unit) + ")");
         }
 
         return new ExpressionBuilder(input)
