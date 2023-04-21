@@ -83,7 +83,7 @@ public class ModConfig {
     @ConfigEntry public boolean motdFilterEnabled = false;
     @ConfigEntry public boolean voteFilterEnabled = false;
     @ConfigEntry public boolean voteRewardFilterEnabled = false;
-    @ConfigEntry public boolean lotteryFilterEnabled = false;
+    @ConfigEntry public boolean raffleFilterEnabled = false;
     @ConfigEntry public boolean cratesFilterEnabled = false;
     @ConfigEntry public boolean clearLagFilterEnabled = false;
     @ConfigEntry public boolean perishedInVoidFilterEnabled = false;
@@ -145,8 +145,8 @@ public class ModConfig {
 
     // Auto Lottery Settings
 
-    @ConfigEntry public boolean autoLottery = false;
-    @ConfigEntry public int lotteryTickets = 2;
+    @ConfigEntry public boolean autoRaffle = false;
+    @ConfigEntry public int raffleTickets = 2;
     @ConfigEntry public double grassCheckDelay = 5.0;
 
 

@@ -65,7 +65,7 @@
   "message.sbutils.autoCommand.infoWithMinutes": "Sending next command in % minutes and % seconds.",
   "message.sbutils.autoCommand.infoJustSeconds": "Sending next command in % seconds.",
 
-  "message.sbutils.autoLottery.buying": "Buying lottery tickets...",
+  "message.sbutils.autoRaffle.buying": "Buying raffle tickets...",
 
   "message.sbutils.autoPrivate.names": "Current Auto Private names:",
   "message.sbutils.autoPrivate.nameAddSuccess": "Successfully added the name @ to Auto Private.",
@@ -245,8 +245,8 @@
   "text.sbutils.config.option.voteFilterEnabled.tooltip": "Whether player vote messages should be filtered from chat.",
   "text.sbutils.config.option.voteRewardFilterEnabled": "Filter Vote Rewards",
   "text.sbutils.config.option.voteRewardFilterEnabled.tooltip": "Whether player vote reward messages should be filtered from chat.",
-  "text.sbutils.config.option.lotteryFilterEnabled": "Filter Lottery Messages",
-  "text.sbutils.config.option.lotteryFilterEnabled.tooltip": "Whether lottery messages should be filtered from chat.",
+  "text.sbutils.config.option.raffleFilterEnabled": "Filter Raffle Messages",
+  "text.sbutils.config.option.raffleFilterEnabled.tooltip": "Whether raffle messages should be filtered from chat.",
   "text.sbutils.config.option.cratesFilterEnabled": "Filter Crate Messages",
   "text.sbutils.config.option.cratesFilterEnabled.tooltip": "Whether crate opening messages should be filtered from chat.",
   "text.sbutils.config.option.clearLagFilterEnabled": "Filter ClearLag Messages",
@@ -344,13 +344,13 @@
   "text.sbutils.config.option.autoReplyDelay.tooltip": "The delay between responses if multiple people message you at once. (Seconds)",
 
 
-  "text.sbutils.config.category.autolottery": "Auto Lottery",
+  "text.sbutils.config.category.autoraffle": "Auto Raffle",
 
-  "text.sbutils.config.group.autoLottery": "Auto Lottery Settings",
-  "text.sbutils.config.option.autoLottery": "Auto Lottery Enabled",
-  "text.sbutils.config.option.autoLottery.tooltip": "Automatically buys lottery tickets when you log in and when the lottery ends.",
-  "text.sbutils.config.option.lotteryTickets": "Lottery Tickets",
-  "text.sbutils.config.option.lotteryTickets.tooltip": "The amount of lottery tickets to purchase. (Max. 2)",
+  "text.sbutils.config.group.autoRaffle": "Auto Raffle Settings",
+  "text.sbutils.config.option.autoRaffle": "Auto Raffle Enabled",
+  "text.sbutils.config.option.autoRaffle.tooltip": "Automatically buys raffle tickets when you log in and when the raffle ends.",
+  "text.sbutils.config.option.raffleTickets": "Raffle Tickets",
+  "text.sbutils.config.option.raffleTickets.tooltip": "The amount of raffle tickets to purchase. (Max. 2)",
   "text.sbutils.config.option.grassCheckDelay": "Grass Check Delay",
   "text.sbutils.config.option.grassCheckDelay.tooltip": "If you don't have enough grass in your inventory, how often it should check for more. (Seconds)",
 

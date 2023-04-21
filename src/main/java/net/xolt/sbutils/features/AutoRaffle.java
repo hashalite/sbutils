@@ -17,30 +17,30 @@ import net.xolt.sbutils.util.RegexFilters;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoLottery {
+public class AutoRaffle {
 
     private static boolean enabled;
     private static boolean waitingToBuy;
     private static long checkedForGrassAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> autoLotteryNode = dispatcher.register(ClientCommandManager.literal("autolottery")
+        LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(ClientCommandManager.literal("autoraffle")
                 .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().autoLottery = !ModConfig.INSTANCE.getConfig().autoLottery;
+                    ModConfig.INSTANCE.getConfig().autoRaffle = !ModConfig.INSTANCE.getConfig().autoRaffle;
                     ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.autolottery", ModConfig.INSTANCE.getConfig().autoLottery);
+                    Messenger.printChangedSetting("text.sbutils.config.category.autoraffle", ModConfig.INSTANCE.getConfig().autoRaffle);
                     return Command.SINGLE_SUCCESS;
                 })
                 .then(ClientCommandManager.literal("tickets")
                         .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.lotteryTickets", ModConfig.INSTANCE.getConfig().lotteryTickets);
+                            Messenger.printSetting("text.sbutils.config.option.raffleTickets", ModConfig.INSTANCE.getConfig().raffleTickets);
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().lotteryTickets = IntegerArgumentType.getInteger(context, "amount");
+                                    ModConfig.INSTANCE.getConfig().raffleTickets = IntegerArgumentType.getInteger(context, "amount");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.lotteryTickets", ModConfig.INSTANCE.getConfig().lotteryTickets);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.raffleTickets", ModConfig.INSTANCE.getConfig().raffleTickets);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("checkDelay")
@@ -56,20 +56,20 @@ public class AutoLottery {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("autolot")
+        dispatcher.register(ClientCommandManager.literal("autoraf")
                 .executes(context ->
-                        dispatcher.execute("autolottery", context.getSource())
+                        dispatcher.execute("autoraffle", context.getSource())
                 )
-                .redirect(autoLotteryNode));
+                .redirect(autoRaffleNode));
     }
 
     public static void tick() {
-        if (enabled != ModConfig.INSTANCE.getConfig().autoLottery) {
-            enabled = ModConfig.INSTANCE.getConfig().autoLottery;
+        if (enabled != ModConfig.INSTANCE.getConfig().autoRaffle) {
+            enabled = ModConfig.INSTANCE.getConfig().autoRaffle;
             waitingToBuy = enabled;
         }
 
-        if (!ModConfig.INSTANCE.getConfig().autoLottery || MC.getNetworkHandler() == null || MC.currentScreen instanceof ProgressScreen) {
+        if (!ModConfig.INSTANCE.getConfig().autoRaffle || MC.getNetworkHandler() == null || MC.currentScreen instanceof ProgressScreen) {
             return;
         }
 
@@ -79,13 +79,13 @@ public class AutoLottery {
     }
 
     public static void processMessage(Text message) {
-        if (ModConfig.INSTANCE.getConfig().autoLottery && RegexFilters.lotteryEndFilter.matcher(message.getString()).matches()) {
+        if (ModConfig.INSTANCE.getConfig().autoRaffle && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
             waitingToBuy = true;
         }
     }
 
     public static void onGameJoin() {
-        if (ModConfig.INSTANCE.getConfig().autoLottery) {
+        if (ModConfig.INSTANCE.getConfig().autoRaffle) {
             waitingToBuy = true;
         }
     }
@@ -95,16 +95,16 @@ public class AutoLottery {
             return;
         }
 
-        int numTickets = Math.min(Math.max(ModConfig.INSTANCE.getConfig().lotteryTickets, 1), 2);
+        int numTickets = Math.min(Math.max(ModConfig.INSTANCE.getConfig().raffleTickets, 1), 2);
         if (getGrassCount() < numTickets) {
             waitingToBuy = true;
             checkedForGrassAt = System.currentTimeMillis();
             return;
         }
 
-        MC.getNetworkHandler().sendChatCommand("lot buy " + numTickets);
+        MC.getNetworkHandler().sendChatCommand("raffle buy " + numTickets);
         waitingToBuy = false;
-        Messenger.printMessage("message.sbutils.autoLottery.buying");
+        Messenger.printMessage("message.sbutils.autoRaffle.buying");
     }
 
     private static int getGrassCount() {

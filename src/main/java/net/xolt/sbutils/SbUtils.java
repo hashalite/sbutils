@@ -48,7 +48,7 @@ public class SbUtils implements ClientModInitializer {
             ToolSaver.registerCommand(dispatcher);
             AutoMine.registerCommand(dispatcher);
             AutoFix.registerCommand(dispatcher);
-            AutoLottery.registerCommand(dispatcher);
+            AutoRaffle.registerCommand(dispatcher);
             ChatAppend.registerCommand(dispatcher);
             AutoReply.registerCommand(dispatcher);
             AutoCommand.registerCommand(dispatcher);

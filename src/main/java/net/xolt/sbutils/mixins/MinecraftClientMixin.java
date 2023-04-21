@@ -34,7 +34,7 @@ public abstract class MinecraftClientMixin {
         AutoCrate.tick();
         AutoSilk.tick();
         AutoFix.tick();
-        AutoLottery.tick();
+        AutoRaffle.tick();
         AutoReply.tick();
         AutoCommand.tick();
     }

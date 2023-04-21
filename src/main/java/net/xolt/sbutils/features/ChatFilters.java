@@ -23,7 +23,7 @@ public class ChatFilters {
             new ChatFilter("text.sbutils.config.option.motdFilterEnabled", List.of(RegexFilters.motdFilter), () -> ModConfig.INSTANCE.getConfig().motdFilterEnabled),
             new ChatFilter("text.sbutils.config.option.voteFilterEnabled", List.of(RegexFilters.voteFilter), () -> ModConfig.INSTANCE.getConfig().voteFilterEnabled),
             new ChatFilter("text.sbutils.config.option.voteRewardFilterEnabled", List.of(RegexFilters.voteRewardFilter), () -> ModConfig.INSTANCE.getConfig().voteRewardFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.lotteryFilterEnabled", List.of(RegexFilters.lotteryFilter), () -> ModConfig.INSTANCE.getConfig().lotteryFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.raffleFilterEnabled", List.of(RegexFilters.raffleFilter), () -> ModConfig.INSTANCE.getConfig().raffleFilterEnabled),
             new ChatFilter("text.sbutils.config.option.cratesFilterEnabled", List.of(RegexFilters.cratesFilter), () -> ModConfig.INSTANCE.getConfig().cratesFilterEnabled),
             new ChatFilter("text.sbutils.config.option.clearLagFilterEnabled", List.of(RegexFilters.clearLagFilter), () -> ModConfig.INSTANCE.getConfig().clearLagFilterEnabled),
             new ChatFilter("text.sbutils.config.option.perishedInVoidFilterEnabled", List.of(RegexFilters.perishedInVoidFilter), () -> ModConfig.INSTANCE.getConfig().perishedInVoidFilterEnabled),
@@ -171,21 +171,21 @@ public class ChatFilters {
                                 })))
                 .then(ClientCommandManager.literal("lottery")
                         .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.lotteryFilterEnabled", ModConfig.INSTANCE.getConfig().lotteryFilterEnabled);
+                            Messenger.printSetting("text.sbutils.config.option.raffleFilterEnabled", ModConfig.INSTANCE.getConfig().raffleFilterEnabled);
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(ClientCommandManager.literal("true")
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().lotteryFilterEnabled = true;
+                                    ModConfig.INSTANCE.getConfig().raffleFilterEnabled = true;
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.lotteryFilterEnabled", true);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.raffleFilterEnabled", true);
                                     return Command.SINGLE_SUCCESS;
                                 }))
                         .then(ClientCommandManager.literal("false")
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().lotteryFilterEnabled = false;
+                                    ModConfig.INSTANCE.getConfig().raffleFilterEnabled = false;
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.lotteryFilterEnabled", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.raffleFilterEnabled", false);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("crates")

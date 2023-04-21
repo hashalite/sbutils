@@ -501,12 +501,12 @@ public class ConfigGui {
                                 .controller(TickBoxController::new)
                                 .build())
                         .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.lotteryFilterEnabled"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.lotteryFilterEnabled.tooltip"))
+                                .name(Text.translatable("text.sbutils.config.option.raffleFilterEnabled"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.raffleFilterEnabled.tooltip"))
                                 .binding(
-                                        defaults.lotteryFilterEnabled,
-                                        () -> config.lotteryFilterEnabled,
-                                        (value) -> config.lotteryFilterEnabled = value
+                                        defaults.raffleFilterEnabled,
+                                        () -> config.raffleFilterEnabled,
+                                        (value) -> config.raffleFilterEnabled = value
                                 )
                                 .controller(TickBoxController::new)
                                 .build())
@@ -869,26 +869,26 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoLotteryCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autolottery"))
+                .name(Text.translatable("text.sbutils.config.category.autoraffle"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoLottery"))
+                        .name(Text.translatable("text.sbutils.config.group.autoRaffle"))
                         .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.autoLottery"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.autoLottery.tooltip"))
+                                .name(Text.translatable("text.sbutils.config.option.autoRaffle"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.autoRaffle.tooltip"))
                                 .binding(
-                                        defaults.autoLottery,
-                                        () -> config.autoLottery,
-                                        (value) -> config.autoLottery = value
+                                        defaults.autoRaffle,
+                                        () -> config.autoRaffle,
+                                        (value) -> config.autoRaffle = value
                                 )
                                 .controller(TickBoxController::new)
                                 .build())
                         .option(Option.createBuilder(int.class)
-                                .name(Text.translatable("text.sbutils.config.option.lotteryTickets"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.lotteryTickets.tooltip"))
+                                .name(Text.translatable("text.sbutils.config.option.raffleTickets"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.raffleTickets.tooltip"))
                                 .binding(
-                                        defaults.lotteryTickets,
-                                        () -> config.lotteryTickets,
-                                        (value) -> config.lotteryTickets = value
+                                        defaults.raffleTickets,
+                                        () -> config.raffleTickets,
+                                        (value) -> config.raffleTickets = value
                                 )
                                 .controller(IntegerFieldController::new)
                                 .build())

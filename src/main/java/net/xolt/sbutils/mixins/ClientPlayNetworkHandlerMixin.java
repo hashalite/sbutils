@@ -27,7 +27,7 @@ public abstract class ClientPlayNetworkHandlerMixin {
     private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         JoinCommands.onJoinGame();
         AutoAdvert.onJoinGame();
-        AutoLottery.onGameJoin();
+        AutoRaffle.onGameJoin();
     }
 
     @Inject(method = "onCloseScreen", at = @At("HEAD"))
