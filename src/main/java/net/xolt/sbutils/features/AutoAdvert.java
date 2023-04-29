@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screen.ProgressScreen;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.IOHandler;
@@ -291,16 +292,24 @@ public class AutoAdvert {
         adIndex = (adIndex + 1) % prevAdList.size();
     }
 
-    public static void processTitle(Text title) {
-        if (RegexFilters.skyblockTitleFilter.matcher(title.getString()).matches()) {
-            currentServer = SbServer.SKYBLOCK;
-            prevAdList = getAdList();
-        } else if (RegexFilters.economyTitleFilter.matcher(title.getString()).matches()) {
-            currentServer = SbServer.ECONOMY;
-            prevAdList = getAdList();
-        } else if (RegexFilters.classicTitleFilter.matcher(title.getString()).matches()) {
-            currentServer = SbServer.CLASSIC;
-            prevAdList = getAdList();
+    public static void processMessage(Text message) {
+        if (RegexFilters.skyblockJoinFilter.matcher(message.getString()).matches()) {
+            List<Text> siblings = message.getSiblings();
+            if (siblings.size() < 1) {
+                return;
+            }
+
+            TextColor serverColor = siblings.get(siblings.size() - 1).getStyle().getColor();
+            if (serverColor.equals(TextColor.fromFormatting(Formatting.GREEN))) {
+                currentServer = SbServer.SKYBLOCK;
+                prevAdList = getAdList();
+            } else if (serverColor.equals(TextColor.fromFormatting(Formatting.LIGHT_PURPLE))) {
+                currentServer = SbServer.ECONOMY;
+                prevAdList = getAdList();
+            } else if (serverColor.equals(TextColor.fromFormatting(Formatting.YELLOW))) {
+                currentServer = SbServer.CLASSIC;
+                prevAdList = getAdList();
+            }
         }
     }
 

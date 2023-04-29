@@ -6,9 +6,7 @@ public class RegexFilters {
 
     // Auto Advert
 
-    public static final Pattern skyblockTitleFilter = Pattern.compile("\u00a7a\u00a7o\u00a7lSkyblock Survival");
-    public static final Pattern economyTitleFilter = Pattern.compile("\u00a7d\u00a7o\u00a7lSkyblock Economy");
-    public static final Pattern classicTitleFilter = Pattern.compile("\u00a76\u00a7o\u00a7lSkyblock Classic");
+    public static final Pattern skyblockJoinFilter = Pattern.compile("Welcome [\u00a7_a-zA-Z0-9]+, to Skyblock!");
 
 
     // Mentions
@@ -49,12 +47,12 @@ public class RegexFilters {
     // Auto Fix
     
     public static final Pattern fixSuccessFilter = Pattern.compile("You have successfully repaired your: .*\\.");
-    public static final Pattern fixFailFilter = Pattern.compile("You cannot type that command for ((([0-9]+) minutes )?(([0-9]+) seconds)?|now)\\.|Error: This item cannot be repaired\\.");
+    public static final Pattern fixFailFilter = Pattern.compile("You cannot type that command for ((([0-9]+) (minutes|minute) )?(([0-9]+) (seconds|second))?|now)\\.|Error: This item cannot be repaired\\.");
 
     
     // Auto Raffle
     
-    public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle\\] Congratulations go to [\u00a7_a-zA-Z0-9]+ for winning [0-9]+ Grass with [0-9]+ (ticket|tickets)");
+    public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle\\] Congratulations go to [\u00a7_a-zA-Z0-9]+ for winning [0-9]+ Grass block with [0-9]+ (ticket|tickets)");
 
 
     // Auto Crate

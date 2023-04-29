@@ -50,25 +50,15 @@ public abstract class MinecraftClientMixin {
 
     @Inject(method = "handleBlockBreaking", at = @At("HEAD"), cancellable = true)
     public void onHandleBlockBreaking(boolean breaking, CallbackInfo ci) {
-        if (breaking && ToolSaver.onHandleBlockBreaking()) {
+        if (breaking && ToolSaver.shouldCancelAttack()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
     public void onDoAttack(CallbackInfoReturnable<Boolean> cir) {
-        if (ToolSaver.onHandleBlockBreaking()) {
+        if (ToolSaver.shouldCancelAttack()) {
             cir.cancel();
-        }
-    }
-
-    @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
-    public void onDoItemUse(CallbackInfo ci) {
-        if (AntiPlace.onHandleBlockPlace()) {
-            ci.cancel();
-        }
-        if (ToolSaver.onHandleBlockBreaking()) {
-            ci.cancel();
         }
     }
 }

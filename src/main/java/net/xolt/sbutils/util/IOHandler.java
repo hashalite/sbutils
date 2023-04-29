@@ -49,7 +49,7 @@ public class IOHandler {
     private static boolean createFiles() {
         try {
             globalJoinCmdsFile.createNewFile();
-            transactionLogFile.createNewFile();
+            //transactionLogFile.createNewFile();
             messageLogFile.createNewFile();
             visitLogFile.createNewFile();
             dpLogFile.createNewFile();

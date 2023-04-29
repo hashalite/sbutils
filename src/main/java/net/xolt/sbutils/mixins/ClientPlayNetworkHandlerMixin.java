@@ -6,7 +6,9 @@ import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
+import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +29,7 @@ public abstract class ClientPlayNetworkHandlerMixin {
     private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         JoinCommands.onJoinGame();
         AutoAdvert.onJoinGame();
-        AutoRaffle.onGameJoin();
+        AutoRaffle.onJoinGame();
     }
 
     @Inject(method = "onCloseScreen", at = @At("HEAD"))
@@ -94,11 +96,6 @@ public abstract class ClientPlayNetworkHandlerMixin {
         if (packet instanceof ClickSlotC2SPacket) {
             AutoFix.onUpdateInventory();
         }
-    }
-
-    @Inject(method = "onTitle", at = @At("HEAD"))
-    private void onTitle(TitleS2CPacket packet, CallbackInfo ci) {
-        AutoAdvert.processTitle(packet.getTitle());
     }
 
     @ModifyVariable(method = "sendPacket", at = @At("HEAD"), argsOnly = true)

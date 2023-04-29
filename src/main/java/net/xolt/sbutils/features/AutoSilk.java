@@ -79,8 +79,8 @@ public class AutoSilk {
             return;
         }
 
-        if (state.equals(State.WAIT_FOR_PICK_ENCHANTS)) {
-            state = State.ENCHANT_PICKAXE;
+        if (state.equals(State.WAIT_FOR_TOOL_ENCHANTS)) {
+            state = State.ENCHANT_TOOL;
             return;
         }
 
@@ -137,8 +137,9 @@ public class AutoSilk {
                 reset();
                 return;
             }
-            if (findInEnchantScreen(Items.DIAMOND_PICKAXE, true) == null) {
-                Messenger.printMessage("message.sbutils.autoSilk.noPickaxes");
+            Item targetTool = ModConfig.INSTANCE.getConfig().targetTool.getTool();
+            if (findInEnchantScreen(targetTool, true) == null) {
+                Messenger.printWithPlaceholders("message.sbutils.autoSilk.noTools", targetTool.getTranslationKey());
                 ModConfig.INSTANCE.getConfig().autoSilk = false;
                 ModConfig.INSTANCE.save();
                 reset();
@@ -162,10 +163,10 @@ public class AutoSilk {
             case INSERT_LAPIS:
                 insertLapis();
                 break;
-            case INSERT_PICKAXE:
-                insertPickaxe();
+            case INSERT_TOOL:
+                insertTool();
                 break;
-            case ENCHANT_PICKAXE:
+            case ENCHANT_TOOL:
                 enchantPickaxe();
                 break;
             case RETURN_ITEM_AND_CONTINUE:
@@ -187,8 +188,8 @@ public class AutoSilk {
         insertItem(Items.LAPIS_LAZULI);
     }
 
-    private static void insertPickaxe() {
-        insertItem(Items.DIAMOND_PICKAXE);
+    private static void insertTool() {
+        insertItem(ModConfig.INSTANCE.getConfig().targetTool.getTool());
     }
 
     private static void enchantPickaxe() {
@@ -230,7 +231,7 @@ public class AutoSilk {
         }
 
         if (item.equals(Items.LAPIS_LAZULI) && screenHandler.getLapisCount() >= 3) {
-            state = State.INSERT_PICKAXE;
+            state = State.INSERT_TOOL;
             return;
         }
 
@@ -240,20 +241,20 @@ public class AutoSilk {
             return;
         }
 
-        if ((item.equals(Items.BOOK) || item.equals(Items.DIAMOND_PICKAXE)) && !screenHandler.getSlot(0).getStack().isEmpty()) {
-            // Slot is not empty
+        if (!item.equals(Items.LAPIS_LAZULI) && !screenHandler.getSlot(0).getStack().isEmpty()) {
+            // Slot is not empty; remove existing item
             interactionManager.clickSlot(screenHandler.syncId, 0, 0, SlotActionType.QUICK_MOVE, MC.player);
             return;
         }
 
         Slot itemSlot = findInEnchantScreen(item, true);
         if (itemSlot == null) {
-            if (item.equals(Items.BOOK)) {
-                Messenger.printMessage("message.sbutils.autoSilk.noBooks");
-            } else if (item.equals(Items.DIAMOND_PICKAXE)) {
-                Messenger.printMessage("message.sbutils.autoSilk.noPickaxes");
-            } else if (item.equals(Items.LAPIS_LAZULI)) {
+            if (item.equals(Items.LAPIS_LAZULI)) {
                 Messenger.printMessage(getTotalLapis() > 0 ? "message.sbutils.autoSilk.notEnoughLapis" : "message.sbutils.autoSilk.noLapis");
+            } else if (item.equals(Items.BOOK)) {
+                Messenger.printMessage("message.sbutils.autoSilk.noBooks");
+            } else {
+                Messenger.printWithPlaceholders("message.sbutils.autoSilk.noTools", item.getTranslationKey());
             }
             reset();
             return;
@@ -261,16 +262,16 @@ public class AutoSilk {
 
         interactionManager.clickSlot(screenHandler.syncId, itemSlot.id, 0, SlotActionType.QUICK_MOVE, MC.player);
 
-        if (item.equals(Items.BOOK)) {
-            state = State.WAIT_FOR_BOOK_ENCHANTS;
-        } else if (item.equals(Items.DIAMOND_PICKAXE)) {
-            state = State.WAIT_FOR_PICK_ENCHANTS;
-        } else if (item.equals(Items.LAPIS_LAZULI)) {
+        if (item.equals(Items.LAPIS_LAZULI)) {
             if (screenHandler.getLapisCount() >= 3) {
-                state = State.INSERT_PICKAXE;
+                state = State.INSERT_TOOL;
             } else {
                 state = State.INSERT_LAPIS;
             }
+        } else if (item.equals(Items.BOOK)) {
+            state = State.WAIT_FOR_BOOK_ENCHANTS;
+        } else {
+            state = State.WAIT_FOR_TOOL_ENCHANTS;
         }
     }
 
@@ -284,8 +285,6 @@ public class AutoSilk {
         if (player == null || interactionManager == null) {
             return;
         }
-
-
 
         int[] enchantments = screenHandler.enchantmentId;
         int buttonIndex = book ? 0 : -1;
@@ -303,7 +302,7 @@ public class AutoSilk {
         }
 
         if (buttonIndex == -1) {
-            // No silktouch for pickaxe, continue to book
+            // No silktouch for tool, continue to book
             state = State.RETURN_ITEM_AND_CONTINUE;
             return;
         }
@@ -381,9 +380,9 @@ public class AutoSilk {
 
     private enum State {
         INSERT_LAPIS,
-        INSERT_PICKAXE,
-        WAIT_FOR_PICK_ENCHANTS,
-        ENCHANT_PICKAXE,
+        INSERT_TOOL,
+        WAIT_FOR_TOOL_ENCHANTS,
+        ENCHANT_TOOL,
         RETURN_ITEM_AND_CONTINUE,
         INSERT_BOOK,
         WAIT_FOR_BOOK_ENCHANTS,

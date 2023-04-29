@@ -15,6 +15,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
@@ -230,10 +231,19 @@ public class AutoCrate {
     }
 
     private static boolean useKey(BlockPos cratePos) {
-        if (cratePos == null || MC.interactionManager == null) {
+        if (cratePos == null || MC.interactionManager == null || MC.getNetworkHandler() == null) {
             return false;
         }
+
+        if (ModConfig.INSTANCE.getConfig().doubleSpin) {
+            MC.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+        }
+
         MC.interactionManager.interactBlock(MC.player, Hand.MAIN_HAND, new BlockHitResult(cratePos.toCenterPos(), Direction.UP, cratePos, false));
+
+        if (ModConfig.INSTANCE.getConfig().doubleSpin) {
+            MC.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+        }
         return true;
     }
 

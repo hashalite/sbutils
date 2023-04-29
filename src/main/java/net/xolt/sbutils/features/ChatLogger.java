@@ -17,14 +17,14 @@ import java.util.List;
 
 public class ChatLogger {
 
-    private static List<ChatFilter> shopFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.shopLoggerIncoming",
-                    List.of(RegexFilters.incomingBuyFilter, RegexFilters.incomingSellFilter, RegexFilters.incomingBarterFilter),
-                    () -> ModConfig.INSTANCE.getConfig().shopLoggerIncoming),
-            new ChatFilter("text.sbutils.config.option.shopLoggerOutgoing",
-                    List.of(RegexFilters.outgoingBuyFilter, RegexFilters.outgoingSellFilter, RegexFilters.outgoingBarterFilter),
-                    () -> ModConfig.INSTANCE.getConfig().shopLoggerOutgoing)
-    );
+//    private static List<ChatFilter> shopFilters = List.of(
+//            new ChatFilter("text.sbutils.config.option.shopLoggerIncoming",
+//                    List.of(RegexFilters.incomingBuyFilter, RegexFilters.incomingSellFilter, RegexFilters.incomingBarterFilter),
+//                    () -> ModConfig.INSTANCE.getConfig().shopLoggerIncoming),
+//            new ChatFilter("text.sbutils.config.option.shopLoggerOutgoing",
+//                    List.of(RegexFilters.outgoingBuyFilter, RegexFilters.outgoingSellFilter, RegexFilters.outgoingBarterFilter),
+//                    () -> ModConfig.INSTANCE.getConfig().shopLoggerOutgoing)
+//    );
     private static List<ChatFilter> messageFilters = List.of(
             new ChatFilter("text.sbutils.config.option.msgLoggerIncoming", List.of(RegexFilters.incomingMsgFilter), () -> ModConfig.INSTANCE.getConfig().msgLoggerIncoming),
             new ChatFilter("text.sbutils.config.option.msgLoggerOutgoing", List.of(RegexFilters.outgoingMsgFilter), () -> ModConfig.INSTANCE.getConfig().msgLoggerOutgoing)
@@ -42,44 +42,44 @@ public class ChatLogger {
                     Messenger.printEnabledFilters("message.sbutils.chatLogger.status", getFilters());
                     return Command.SINGLE_SUCCESS;
                 })
-                .then(ClientCommandManager.literal("incomingShop")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.shopLoggerIncoming", ModConfig.INSTANCE.getConfig().shopLoggerIncoming);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.literal("true")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = true;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", false);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("outgoingShop")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.shopLoggerOutgoing", ModConfig.INSTANCE.getConfig().shopLoggerOutgoing);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.literal("true")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = true;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", false);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
+//                .then(ClientCommandManager.literal("incomingShop")
+//                        .executes(context -> {
+//                            Messenger.printSetting("text.sbutils.config.option.shopLoggerIncoming", ModConfig.INSTANCE.getConfig().shopLoggerIncoming);
+//                            return Command.SINGLE_SUCCESS;
+//                        })
+//                        .then(ClientCommandManager.literal("true")
+//                                .executes(context -> {
+//                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = true;
+//                                    ModConfig.INSTANCE.save();
+//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", true);
+//                                    return Command.SINGLE_SUCCESS;
+//                                }))
+//                        .then(ClientCommandManager.literal("false")
+//                                .executes(context -> {
+//                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = false;
+//                                    ModConfig.INSTANCE.save();
+//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", false);
+//                                    return Command.SINGLE_SUCCESS;
+//                                })))
+//                .then(ClientCommandManager.literal("outgoingShop")
+//                        .executes(context -> {
+//                            Messenger.printSetting("text.sbutils.config.option.shopLoggerOutgoing", ModConfig.INSTANCE.getConfig().shopLoggerOutgoing);
+//                            return Command.SINGLE_SUCCESS;
+//                        })
+//                        .then(ClientCommandManager.literal("true")
+//                                .executes(context -> {
+//                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = true;
+//                                    ModConfig.INSTANCE.save();
+//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", true);
+//                                    return Command.SINGLE_SUCCESS;
+//                                }))
+//                        .then(ClientCommandManager.literal("false")
+//                                .executes(context -> {
+//                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = false;
+//                                    ModConfig.INSTANCE.save();
+//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", false);
+//                                    return Command.SINGLE_SUCCESS;
+//                                })))
                 .then(ClientCommandManager.literal("incomingMsg")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.msgLoggerIncoming", ModConfig.INSTANCE.getConfig().msgLoggerIncoming);
@@ -171,11 +171,11 @@ public class ChatLogger {
         String stringMessage = message.getString();
         long messageReceivedAt = System.currentTimeMillis();
 
-        for (ChatFilter filter : shopFilters) {
-            if (filter.matches(stringMessage) && filter.isEnabled()) {
-                IOHandler.logTransaction(message, messageReceivedAt);
-            }
-        }
+//        for (ChatFilter filter : shopFilters) {
+//            if (filter.matches(stringMessage) && filter.isEnabled()) {
+//                IOHandler.logTransaction(message, messageReceivedAt);
+//            }
+//        }
 
         for (ChatFilter filter : messageFilters) {
             if (filter.matches(stringMessage) && filter.isEnabled()) {
@@ -197,11 +197,11 @@ public class ChatLogger {
     }
 
     private static boolean anyFiltersEnabled() {
-        for (ChatFilter filter : shopFilters) {
-            if (filter.isEnabled()) {
-                return true;
-            }
-        }
+//        for (ChatFilter filter : shopFilters) {
+//            if (filter.isEnabled()) {
+//                return true;
+//            }
+//        }
 
         for (ChatFilter filter : messageFilters) {
             if (filter.isEnabled()) {
@@ -219,7 +219,7 @@ public class ChatLogger {
 
     public static List<ChatFilter> getFilters() {
         List<ChatFilter> result = new ArrayList<>();
-        result.addAll(shopFilters);
+//        result.addAll(shopFilters);
         result.addAll(messageFilters);
         result.addAll(visitFilters);
         return result;

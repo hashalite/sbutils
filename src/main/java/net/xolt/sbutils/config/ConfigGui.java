@@ -559,26 +559,26 @@ public class ConfigGui {
                 .name(Text.translatable("text.sbutils.config.category.chatlogger"))
                 .group(OptionGroup.createBuilder()
                         .name(Text.translatable("text.sbutils.config.group.chatLogger"))
-                        .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.shopLoggerIncoming"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerIncoming.tooltip"))
-                                .binding(
-                                        defaults.shopLoggerIncoming,
-                                        () -> config.shopLoggerIncoming,
-                                        (value) -> config.shopLoggerIncoming = value
-                                )
-                                .controller(TickBoxController::new)
-                                .build())
-                        .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing.tooltip"))
-                                .binding(
-                                        defaults.shopLoggerOutgoing,
-                                        () -> config.shopLoggerOutgoing,
-                                        (value) -> config.shopLoggerOutgoing = value
-                                )
-                                .controller(TickBoxController::new)
-                                .build())
+//                        .option(Option.createBuilder(boolean.class)
+//                                .name(Text.translatable("text.sbutils.config.option.shopLoggerIncoming"))
+//                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerIncoming.tooltip"))
+//                                .binding(
+//                                        defaults.shopLoggerIncoming,
+//                                        () -> config.shopLoggerIncoming,
+//                                        (value) -> config.shopLoggerIncoming = value
+//                                )
+//                                .controller(TickBoxController::new)
+//                                .build())
+//                        .option(Option.createBuilder(boolean.class)
+//                                .name(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing"))
+//                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing.tooltip"))
+//                                .binding(
+//                                        defaults.shopLoggerOutgoing,
+//                                        () -> config.shopLoggerOutgoing,
+//                                        (value) -> config.shopLoggerOutgoing = value
+//                                )
+//                                .controller(TickBoxController::new)
+//                                .build())
                         .option(Option.createBuilder(boolean.class)
                                 .name(Text.translatable("text.sbutils.config.option.msgLoggerIncoming"))
                                 .tooltip(Text.translatable("text.sbutils.config.option.msgLoggerIncoming.tooltip"))
@@ -951,6 +951,16 @@ public class ConfigGui {
                                 )
                                 .controller(TickBoxController::new)
                                 .build())
+                        .option(Option.createBuilder(ModConfig.SilkTarget.class)
+                                .name(Text.translatable("text.sbutils.config.option.targetTool"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.targetTool.tooltip"))
+                                .binding(
+                                        defaults.targetTool,
+                                        () -> config.targetTool,
+                                        (value) -> config.targetTool = value
+                                )
+                                .controller(EnumController::new)
+                                .build())
                         .option(Option.createBuilder(double.class)
                                 .name(Text.translatable("text.sbutils.config.option.autoSilkDelay"))
                                 .tooltip(Text.translatable("text.sbutils.config.option.autoSilkDelay.tooltip"))
@@ -989,6 +999,16 @@ public class ConfigGui {
                                         (value) -> config.crateMode = value
                                 )
                                 .controller(EnumController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.doubleSpin"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.doubleSpin.tooltip"))
+                                .binding(
+                                        defaults.doubleSpin,
+                                        () -> config.doubleSpin,
+                                        (value) -> config.doubleSpin = value
+                                )
+                                .controller(TickBoxController::new)
                                 .build())
                         .option(Option.createBuilder(double.class)
                                 .name(Text.translatable("text.sbutils.config.option.crateDelay"))

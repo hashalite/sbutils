@@ -5,14 +5,22 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AntiPlace {
+
+    private static long lastMessageSentAt;
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal("antiplace")
                 .then(ClientCommandManager.literal("heads")
@@ -61,31 +69,42 @@ public class AntiPlace {
                 .redirect(antiPlaceNode));
     }
 
-    public static boolean onHandleBlockPlace() {
-        if (ModConfig.INSTANCE.getConfig().antiPlaceHeads && isHoldingNamedHead()) {
+    public static boolean shouldCancelBlockInteract(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult) {
+        if (MC.world == null) {
+            return false;
+        }
+
+        ActionResult actionResult = MC.world.getBlockState(hitResult.getBlockPos()).onUse(MC.world, player, hand, hitResult);
+        if ((actionResult == ActionResult.CONSUME || actionResult == ActionResult.SUCCESS) && !player.isSneaking()) {
+            return false;
+        }
+
+        ItemStack held = player.getStackInHand(hand);
+        if (ModConfig.INSTANCE.getConfig().antiPlaceHeads && isNamedHead(held)) {
+            notifyBlocked("message.sbutils.antiPlace.headBlocked");
             return true;
         }
-        if (ModConfig.INSTANCE.getConfig().antiPlaceGrass && isHoldingGrass()) {
+
+        if (ModConfig.INSTANCE.getConfig().antiPlaceGrass && isGrass(held)) {
+            notifyBlocked("message.sbutils.antiPlace.grassBlocked");
             return true;
         }
+
         return false;
     }
 
-    private static boolean isHoldingNamedHead() {
-        if (MC.player == null) {
-            return false;
-        }
-
-        ItemStack held = MC.player.getMainHandStack();
-        return held.getItem().equals(Items.PLAYER_HEAD) && held.hasCustomName();
+    private static boolean isNamedHead(ItemStack item) {
+        return item.getItem().equals(Items.PLAYER_HEAD) && item.hasCustomName();
     }
 
-    private static boolean isHoldingGrass() {
-        if (MC.player == null) {
-            return false;
-        }
+    private static boolean isGrass(ItemStack item) {
+        return item.getItem().equals(Items.GRASS_BLOCK);
+    }
 
-        ItemStack held = MC.player.getMainHandStack();
-        return held.getItem().equals(Items.GRASS_BLOCK);
+    private static void notifyBlocked(String message) {
+        if (System.currentTimeMillis() - lastMessageSentAt >= 5000) {
+            Messenger.printMessage(message, Formatting.RED);
+            lastMessageSentAt = System.currentTimeMillis();
+        }
     }
 }

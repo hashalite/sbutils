@@ -116,6 +116,6 @@ public class AutoMine {
     }
 
     public static boolean shouldMine() {
-        return MC.player != null && !MC.isPaused() && !AutoFix.fixing() && !ToolSaver.shouldCancelAction();
+        return MC.player != null && !MC.isPaused() && !AutoFix.fixing() && !ToolSaver.shouldCancelAttack();
     }
 }

@@ -235,7 +235,7 @@ public class AutoFix {
         Matcher fixFailMatcher = RegexFilters.fixFailFilter.matcher(message.getString());
         if (fixFailMatcher.matches()) {
             String minutesText = fixFailMatcher.group(3);
-            String secondsText = fixFailMatcher.group(5);
+            String secondsText = fixFailMatcher.group(6);
             int minutes = minutesText.length() > 0 ? Integer.parseInt(minutesText) : 0;
             int seconds = secondsText.length() > 0 ? Integer.parseInt(secondsText) : 0;
             lastActionPerformedAt = calculateLastCommandSentAt((((long)minutes * 60000) + ((long)seconds * 1000) + 2000));

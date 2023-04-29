@@ -21,6 +21,7 @@ public class AutoRaffle {
 
     private static boolean enabled;
     private static boolean waitingToBuy;
+    private static boolean shouldSendErrorMessage;
     private static long checkedForGrassAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
@@ -66,7 +67,7 @@ public class AutoRaffle {
     public static void tick() {
         if (enabled != ModConfig.INSTANCE.getConfig().autoRaffle) {
             enabled = ModConfig.INSTANCE.getConfig().autoRaffle;
-            waitingToBuy = enabled;
+            reset();
         }
 
         if (!ModConfig.INSTANCE.getConfig().autoRaffle || MC.getNetworkHandler() == null || MC.currentScreen instanceof ProgressScreen) {
@@ -80,13 +81,13 @@ public class AutoRaffle {
 
     public static void processMessage(Text message) {
         if (ModConfig.INSTANCE.getConfig().autoRaffle && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
-            waitingToBuy = true;
+            reset();
         }
     }
 
-    public static void onGameJoin() {
+    public static void onJoinGame() {
         if (ModConfig.INSTANCE.getConfig().autoRaffle) {
-            waitingToBuy = true;
+            reset();
         }
     }
 
@@ -96,15 +97,21 @@ public class AutoRaffle {
         }
 
         int numTickets = Math.min(Math.max(ModConfig.INSTANCE.getConfig().raffleTickets, 1), 2);
-        if (getGrassCount() < numTickets) {
+        int grassCount = getGrassCount();
+        if (grassCount < 1) {
             waitingToBuy = true;
             checkedForGrassAt = System.currentTimeMillis();
+            if (shouldSendErrorMessage) {
+                Messenger.printMessage("message.sbutils.autoRaffle.notEnoughGrass");
+                shouldSendErrorMessage = false;
+            }
             return;
         }
 
-        MC.getNetworkHandler().sendChatCommand("raffle buy " + numTickets);
+        int buyAmount = Math.min(numTickets, grassCount);
+        MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
-        Messenger.printMessage("message.sbutils.autoRaffle.buying");
+        Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
     }
 
     private static int getGrassCount() {
@@ -122,5 +129,10 @@ public class AutoRaffle {
             counter += itemStack.getCount();
         }
         return counter;
+    }
+
+    private static void reset() {
+        waitingToBuy = true;
+        shouldSendErrorMessage = true;
     }
 }

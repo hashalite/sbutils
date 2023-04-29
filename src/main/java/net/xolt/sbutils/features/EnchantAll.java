@@ -383,8 +383,6 @@ public class EnchantAll {
         enchantments.remove(Enchantments.SILK_TOUCH);
         enchantments.remove(Enchantments.BINDING_CURSE);
         enchantments.remove(Enchantments.VANISHING_CURSE);
-        enchantments.remove(Enchantments.SOUL_SPEED);
-        enchantments.remove(Enchantments.SWIFT_SNEAK);
 
         if (ModConfig.INSTANCE.getConfig().excludeFrost && !unenchant) {
             enchantments.remove(Enchantments.FROST_WALKER);

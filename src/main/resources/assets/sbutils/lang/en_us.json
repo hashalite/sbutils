@@ -62,10 +62,14 @@
 
   "message.sbutils.toolSaver.actionBlocked": "Action blocked due to item durability being too low.",
 
+  "message.sbutils.antiPlace.grassBlocked": "Grass placement blocked.",
+  "message.sbutils.antiPlace.headBlocked": "Head placement blocked.",
+
   "message.sbutils.autoCommand.infoWithMinutes": "Sending next command in % minutes and % seconds.",
   "message.sbutils.autoCommand.infoJustSeconds": "Sending next command in % seconds.",
 
-  "message.sbutils.autoRaffle.buying": "Buying raffle tickets...",
+  "message.sbutils.autoRaffle.buying": "Buying @ raffle ticket(s)...",
+  "message.sbutils.autoRaffle.notEnoughGrass": "You don't have enough grass to purchase raffle tickets.",
 
   "message.sbutils.autoPrivate.names": "Current Auto Private names:",
   "message.sbutils.autoPrivate.nameAddSuccess": "Successfully added the name @ to Auto Private.",
@@ -78,7 +82,7 @@
   "message.sbutils.autoSilk.invFull": "Disabling Auto Silk because your inventory is full.",
   "message.sbutils.autoSilk.noLapis": "Disabling Auto Silk because you don't have any lapis in your inventory.",
   "message.sbutils.autoSilk.notEnoughLapis": "Disabling Auto Silk because you don't have enough lapis in your inventory.",
-  "message.sbutils.autoSilk.noPickaxes": "Disabling Auto Silk because you don't have any pickaxes in your inventory.",
+  "message.sbutils.autoSilk.noTools": "Disabling Auto Silk because you don't have any @ in your inventory.",
   "message.sbutils.autoSilk.noBooks": "Disabling Auto Silk because you don't have any books in your inventory.",
   "message.sbutils.autoSilk.notEnoughExperience": "Disabling Auto Silk because you don't have enough experience levels.",
 
@@ -369,6 +373,8 @@
   "text.sbutils.config.group.autoSilk": "Auto Silk Settings",
   "text.sbutils.config.option.autoSilk": "Auto Silk Enabled",
   "text.sbutils.config.option.autoSilk.tooltip": "Automatically enchants books and diamond pickaxes with Silk Touch.",
+  "text.sbutils.config.option.targetTool": "Target Tool",
+  "text.sbutils.config.option.targetTool.tooltip": "The tool that Auto Silk will target.",
   "text.sbutils.config.option.autoSilkDelay": "Auto Silk Delay",
   "text.sbutils.config.option.autoSilkDelay.tooltip": "The delay between each enchanting action.",
 
@@ -382,6 +388,8 @@
   "text.sbutils.config.option.crateMode.voter" : "Voter",
   "text.sbutils.config.option.crateMode.common" : "Common",
   "text.sbutils.config.option.crateMode.tooltip": "The type of crate to target.",
+  "text.sbutils.config.option.doubleSpin": "Double Spin",
+  "text.sbutils.config.option.doubleSpin.tooltip": "Opens two crate keys at once.",
   "text.sbutils.config.option.crateDelay": "Crate Delay",
   "text.sbutils.config.option.crateDelay.tooltip": "After the current crate finishes, how long to wait before opening the next.",
   "text.sbutils.config.option.crateDistance": "Crate Distance",

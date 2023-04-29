@@ -17,7 +17,6 @@ public class ClientConnectionMixin {
         EnchantAll.reset();
         JoinCommands.reset();
         AutoSilk.reset();
-        ToolSaver.reset();
         AutoFix.reset();
         AutoCrate.reset();
 

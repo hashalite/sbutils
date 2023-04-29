@@ -3,6 +3,8 @@ package net.xolt.sbutils.config;
 import dev.isxander.yacl.api.NameableEnum;
 import dev.isxander.yacl.config.ConfigEntry;
 import dev.isxander.yacl.config.ConfigInstance;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -92,8 +94,8 @@ public class ModConfig {
 
     // Chat Logger Settings
 
-    @ConfigEntry public boolean shopLoggerIncoming = false;
-    @ConfigEntry public boolean shopLoggerOutgoing = false;
+    //@ConfigEntry public boolean shopLoggerIncoming = false;
+    //@ConfigEntry public boolean shopLoggerOutgoing = false;
     @ConfigEntry public boolean msgLoggerIncoming = false;
     @ConfigEntry public boolean msgLoggerOutgoing = false;
     @ConfigEntry public boolean visitLogger = false;
@@ -159,6 +161,7 @@ public class ModConfig {
     // Auto Silk Settings
 
     @ConfigEntry public boolean autoSilk = false;
+    @ConfigEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
     @ConfigEntry public double autoSilkDelay = 0.25;
 
 
@@ -166,6 +169,7 @@ public class ModConfig {
 
     @ConfigEntry public boolean autoCrate = false;
     @ConfigEntry public CrateMode crateMode = CrateMode.VOTER;
+    @ConfigEntry public boolean doubleSpin = true;
     @ConfigEntry public double crateDelay = 0.25;
     @ConfigEntry public double crateDistance = 4.0;
 
@@ -244,6 +248,28 @@ public class ModConfig {
 
         public Text getDisplayName() {
             return Text.translatable(name);
+        }
+    }
+
+    public enum SilkTarget implements NameableEnum {
+        DIAMOND_PICKAXE(Items.DIAMOND_PICKAXE),
+        DIAMOND_AXE(Items.DIAMOND_AXE),
+        DIAMOND_SHOVEL(Items.DIAMOND_SHOVEL),
+        DIAMOND_HOE(Items.DIAMOND_HOE),
+        SHEARS(Items.SHEARS);
+
+        private final Item tool;
+
+        SilkTarget(Item tool) {
+            this.tool = tool;
+        }
+
+        public Item getTool() {
+            return tool;
+        }
+
+        public Text getDisplayName() {
+            return Text.translatable(tool.getTranslationKey());
         }
     }
 
