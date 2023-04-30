@@ -12,8 +12,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
+import org.apache.logging.log4j.core.jmx.Server;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -32,16 +34,28 @@ public class AutoRaffle {
                     Messenger.printChangedSetting("text.sbutils.config.category.autoraffle", ModConfig.INSTANCE.getConfig().autoRaffle);
                     return Command.SINGLE_SUCCESS;
                 })
-                .then(ClientCommandManager.literal("tickets")
+                .then(ClientCommandManager.literal("sbTickets")
                         .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.raffleTickets", ModConfig.INSTANCE.getConfig().raffleTickets);
+                            Messenger.printSetting("text.sbutils.config.option.skyblockRaffleTickets", ModConfig.INSTANCE.getConfig().skyblockRaffleTickets);
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().raffleTickets = IntegerArgumentType.getInteger(context, "amount");
+                                    ModConfig.INSTANCE.getConfig().skyblockRaffleTickets = Math.min(Math.max(IntegerArgumentType.getInteger(context, "amount"), 1), 2);
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.raffleTickets", ModConfig.INSTANCE.getConfig().raffleTickets);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.skyblockRaffleTickets", ModConfig.INSTANCE.getConfig().skyblockRaffleTickets);
+                                    return Command.SINGLE_SUCCESS;
+                                })))
+                .then(ClientCommandManager.literal("ecoTickets")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.economyRaffleTickets", ModConfig.INSTANCE.getConfig().economyRaffleTickets);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer())
+                                .executes(context -> {
+                                    ModConfig.INSTANCE.getConfig().economyRaffleTickets = Math.min(Math.max(IntegerArgumentType.getInteger(context, "amount"), 1), 5);
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.economyRaffleTickets", ModConfig.INSTANCE.getConfig().economyRaffleTickets);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("checkDelay")
@@ -91,12 +105,29 @@ public class AutoRaffle {
         }
     }
 
-    private static void buyTickets() {
+    public static void buyTickets() {
+        if (ServerDetector.currentServer == null) {
+            return;
+        } else {
+            switch (ServerDetector.currentServer) {
+                case ECONOMY:
+                    buyEconomyTickets();
+                    break;
+                case CLASSIC:
+                    break;
+                default:
+                    buySkyblockTickets();
+                    break;
+            }
+        }
+    }
+
+    private static void buySkyblockTickets() {
         if (MC.getNetworkHandler() == null) {
             return;
         }
 
-        int numTickets = Math.min(Math.max(ModConfig.INSTANCE.getConfig().raffleTickets, 1), 2);
+        int numTickets = Math.min(Math.max(ModConfig.INSTANCE.getConfig().skyblockRaffleTickets, 1), 2);
         int grassCount = getGrassCount();
         if (grassCount < 1) {
             waitingToBuy = true;
@@ -109,6 +140,17 @@ public class AutoRaffle {
         }
 
         int buyAmount = Math.min(numTickets, grassCount);
+        MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
+        waitingToBuy = false;
+        Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
+    }
+
+    private static void buyEconomyTickets() {
+        if (MC.getNetworkHandler() == null) {
+            return;
+        }
+
+        int buyAmount = Math.min(Math.max(ModConfig.INSTANCE.getConfig().economyRaffleTickets, 1), 5);
         MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
         Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);

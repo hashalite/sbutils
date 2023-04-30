@@ -87,7 +87,6 @@ public class ModConfig {
     @ConfigEntry public boolean voteRewardFilterEnabled = false;
     @ConfigEntry public boolean raffleFilterEnabled = false;
     @ConfigEntry public boolean cratesFilterEnabled = false;
-    @ConfigEntry public boolean clearLagFilterEnabled = false;
     @ConfigEntry public boolean perishedInVoidFilterEnabled = false;
     @ConfigEntry public boolean skyChatFilterEnabled = false;
 
@@ -114,7 +113,7 @@ public class ModConfig {
     @ConfigEntry public boolean autoFix = false;
     @ConfigEntry public FixMode autoFixMode = FixMode.HAND;
     @ConfigEntry public double maxFixPercent = 0.2;
-    @ConfigEntry public double autoFixDelay = 1200.0;
+    @ConfigEntry public double autoFixDelay = 120.0;
     @ConfigEntry public double fixRetryDelay = 3.0;
     @ConfigEntry public int maxFixRetries = 3;
 
@@ -145,10 +144,11 @@ public class ModConfig {
     @ConfigEntry public double autoReplyDelay = 1.0;
 
 
-    // Auto Lottery Settings
+    // Auto Raffle Settings
 
     @ConfigEntry public boolean autoRaffle = false;
-    @ConfigEntry public int raffleTickets = 2;
+    @ConfigEntry public int skyblockRaffleTickets = 2;
+    @ConfigEntry public int economyRaffleTickets = 5;
     @ConfigEntry public double grassCheckDelay = 5.0;
 
 
@@ -163,15 +163,6 @@ public class ModConfig {
     @ConfigEntry public boolean autoSilk = false;
     @ConfigEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
     @ConfigEntry public double autoSilkDelay = 0.25;
-
-
-    // Auto Crate Settings
-
-    @ConfigEntry public boolean autoCrate = false;
-    @ConfigEntry public CrateMode crateMode = CrateMode.VOTER;
-    @ConfigEntry public boolean doubleSpin = true;
-    @ConfigEntry public double crateDelay = 0.25;
-    @ConfigEntry public double crateDistance = 4.0;
 
 
     // Staff Detector Settings
@@ -218,21 +209,6 @@ public class ModConfig {
 
         public Formatting getFormatting() {
             return formatting;
-        }
-    }
-
-    public enum CrateMode implements NameableEnum {
-        VOTER("text.sbutils.config.option.crateMode.voter"),
-        COMMON("text.sbutils.config.option.crateMode.common");
-
-        private final String name;
-
-        CrateMode(String name) {
-            this.name = name;
-        }
-
-        public Text getDisplayName() {
-            return Text.translatable(name);
         }
     }
 

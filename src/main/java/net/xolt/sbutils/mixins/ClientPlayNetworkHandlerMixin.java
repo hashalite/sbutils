@@ -6,10 +6,9 @@ import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
-import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
+import net.xolt.sbutils.features.common.ServerDetector;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,14 +26,9 @@ public abstract class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "onGameJoin", at = @At("TAIL"))
     private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
+        ServerDetector.onJoinGame();
         JoinCommands.onJoinGame();
-        AutoAdvert.onJoinGame();
         AutoRaffle.onJoinGame();
-    }
-
-    @Inject(method = "onCloseScreen", at = @At("HEAD"))
-    private void onCloseScreen(CloseScreenS2CPacket packet, CallbackInfo ci) {
-        AutoCrate.onServerCloseScreen();
     }
 
     @Inject(method = "onPlayerRemove", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT)

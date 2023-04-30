@@ -3,6 +3,7 @@ package net.xolt.sbutils.config;
 import dev.isxander.yacl.api.*;
 import dev.isxander.yacl.gui.controllers.TickBoxController;
 import dev.isxander.yacl.gui.controllers.cycling.EnumController;
+import dev.isxander.yacl.gui.controllers.slider.IntegerSliderController;
 import dev.isxander.yacl.gui.controllers.string.StringController;
 import dev.isxander.yacl.gui.controllers.string.number.DoubleFieldController;
 import dev.isxander.yacl.gui.controllers.string.number.IntegerFieldController;
@@ -29,10 +30,9 @@ public class ConfigGui {
                 .category(buildAntiPlaceCategory(defaults, config))
                 .category(buildAutoCommandCategory(defaults, config))
                 .category(buildAutoReplyCategory(defaults, config))
-                .category(buildAutoLotteryCategory(defaults, config))
+                .category(buildAutoRaffleCategory(defaults, config))
                 .category(buildAutoPrivateCategory(defaults, config))
                 .category(buildAutoSilkCategory(defaults, config))
-                .category(buildAutoCrateCategory(defaults, config))
                 .category(buildStaffDetectorCategory(defaults, config))
                 .save(ModConfig.INSTANCE::save))
                 .generateScreen(parent);
@@ -521,16 +521,6 @@ public class ConfigGui {
                                 .controller(TickBoxController::new)
                                 .build())
                         .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.clearLagFilterEnabled"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.clearLagFilterEnabled.tooltip"))
-                                .binding(
-                                        defaults.clearLagFilterEnabled,
-                                        () -> config.clearLagFilterEnabled,
-                                        (value) -> config.clearLagFilterEnabled = value
-                                )
-                                .controller(TickBoxController::new)
-                                .build())
-                        .option(Option.createBuilder(boolean.class)
                                 .name(Text.translatable("text.sbutils.config.option.perishedInVoidFilterEnabled"))
                                 .tooltip(Text.translatable("text.sbutils.config.option.perishedInVoidFilterEnabled.tooltip"))
                                 .binding(
@@ -867,7 +857,7 @@ public class ConfigGui {
                 .build();
     }
 
-    private static ConfigCategory buildAutoLotteryCategory(ModConfig defaults, ModConfig config) {
+    private static ConfigCategory buildAutoRaffleCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
                 .name(Text.translatable("text.sbutils.config.category.autoraffle"))
                 .group(OptionGroup.createBuilder()
@@ -883,14 +873,24 @@ public class ConfigGui {
                                 .controller(TickBoxController::new)
                                 .build())
                         .option(Option.createBuilder(int.class)
-                                .name(Text.translatable("text.sbutils.config.option.raffleTickets"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.raffleTickets.tooltip"))
+                                .name(Text.translatable("text.sbutils.config.option.skyblockRaffleTickets"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.skyblockRaffleTickets.tooltip"))
                                 .binding(
-                                        defaults.raffleTickets,
-                                        () -> config.raffleTickets,
-                                        (value) -> config.raffleTickets = value
+                                        defaults.skyblockRaffleTickets,
+                                        () -> config.skyblockRaffleTickets,
+                                        (value) -> config.skyblockRaffleTickets = value
                                 )
-                                .controller(IntegerFieldController::new)
+                                .controller(integerOption -> new IntegerSliderController(integerOption, 1, 2, 1))
+                                .build())
+                        .option(Option.createBuilder(int.class)
+                                .name(Text.translatable("text.sbutils.config.option.economyRaffleTickets"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.economyRaffleTickets.tooltip"))
+                                .binding(
+                                        defaults.economyRaffleTickets,
+                                        () -> config.economyRaffleTickets,
+                                        (value) -> config.economyRaffleTickets = value
+                                )
+                                .controller(integerOption -> new IntegerSliderController(integerOption, 1, 5, 1))
                                 .build())
                         .option(Option.createBuilder(double.class)
                                 .name(Text.translatable("text.sbutils.config.option.grassCheckDelay"))
@@ -968,65 +968,6 @@ public class ConfigGui {
                                         defaults.autoSilkDelay,
                                         () -> config.autoSilkDelay,
                                         (value) -> config.autoSilkDelay = value
-                                )
-                                .controller(DoubleFieldController::new)
-                                .build())
-                        .build())
-                .build();
-    }
-
-    private static ConfigCategory buildAutoCrateCategory(ModConfig defaults, ModConfig config) {
-        return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autocrate"))
-                .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoCrate"))
-                        .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.autoCrate"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.autoCrate.tooltip"))
-                                .binding(
-                                        defaults.autoCrate,
-                                        () -> config.autoCrate,
-                                        (value) -> config.autoCrate = value
-                                )
-                                .controller(TickBoxController::new)
-                                .build())
-                        .option(Option.createBuilder(ModConfig.CrateMode.class)
-                                .name(Text.translatable("text.sbutils.config.option.crateMode"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.crateMode.tooltip"))
-                                .binding(
-                                        defaults.crateMode,
-                                        () -> config.crateMode,
-                                        (value) -> config.crateMode = value
-                                )
-                                .controller(EnumController::new)
-                                .build())
-                        .option(Option.createBuilder(boolean.class)
-                                .name(Text.translatable("text.sbutils.config.option.doubleSpin"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.doubleSpin.tooltip"))
-                                .binding(
-                                        defaults.doubleSpin,
-                                        () -> config.doubleSpin,
-                                        (value) -> config.doubleSpin = value
-                                )
-                                .controller(TickBoxController::new)
-                                .build())
-                        .option(Option.createBuilder(double.class)
-                                .name(Text.translatable("text.sbutils.config.option.crateDelay"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.crateDelay.tooltip"))
-                                .binding(
-                                        defaults.crateDelay,
-                                        () -> config.crateDelay,
-                                        (value) -> config.crateDelay = value
-                                )
-                                .controller(DoubleFieldController::new)
-                                .build())
-                        .option(Option.createBuilder(double.class)
-                                .name(Text.translatable("text.sbutils.config.option.crateDistance"))
-                                .tooltip(Text.translatable("text.sbutils.config.option.crateDistance.tooltip"))
-                                .binding(
-                                        defaults.crateDistance,
-                                        () -> config.crateDistance,
-                                        (value) -> config.crateDistance = value
                                 )
                                 .controller(DoubleFieldController::new)
                                 .build())

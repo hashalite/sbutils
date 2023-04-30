@@ -27,6 +27,7 @@ public class SbUtils implements ClientModInitializer {
     public static KeyBinding backKey;
     public static KeyBinding craftKey;
     public static KeyBinding echestKey;
+    public static KeyBinding trashKey;
 
     @Override
     public void onInitializeClient() {
@@ -37,7 +38,6 @@ public class SbUtils implements ClientModInitializer {
             AutoAdvert.registerCommand(dispatcher);
             Convert.registerCommand(dispatcher);
             OpenFolder.registerCommand(dispatcher);
-            AutoCrate.registerCommand(dispatcher);
             AutoPrivate.registerCommand(dispatcher);
             StaffDetector.registerCommand(dispatcher);
             ChatFilters.registerCommand(dispatcher);
@@ -73,6 +73,7 @@ public class SbUtils implements ClientModInitializer {
         backKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.back", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
         craftKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.craft", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
         echestKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.echest", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        trashKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.trash", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (configKey.wasPressed()) {
@@ -105,6 +106,10 @@ public class SbUtils implements ClientModInitializer {
 
             while (echestKey.wasPressed()) {
                 MC.getNetworkHandler().sendChatCommand("ec");
+            }
+
+            while (trashKey.wasPressed()) {
+                MC.getNetworkHandler().sendChatCommand("trash");
             }
         });
     }

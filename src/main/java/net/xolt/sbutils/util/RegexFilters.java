@@ -21,11 +21,10 @@ public class RegexFilters {
     public static final Pattern welcomeFilter = Pattern.compile("Welcome [\u00a7_a-zA-Z0-9]+ to Skyblock!");
     public static final Pattern friendJoinFilter = Pattern.compile("\\[Friends\\] [\u00a7_a-zA-Z0-9]+ has joined [a-zA-Z0-9]+");
     public static final Pattern motdFilter = Pattern.compile("============ Welcome to [\u00a7_a-zA-Z0-9]+'s Island ============|\\+ .*");
-    public static final Pattern voteFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for 1x Grass Block and 1x Voter Key! /vote");
+    public static final Pattern voteFilter = Pattern.compile("\\[Broadcast\\] [\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for 1x Grass Block and 1x Voter Key! /vote");
     public static final Pattern voteRewardFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ was (super |super duper )?lucky and received [a-zA-Z0-9/! ]+! ?");
     public static final Pattern raffleFilter = Pattern.compile("\\[SBRaffle\\].*");
     public static final Pattern cratesFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ has just opened a (Rare|Epic|Legendary) Crate!");
-    public static final Pattern clearLagFilter = Pattern.compile("WARNING Ground items will be removed in [0-9]+ seconds!|\\[SB\\] Removed [0-9]+ Entities!");
     public static final Pattern perishedInVoidFilter = Pattern.compile("\\[\u2620\\] [0-9]+ players have perished in the void today\\.");
     public static final Pattern skyChatFilter = Pattern.compile("\\[\u270e\\] .*|The word was [a-z0-9 ]+");
     

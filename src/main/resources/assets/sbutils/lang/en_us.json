@@ -110,6 +110,7 @@
   "key.sbutils.back": "/back",
   "key.sbutils.craft": "/wb",
   "key.sbutils.echest": "/ec",
+  "key.sbutils.trash": "/trash",
 
 
 
@@ -253,8 +254,6 @@
   "text.sbutils.config.option.raffleFilterEnabled.tooltip": "Whether raffle messages should be filtered from chat.",
   "text.sbutils.config.option.cratesFilterEnabled": "Filter Crate Messages",
   "text.sbutils.config.option.cratesFilterEnabled.tooltip": "Whether crate opening messages should be filtered from chat.",
-  "text.sbutils.config.option.clearLagFilterEnabled": "Filter ClearLag Messages",
-  "text.sbutils.config.option.clearLagFilterEnabled.tooltip": "Whether ClearLag messages should be filtered from chat.",
   "text.sbutils.config.option.perishedInVoidFilterEnabled": "Filter Perished In Void Messages",
   "text.sbutils.config.option.perishedInVoidFilterEnabled.tooltip": "Whether 'perished in void' messages should be filtered from chat.",
   "text.sbutils.config.option.skyChatFilterEnabled": "Filter SkyChats",
@@ -353,8 +352,10 @@
   "text.sbutils.config.group.autoRaffle": "Auto Raffle Settings",
   "text.sbutils.config.option.autoRaffle": "Auto Raffle Enabled",
   "text.sbutils.config.option.autoRaffle.tooltip": "Automatically buys raffle tickets when you log in and when the raffle ends.",
-  "text.sbutils.config.option.raffleTickets": "Raffle Tickets",
-  "text.sbutils.config.option.raffleTickets.tooltip": "The amount of raffle tickets to purchase. (Max. 2)",
+  "text.sbutils.config.option.skyblockRaffleTickets": "Skyblock Raffle Tickets",
+  "text.sbutils.config.option.skyblockRaffleTickets.tooltip": "The amount of raffle tickets to purchase on /skyblock. (Max. 2)",
+  "text.sbutils.config.option.economyRaffleTickets": "Economy Raffle Tickets",
+  "text.sbutils.config.option.economyRaffleTickets.tooltip": "The amount of raffle tickets to purchase on /economy. (Max. 5)",
   "text.sbutils.config.option.grassCheckDelay": "Grass Check Delay",
   "text.sbutils.config.option.grassCheckDelay.tooltip": "If you don't have enough grass in your inventory, how often it should check for more. (Seconds)",
 
@@ -377,23 +378,6 @@
   "text.sbutils.config.option.targetTool.tooltip": "The tool that Auto Silk will target.",
   "text.sbutils.config.option.autoSilkDelay": "Auto Silk Delay",
   "text.sbutils.config.option.autoSilkDelay.tooltip": "The delay between each enchanting action.",
-
-
-  "text.sbutils.config.category.autocrate": "Auto Crate",
-
-  "text.sbutils.config.group.autoCrate": "Auto Crate Settings",
-  "text.sbutils.config.option.autoCrate": "Auto Crate Enabled",
-  "text.sbutils.config.option.autoCrate.tooltip": "Opens crate keys automatically.",
-  "text.sbutils.config.option.crateMode": "Crate Mode",
-  "text.sbutils.config.option.crateMode.voter" : "Voter",
-  "text.sbutils.config.option.crateMode.common" : "Common",
-  "text.sbutils.config.option.crateMode.tooltip": "The type of crate to target.",
-  "text.sbutils.config.option.doubleSpin": "Double Spin",
-  "text.sbutils.config.option.doubleSpin.tooltip": "Opens two crate keys at once.",
-  "text.sbutils.config.option.crateDelay": "Crate Delay",
-  "text.sbutils.config.option.crateDelay.tooltip": "After the current crate finishes, how long to wait before opening the next.",
-  "text.sbutils.config.option.crateDistance": "Crate Distance",
-  "text.sbutils.config.option.crateDistance.tooltip": "The maximum distance from the crate.",
 
 
   "text.sbutils.config.category.staffdetector": "Staff Detector",

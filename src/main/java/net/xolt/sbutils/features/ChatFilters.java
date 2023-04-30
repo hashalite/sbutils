@@ -25,7 +25,6 @@ public class ChatFilters {
             new ChatFilter("text.sbutils.config.option.voteRewardFilterEnabled", List.of(RegexFilters.voteRewardFilter), () -> ModConfig.INSTANCE.getConfig().voteRewardFilterEnabled),
             new ChatFilter("text.sbutils.config.option.raffleFilterEnabled", List.of(RegexFilters.raffleFilter), () -> ModConfig.INSTANCE.getConfig().raffleFilterEnabled),
             new ChatFilter("text.sbutils.config.option.cratesFilterEnabled", List.of(RegexFilters.cratesFilter), () -> ModConfig.INSTANCE.getConfig().cratesFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.clearLagFilterEnabled", List.of(RegexFilters.clearLagFilter), () -> ModConfig.INSTANCE.getConfig().clearLagFilterEnabled),
             new ChatFilter("text.sbutils.config.option.perishedInVoidFilterEnabled", List.of(RegexFilters.perishedInVoidFilter), () -> ModConfig.INSTANCE.getConfig().perishedInVoidFilterEnabled),
             new ChatFilter("text.sbutils.config.option.skyChatFilterEnabled", List.of(RegexFilters.skyChatFilter), () -> ModConfig.INSTANCE.getConfig().skyChatFilterEnabled)
     );
@@ -169,7 +168,7 @@ public class ChatFilters {
                                     Messenger.printChangedSetting("text.sbutils.config.option.voteRewardFilterEnabled", false);
                                     return Command.SINGLE_SUCCESS;
                                 })))
-                .then(ClientCommandManager.literal("lottery")
+                .then(ClientCommandManager.literal("raffle")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.raffleFilterEnabled", ModConfig.INSTANCE.getConfig().raffleFilterEnabled);
                             return Command.SINGLE_SUCCESS;
@@ -205,25 +204,6 @@ public class ChatFilters {
                                     ModConfig.INSTANCE.getConfig().cratesFilterEnabled = false;
                                     ModConfig.INSTANCE.save();
                                     Messenger.printChangedSetting("text.sbutils.config.option.cratesFilterEnabled", false);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("clearLag")
-                        .executes(context -> {
-                            Messenger.printSetting( "text.sbutils.config.option.clearLagFilterEnabled", ModConfig.INSTANCE.getConfig().clearLagFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.literal("true")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().clearLagFilterEnabled = true;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting( "text.sbutils.config.option.clearLagFilterEnabled", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().clearLagFilterEnabled = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting( "text.sbutils.config.option.clearLagFilterEnabled", false);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("perished")

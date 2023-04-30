@@ -31,7 +31,6 @@ public abstract class MinecraftClientMixin {
         EnchantAll.tick();
         AutoAdvert.tick();
         JoinCommands.tick();
-        AutoCrate.tick();
         AutoSilk.tick();
         AutoFix.tick();
         AutoRaffle.tick();

@@ -1,7 +1,6 @@
 package net.xolt.sbutils.mixins;
 
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.xolt.sbutils.features.AutoCrate;
 import net.xolt.sbutils.features.AutoSilk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +12,6 @@ public class ClientPlayerEntityMixin {
 
     @Inject(method = "closeHandledScreen", at = @At("HEAD"))
     private void onCloseHandledScreen(CallbackInfo ci) {
-        AutoCrate.onPlayerCloseScreen();
         AutoSilk.onPlayerCloseScreen();
     }
 }

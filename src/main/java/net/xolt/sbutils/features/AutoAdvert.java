@@ -9,13 +9,11 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screen.ProgressScreen;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
-import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.*;
 
@@ -23,7 +21,6 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoAdvert {
     private static List<String> prevAdList;
-    private static SbServer currentServer;
     private static int adIndex;
     private static long lastAdSentAt;
     private static long joinedAt;
@@ -38,7 +35,7 @@ public class AutoAdvert {
                 })
                 .then(ClientCommandManager.literal("info")
                         .executes(context -> {
-                            Messenger.printAutoAdvertInfo(ModConfig.INSTANCE.getConfig().autoAdvert, currentServer == null, getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.INSTANCE.getConfig().advertUseWhitelist);
+                            Messenger.printAutoAdvertInfo(ModConfig.INSTANCE.getConfig().autoAdvert, ServerDetector.currentServer == null, getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.INSTANCE.getConfig().advertUseWhitelist);
                             return Command.SINGLE_SUCCESS;
                         }))
                 .then(ClientCommandManager.literal("sbFile")
@@ -165,7 +162,7 @@ public class AutoAdvert {
     }
 
     private static int onListCommand() {
-        if (currentServer == null) {
+        if (ServerDetector.currentServer == null) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -175,7 +172,7 @@ public class AutoAdvert {
     }
 
     private static int onAddCommand(String advert) {
-        if (currentServer == null) {
+        if (ServerDetector.currentServer == null) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -190,7 +187,7 @@ public class AutoAdvert {
     }
 
     private static int onDelCommand(int index) {
-        if (currentServer == null) {
+        if (ServerDetector.currentServer == null) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -210,7 +207,7 @@ public class AutoAdvert {
     }
 
     private static int onInsertCommand(int index, String advert) {
-        if (currentServer == null) {
+        if (ServerDetector.currentServer == null) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -260,7 +257,7 @@ public class AutoAdvert {
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().autoAdvert || currentServer == null || MC.getNetworkHandler() == null) {
+        if (!ModConfig.INSTANCE.getConfig().autoAdvert || ServerDetector.currentServer == null || MC.getNetworkHandler() == null) {
             return;
         }
 
@@ -290,32 +287,6 @@ public class AutoAdvert {
         sendAd();
         lastAdSentAt = System.currentTimeMillis();
         adIndex = (adIndex + 1) % prevAdList.size();
-    }
-
-    public static void processMessage(Text message) {
-        if (RegexFilters.skyblockJoinFilter.matcher(message.getString()).matches()) {
-            List<Text> siblings = message.getSiblings();
-            if (siblings.size() < 1) {
-                return;
-            }
-
-            TextColor serverColor = siblings.get(siblings.size() - 1).getStyle().getColor();
-            if (serverColor.equals(TextColor.fromFormatting(Formatting.GREEN))) {
-                currentServer = SbServer.SKYBLOCK;
-                prevAdList = getAdList();
-            } else if (serverColor.equals(TextColor.fromFormatting(Formatting.LIGHT_PURPLE))) {
-                currentServer = SbServer.ECONOMY;
-                prevAdList = getAdList();
-            } else if (serverColor.equals(TextColor.fromFormatting(Formatting.YELLOW))) {
-                currentServer = SbServer.CLASSIC;
-                prevAdList = getAdList();
-            }
-        }
-    }
-
-    public static void onJoinGame() {
-        joinedAt = System.currentTimeMillis();
-        resetServer();
     }
 
     private static int getUpdatedAdIndex(List<String> newAdList) {
@@ -353,10 +324,10 @@ public class AutoAdvert {
 
     private static String getAdFile() {
         String adFile;
-        if (currentServer == null) {
+        if (ServerDetector.currentServer == null) {
             return null;
         } else {
-            switch (currentServer) {
+            switch (ServerDetector.currentServer) {
                 case ECONOMY:
                     adFile = ModConfig.INSTANCE.getConfig().economyAdFile;
                     break;
@@ -411,13 +382,7 @@ public class AutoAdvert {
         adIndex = 0;
     }
 
-    public static void resetServer() {
-        currentServer = null;
-    }
-
-    private enum SbServer {
-        SKYBLOCK,
-        ECONOMY,
-        CLASSIC;
+    public static void refreshPrevAdlist() {
+        prevAdList = getAdList();
     }
 }
