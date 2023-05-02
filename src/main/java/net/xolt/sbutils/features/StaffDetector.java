@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
-import net.xolt.sbutils.util.command.NotifSoundArgumentType;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.UUID;
@@ -64,9 +63,9 @@ public class StaffDetector {
                             Messenger.printSetting("text.sbutils.config.option.staffDetectSound", ModConfig.INSTANCE.getConfig().staffDetectSound);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.argument("sound", NotifSoundArgumentType.notifSound())
+                        .then(ClientCommandManager.argument("sound", ModConfig.NotifSound.NotifSoundArgumentType.notifSound())
                                 .executes(context ->{
-                                    ModConfig.INSTANCE.getConfig().staffDetectSound = NotifSoundArgumentType.getNotifSound(context, "sound");
+                                    ModConfig.INSTANCE.getConfig().staffDetectSound = ModConfig.NotifSound.NotifSoundArgumentType.getNotifSound(context, "sound");
                                     ModConfig.INSTANCE.save();
                                     Messenger.printChangedSetting("text.sbutils.config.option.staffDetectSound", ModConfig.INSTANCE.getConfig().staffDetectSound);
                                     return Command.SINGLE_SUCCESS;

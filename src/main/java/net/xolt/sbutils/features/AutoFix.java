@@ -61,18 +61,11 @@ public class AutoFix {
                             Messenger.printSetting("text.sbutils.config.option.autoFixMode", ModConfig.INSTANCE.getConfig().autoFixMode);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("hand")
+                        .then(ClientCommandManager.argument("mode", ModConfig.FixMode.FixModeArgumentType.fixMode())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoFixMode = ModConfig.FixMode.HAND;
+                                    ModConfig.INSTANCE.getConfig().autoFixMode = ModConfig.FixMode.FixModeArgumentType.getFixMode(context, "mode");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoFixMode", ModConfig.FixMode.HAND);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("all")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoFixMode = ModConfig.FixMode.ALL;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoFixMode", ModConfig.FixMode.ALL);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.autoFixMode", ModConfig.INSTANCE.getConfig().autoFixMode);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("percent")
@@ -219,6 +212,10 @@ public class AutoFix {
         }
     }
 
+    public static void onDisconnect() {
+        reset();
+    }
+
     public static void onUpdateInventory() {
         if (!ModConfig.INSTANCE.getConfig().autoFix || fixing) {
             return;
@@ -326,7 +323,7 @@ public class AutoFix {
         return fixing;
     }
 
-    public static void reset() {
+    private static void reset() {
         fixing = false;
         waitingForResponse = false;
         findMostDamaged = true;

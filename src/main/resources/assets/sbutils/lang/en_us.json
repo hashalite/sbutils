@@ -210,6 +210,10 @@
   "text.sbutils.config.category.enchantall": "Enchant All",
 
   "text.sbutils.config.group.enchantAll": "Enchant All Settings",
+  "text.sbutils.config.option.enchantMode": "Enchant Mode",
+  "text.sbutils.config.option.enchantMode.tooltip": "Whether to use the built in /enchantall command, or send enchants individually.",
+  "text.sbutils.config.option.enchantMode.all": "All",
+  "text.sbutils.config.option.enchantMode.individual": "Individual",
   "text.sbutils.config.option.enchantDelay": "Enchant Delay",
   "text.sbutils.config.option.enchantDelay.tooltip": "The delay between sending enchant commands. (Seconds)",
   "text.sbutils.config.option.cooldownFrequency": "Cooldown Frequency",

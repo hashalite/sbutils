@@ -12,32 +12,36 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.encryption.NetworkEncryptionUtils;
+import net.minecraft.network.message.ArgumentSignatureDataMap;
+import net.minecraft.network.message.LastSeenMessagesCollector;
+import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.registry.Registries;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
+import net.xolt.sbutils.util.RegexFilters;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class EnchantAll {
-    private static Map<ItemStack, Integer> itemsToEnchant;
-    private static ItemStack currentItem;
+
     private static boolean enchanting;
     private static boolean unenchanting;
-    private static boolean sentLastEnchantForItem;
+    private static boolean inventory;
+    private static boolean awaitingResponse;
     private static boolean pause;
     private static boolean cooldown;
-    private static boolean sendCooldownMessage;
+    private static int prevSelectedSlot;
+    private static int commandCount;
     private static long lastActionPerformedAt;
-    private static int selectedSlot;
-    private static int enchantIndex;
-    private static int commandCounter;
-
-    private static List<Enchantment> enchantments;
 
     public static void init() {
         reset();
@@ -45,13 +49,25 @@ public class EnchantAll {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(ClientCommandManager.literal("enchantall")
-                .executes(enchantAll ->
-                        onEnchantAllCommand(false)
+                .executes(context ->
+                        onEnchantAllCommand(false, false)
                 )
                 .then(ClientCommandManager.literal("inv")
-                        .executes(enchantAll ->
-                                onEnchantAllInvCommand(false)
+                        .executes(context ->
+                                onEnchantAllCommand(false, true)
                         ))
+                .then(ClientCommandManager.literal("mode")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.enchantMode", ModConfig.INSTANCE.getConfig().enchantMode);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.argument("mode", ModConfig.EnchantMode.EnchantModeArgumentType.enchantMode())
+                                .executes(context -> {
+                                    ModConfig.INSTANCE.getConfig().enchantMode = ModConfig.EnchantMode.EnchantModeArgumentType.getEnchantMode(context, "mode");
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printSetting("text.sbutils.config.option.enchantMode", ModConfig.INSTANCE.getConfig().enchantMode);
+                                    return Command.SINGLE_SUCCESS;
+                                })))
                 .then(ClientCommandManager.literal("delay")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.enchantDelay", ModConfig.INSTANCE.getConfig().enchantDelay);
@@ -110,12 +126,12 @@ public class EnchantAll {
 
 
         final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(ClientCommandManager.literal("unenchantall")
-                .executes(enchantAll ->
-                        onEnchantAllCommand(true)
+                .executes(context ->
+                        onEnchantAllCommand(true, false)
                 )
                 .then(ClientCommandManager.literal("inv")
-                        .executes(enchantAll ->
-                                onEnchantAllInvCommand(true)
+                        .executes(context ->
+                                onEnchantAllCommand(true, true)
                         ))
                 .then(ClientCommandManager.literal("delay")
                         .executes(context -> {
@@ -186,90 +202,172 @@ public class EnchantAll {
                 .redirect(unenchantAllNode));
     }
 
+    private static int onEnchantAllCommand(boolean unenchant, boolean inv) {
+        if (MC.player == null) {
+            return Command.SINGLE_SUCCESS;
+        }
+
+        if (enchanting || unenchanting) {
+            Messenger.printMessage("message.sbutils.enchantAll.pleaseWait", Formatting.RED);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        enchanting = !unenchant;
+        unenchanting = unenchant;
+        prevSelectedSlot = MC.player.getInventory().selectedSlot;
+        inventory = inv;
+
+        return Command.SINGLE_SUCCESS;
+    }
+
     public static void tick() {
-        if (!enchanting && !unenchanting) {
+        if ((!enchanting && !unenchanting) || awaitingResponse || MC.player == null) {
             return;
         }
 
-        if (commandCounter >= ModConfig.INSTANCE.getConfig().cooldownFrequency) {
-            if (!(sentLastEnchantForItem && itemsToEnchant.size() < 2)) {
-                cooldown = true;
-                sendCooldownMessage = true;
-                lastActionPerformedAt = System.currentTimeMillis();
-            }
-            commandCounter = 0;
+        if (MC.player.getInventory().selectedSlot != prevSelectedSlot) {
+            Messenger.printMessage("message.sbutils.enchantAll.cancelSlotSwitch", Formatting.RED);
+            reset();
+            return;
         }
 
-        if (sendCooldownMessage && System.currentTimeMillis() - lastActionPerformedAt >= 250) {
+        if (done()) {
+            Messenger.printMessage("message.sbutils.enchantAll.complete");
+            reset();
+            return;
+        }
+
+        if (commandCount >= ModConfig.INSTANCE.getConfig().cooldownFrequency) {
+            cooldown = true;
             Messenger.printEnchantCooldown(ModConfig.INSTANCE.getConfig().cooldownTime);
-            sendCooldownMessage = false;
+            commandCount = 0;
         }
 
         if (delayLeft() > 0) {
             return;
         }
 
-        pause = false;
-        cooldown = false;
+        if (pause || cooldown) {
+            pause = false;
+            cooldown = false;
+            return;
+        }
 
-        if (!sentLastEnchantForItem) {
-            if (checkForSlotSwitch()) {
-                return;
-            }
-
-            sendNextEnchant();
-
-            lastActionPerformedAt = System.currentTimeMillis();
-            commandCounter++;
-            enchantIndex++;
-
-            if (enchantIndex >= enchantments.size()) {
-                sentLastEnchantForItem = true;
-                pause = true;
-            }
+        if (inventory) {
+            doEnchantInv(unenchanting);
         } else {
-            if (itemsToEnchant.size() > 1 && checkForSlotSwitch()) {
-                return;
-            }
-
-            if (currentItem != null) {
-                int originalSlot = itemsToEnchant.get(currentItem);
-
-                if (!InvUtils.canSwapSlot(originalSlot)) {
-                    return;
-                }
-
-                // Move item back to original slot
-                InvUtils.swapToHotbar(originalSlot, selectedSlot);
-                itemsToEnchant.remove(currentItem);
-                currentItem = null;
-            }
-
-            if (itemsToEnchant.size() == 0) {
-                Messenger.printMessage("message.sbutils.enchantAll.complete");
-                reset();
-            } else {
-                ItemStack newItem = getNextItem();
-                int newItemSlot = itemsToEnchant.get(newItem);
-
-                if (!InvUtils.canSwapSlot(newItemSlot)) {
-                    return;
-                }
-
-                currentItem = newItem;
-                sentLastEnchantForItem = false;
-                enchantments = getEnchantsForItem(currentItem, unenchanting);
-                enchantIndex = 0;
-                InvUtils.swapToHotbar(itemsToEnchant.get(newItem), selectedSlot);
-                lastActionPerformedAt = System.currentTimeMillis();
-            }
+            doEnchant(unenchanting);
         }
     }
 
-    public static int onEnchantAllInvCommand(boolean unenchant) {
-        if (enchanting || unenchanting) {
-            Messenger.printMessage("message.sbutils.enchantAll.pleaseWait", Formatting.RED);
-            return Command.SINGLE_SUCCESS;
+    public static void onDisconnect() {
+        reset();
+    }
+
+    public static void processMessage(Text message) {
+        if (!enchanting && !unenchanting) {
+            return;
+        }
+
+        String messageString = message.getString();
+        if (RegexFilters.enchantSingleSuccess.matcher(messageString).matches() ||
+                RegexFilters.enchantAllSuccess.matcher(messageString).matches() ||
+                RegexFilters.unenchantSuccess.matcher(messageString).matches() ||
+                RegexFilters.enchantError.matcher(messageString).matches()) {
+            awaitingResponse = false;
+        }
+    }
+
+    private static void doEnchant(boolean unenchant) {
+        if (MC.player == null) {
+            return;
+        }
+
+        ItemStack hand = MC.player.getMainHandStack();
+
+        if (!hand.getItem().isEnchantable(hand)) {
+            Messenger.printMessage("message.sbutils.enchantAll.cantEnchantItem");
+            reset();
+            return;
+        }
+
+        List<Enchantment> enchants = getEnchantsForItem(MC.player.getMainHandStack(), unenchant);
+
+        if (enchants.size() < 1) {
+            if (shouldRemoveFrost()) {
+                sendEnchantCommand(Enchantments.FROST_WALKER, true);
+            }
+            return;
+        }
+
+        sendNextEnchant(enchants, unenchant);
+    }
+
+    private static void doEnchantInv(boolean unenchant) {
+        if (MC.player == null) {
+            return;
+        }
+
+        ItemStack hand = MC.player.getMainHandStack();
+        List<Enchantment> enchants = getEnchantsForItem(hand, unenchant);
+
+        if (enchants.size() < 1) {
+            if (shouldRemoveFrost()) {
+                sendEnchantCommand(Enchantments.FROST_WALKER, true);
+                return;
+            }
+            int enchantableSlot = findEnchantableSlot(unenchant);
+            if (enchantableSlot != -1) {
+                if (!InvUtils.canSwapSlot(enchantableSlot)) {
+                    return;
+                }
+                InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selectedSlot);
+                pause = true;
+            }
+            return;
+        }
+
+        sendNextEnchant(enchants, unenchant);
+    }
+
+    private static void sendNextEnchant(List<Enchantment> enchants, boolean unenchant) {
+        if (!unenchant && ModConfig.INSTANCE.getConfig().enchantMode == ModConfig.EnchantMode.ALL) {
+            sendEnchantAllCommand();
+            return;
+        }
+
+        sendEnchantCommand(enchants.iterator().next(), unenchant);
+    }
+
+    private static void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
+        if (MC.getNetworkHandler() == null) {
+            return;
+        }
+
+        String enchantName = Registries.ENCHANTMENT.getId(enchantment).getPath().replaceAll("_", "");
+        MC.getNetworkHandler().sendChatCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()));
+        afterSendCommand();
+    }
+
+    private static void sendEnchantAllCommand() {
+        if (MC.getNetworkHandler() == null) {
+            return;
+        }
+
+        MC.getNetworkHandler().sendPacket(new CommandExecutionC2SPacket("enchantall", Instant.now(), NetworkEncryptionUtils.SecureRandomUtil.nextLong(),
+                ArgumentSignatureDataMap.EMPTY, new LastSeenMessagesCollector(20).collect().update()));
+        afterSendCommand();
+    }
+
+    private static void afterSendCommand() {
+        commandCount++;
+        lastActionPerformedAt = System.currentTimeMillis();
+        awaitingResponse = true;
+    }
+
+    private static int findEnchantableSlot(boolean unenchant) {
+        if (MC.player == null) {
+            return -1;
         }
 
         for (int i = 0; i < MC.player.getInventory().size(); i++) {
@@ -279,89 +377,21 @@ public class EnchantAll {
             }
             ItemStack itemStack = MC.player.getInventory().getStack(i);
             if (getEnchantsForItem(itemStack, unenchant).size() > 0) {
-                itemsToEnchant.put(itemStack.copy(), i);
+                return i;
             }
         }
 
-        selectedSlot = MC.player.getInventory().selectedSlot;
-
-        if (itemsToEnchant.size() == 0) {
-            Messenger.printMessage("message.sbutils.enchantAll.nothingEnchantable");
-            reset();
-            return Command.SINGLE_SUCCESS;
-        }
-
-        if (!itemsToEnchant.containsValue(MC.player.getInventory().selectedSlot) && !MC.player.getMainHandStack().isEmpty()) {
-            int emptySlot = InvUtils.findEmptyHotbarSlot();
-            if (emptySlot != -1) {
-                MC.player.getInventory().selectedSlot = emptySlot;
-            }
-        }
-
-        currentItem = getNextItem();
-        enchantments = getEnchantsForItem(currentItem, unenchant);
-        enchanting = !unenchant;
-        unenchanting = unenchant;
-        selectedSlot = MC.player.getInventory().selectedSlot;
-        InvUtils.swapToHotbar(itemsToEnchant.get(currentItem), selectedSlot);
-        lastActionPerformedAt = System.currentTimeMillis();
-        pause = true;
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    public static int onEnchantAllCommand(boolean unenchant) {
-        if (enchanting || unenchanting) {
-            Messenger.printMessage("message.sbutils.enchantAll.pleaseWait", Formatting.RED);
-            return Command.SINGLE_SUCCESS;
-        }
-
-        reset();
-        itemsToEnchant.put(MC.player.getMainHandStack().copy(), MC.player.getInventory().selectedSlot);
-        currentItem = getNextItem();
-        enchantments = getEnchantsForItem(currentItem, unenchant);
-        selectedSlot = MC.player.getInventory().selectedSlot;
-
-        if (enchantments.size() == 0) {
-            Messenger.printMessage("message.sbutils.enchantAll.cantEnchantItem");
-            reset();
-            return Command.SINGLE_SUCCESS;
-        }
-
-        enchanting = !unenchant;
-        unenchanting = unenchant;
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    public static void onClickSlot(int slotIndex, SlotActionType actionType, int button) {
-        if (!enchanting && !unenchanting) {
-            return;
-        }
-
-        boolean conflicts = doesClickConflict(slotIndex);
-        if (!conflicts && actionType.equals(SlotActionType.SWAP)) {
-            conflicts = doesClickConflict(button);
-        }
-
-        if (conflicts) {
-            reset();
-            Messenger.printMessage("message.sbutils.enchantAll.cancelInventoryInteract", Formatting.RED);
-        }
-    }
-
-    private static boolean doesClickConflict(int slotIndex) {
-        if (MC.player == null) {
-            return false;
-        }
-        return getEnchantsForItem(MC.player.getInventory().getStack(slotIndex), unenchanting).size() > 0 && (slotIndex == MC.player.getInventory().selectedSlot || itemsToEnchant.size() > 1);
+        return -1;
     }
 
     private static List<Enchantment> getEnchantsForItem(ItemStack itemStack, boolean unenchant) {
         Item item = itemStack.getItem();
 
-        Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.fromNbt(itemStack.getEnchantments());
+        if (!itemStack.getItem().isEnchantable(itemStack)) {
+            return new ArrayList<>();
+        }
 
+        Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.fromNbt(itemStack.getEnchantments());
         List<Enchantment> enchantments = new ArrayList<>();
         if (!unenchant) {
             for (Enchantment enchantment : Registries.ENCHANTMENT) {
@@ -391,36 +421,6 @@ public class EnchantAll {
         return enchantments;
     }
 
-    private static void sendNextEnchant() {
-        sendEnchantCommand(enchantments.get(enchantIndex), unenchanting);
-    }
-
-    private static void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
-        if (MC.getNetworkHandler() == null) {
-            return;
-        }
-
-        String enchantName = Registries.ENCHANTMENT.getId(enchantment).getPath().replaceAll("_", "");
-        MC.getNetworkHandler().sendChatCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()));
-    }
-
-    private static ItemStack getNextItem() {
-        try {
-            return itemsToEnchant.keySet().iterator().next();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
-    }
-
-    private static boolean checkForSlotSwitch() {
-        if (MC.player.getInventory().selectedSlot != selectedSlot) {
-            Messenger.printMessage("message.sbutils.enchantAll.cancelSlotSwitch", Formatting.RED);
-            reset();
-            return true;
-        }
-        return false;
-    }
-
     private static int delayLeft() {
         long delay = (long)(ModConfig.INSTANCE.getConfig().enchantDelay * 1000.0);
         if (cooldown) {
@@ -432,22 +432,39 @@ public class EnchantAll {
         return (int)Math.max(delay - (System.currentTimeMillis() - lastActionPerformedAt), 0L);
     }
 
-    public static boolean active() {
-        return enchanting || unenchanting;
+    private static boolean done() {
+        if (MC.player == null) {
+            return true;
+        }
+
+        ItemStack hand = MC.player.getMainHandStack();
+
+        return ((inventory && findEnchantableSlot(unenchanting) == -1) ||
+                (!inventory && getEnchantsForItem(hand, unenchanting).size() < 1)) &&
+                !shouldRemoveFrost();
     }
 
-    public static void reset() {
+    private static boolean shouldRemoveFrost() {
+        if (MC.player == null) {
+            return false;
+        }
+
+        return ModConfig.INSTANCE.getConfig().excludeFrost &&
+                EnchantmentHelper.fromNbt(MC.player.getMainHandStack().getEnchantments()).containsKey(Enchantments.FROST_WALKER);
+    }
+
+    private static void reset() {
         enchanting = false;
         unenchanting = false;
-        sentLastEnchantForItem = false;
+        inventory = false;
+        awaitingResponse = false;
         pause = false;
         cooldown = false;
-        sendCooldownMessage = false;
-        selectedSlot = 0;
-        enchantIndex = 0;
-        commandCounter = 0;
-        enchantments = List.of();
-        itemsToEnchant = new LinkedHashMap<>();
-        currentItem = null;
+        prevSelectedSlot = -1;
+        commandCount = 0;
+    }
+
+    public static boolean active() {
+        return enchanting || unenchanting;
     }
 }

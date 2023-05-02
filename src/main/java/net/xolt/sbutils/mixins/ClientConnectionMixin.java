@@ -15,10 +15,10 @@ public class ClientConnectionMixin {
     @Inject(method = "handleDisconnection", at = @At("HEAD"))
     private void onHandleDisconnection(CallbackInfo ci) {
         ServerDetector.onDisconnect();
-        EnchantAll.reset();
-        JoinCommands.reset();
-        AutoSilk.reset();
-        AutoFix.reset();
+        EnchantAll.onDisconnect();
+        JoinCommands.onDisconnect();
+        AutoSilk.onDisconnect();
+        AutoFix.onDisconnect();
 
         if (ModConfig.INSTANCE.getConfig().autoSilk || ModConfig.INSTANCE.getConfig().autoMine) {
             ModConfig.INSTANCE.getConfig().autoSilk = false;

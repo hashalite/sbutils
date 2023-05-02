@@ -1,10 +1,13 @@
 package net.xolt.sbutils.config;
 
+import com.mojang.brigadier.context.CommandContext;
 import dev.isxander.yacl.api.NameableEnum;
 import dev.isxander.yacl.config.ConfigEntry;
 import dev.isxander.yacl.config.ConfigInstance;
+import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -62,6 +65,7 @@ public class ModConfig {
 
     // Enchant All Settings
 
+    @ConfigEntry public EnchantMode enchantMode = EnchantMode.ALL;
     @ConfigEntry public double enchantDelay = 0.55;
     @ConfigEntry public int cooldownFrequency = 12;
     @ConfigEntry public double cooldownTime = 6.0;
@@ -210,9 +214,23 @@ public class ModConfig {
         public Formatting getFormatting() {
             return formatting;
         }
+
+        public static class ColorArgumentType extends EnumArgumentType<Color> {
+            private ColorArgumentType() {
+                super(StringIdentifiable.createCodec(Color::values), Color::values);
+            }
+
+            public static ColorArgumentType color() {
+                return new ColorArgumentType();
+            }
+
+            public static Color getColor(CommandContext<?> context, String id) {
+                return context.getArgument(id, Color.class);
+            }
+        }
     }
 
-    public enum FixMode implements NameableEnum {
+    public enum FixMode implements NameableEnum, StringIdentifiable {
         HAND("text.sbutils.config.option.autoFixMode.hand"),
         ALL("text.sbutils.config.option.autoFixMode.all");
 
@@ -225,9 +243,60 @@ public class ModConfig {
         public Text getDisplayName() {
             return Text.translatable(name);
         }
+
+        public String asString() {
+            return getDisplayName().getString();
+        }
+
+        public static class FixModeArgumentType extends EnumArgumentType<FixMode> {
+            private FixModeArgumentType() {
+                super(StringIdentifiable.createCodec(FixMode::values), FixMode::values);
+            }
+
+            public static FixModeArgumentType fixMode() {
+                return new FixModeArgumentType();
+            }
+
+            public static FixMode getFixMode(CommandContext<?> context, String id) {
+                return context.getArgument(id, FixMode.class);
+            }
+        }
     }
 
-    public enum SilkTarget implements NameableEnum {
+    public enum EnchantMode implements NameableEnum, StringIdentifiable {
+        INDIVIDUAL("text.sbutils.config.option.enchantMode.individual"),
+        ALL("text.sbutils.config.option.enchantMode.all");
+
+        private final String name;
+
+        EnchantMode(String name) {
+            this.name = name;
+        }
+
+        public Text getDisplayName() {
+            return Text.translatable(name);
+        }
+
+        public String asString() {
+            return getDisplayName().getString();
+        }
+
+        public static class EnchantModeArgumentType extends EnumArgumentType<EnchantMode> {
+            private EnchantModeArgumentType() {
+                super(StringIdentifiable.createCodec(EnchantMode::values), EnchantMode::values);
+            }
+
+            public static EnchantModeArgumentType enchantMode() {
+                return new EnchantModeArgumentType();
+            }
+
+            public static EnchantMode getEnchantMode(CommandContext<?> context, String id) {
+                return context.getArgument(id, EnchantMode.class);
+            }
+        }
+    }
+
+    public enum SilkTarget implements NameableEnum, StringIdentifiable {
         DIAMOND_PICKAXE(Items.DIAMOND_PICKAXE),
         DIAMOND_AXE(Items.DIAMOND_AXE),
         DIAMOND_SHOVEL(Items.DIAMOND_SHOVEL),
@@ -246,6 +315,25 @@ public class ModConfig {
 
         public Text getDisplayName() {
             return Text.translatable(tool.getTranslationKey());
+        }
+
+        @Override
+        public String asString() {
+            return Registries.ITEM.getId(tool).getPath();
+        }
+
+        public static class SilkTargetArgumentType extends EnumArgumentType<SilkTarget> {
+            private SilkTargetArgumentType() {
+                super(StringIdentifiable.createCodec(ModConfig.SilkTarget::values), ModConfig.SilkTarget::values);
+            }
+
+            public static SilkTargetArgumentType silkTarget() {
+                return new SilkTargetArgumentType();
+            }
+
+            public static SilkTarget getSilkTarget(CommandContext<?> context, String id) {
+                return context.getArgument(id, SilkTarget.class);
+            }
         }
     }
 
@@ -290,6 +378,20 @@ public class ModConfig {
 
         public SoundEvent getSound() {
             return sound;
+        }
+
+        public static class NotifSoundArgumentType extends EnumArgumentType<NotifSound> {
+            private NotifSoundArgumentType() {
+                super(StringIdentifiable.createCodec(NotifSound::values), NotifSound::values);
+            }
+
+            public static NotifSoundArgumentType notifSound() {
+                return new NotifSoundArgumentType();
+            }
+
+            public static NotifSound getNotifSound(CommandContext<?> context, String id) {
+                return context.getArgument(id, NotifSound.class);
+            }
         }
     }
 }

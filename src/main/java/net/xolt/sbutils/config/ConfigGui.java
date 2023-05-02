@@ -332,6 +332,16 @@ public class ConfigGui {
                 .name(Text.translatable("text.sbutils.config.category.enchantall"))
                 .group(OptionGroup.createBuilder()
                         .name(Text.translatable("text.sbutils.config.group.enchantAll"))
+                        .option(Option.createBuilder(ModConfig.EnchantMode.class)
+                                .name(Text.translatable("text.sbutils.config.option.enchantMode"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.enchantMode.tooltip"))
+                                .binding(
+                                        defaults.enchantMode,
+                                        () -> config.enchantMode,
+                                        (value) -> config.enchantMode = value
+                                )
+                                .controller(EnumController::new)
+                                .build())
                         .option(Option.createBuilder(double.class)
                                 .name(Text.translatable("text.sbutils.config.option.enchantDelay"))
                                 .tooltip(Text.translatable("text.sbutils.config.option.enchantDelay.tooltip"))

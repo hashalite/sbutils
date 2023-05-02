@@ -174,6 +174,10 @@ public class JoinCommands {
         return Command.SINGLE_SUCCESS;
     }
 
+    public static void onDisconnect() {
+        reset();
+    }
+
     public static void onJoinGame() {
         if (!ModConfig.INSTANCE.getConfig().joinCmdsEnabled) {
             return;
@@ -256,7 +260,7 @@ public class JoinCommands {
         }
     }
 
-    public static void reset() {
+    private static void reset() {
         waitingToSend = false;
         joinedAt = 0;
         lastCommandSentAt = 0;

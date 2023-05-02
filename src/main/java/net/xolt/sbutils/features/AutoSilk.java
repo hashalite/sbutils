@@ -46,6 +46,18 @@ public class AutoSilk {
                     Messenger.printChangedSetting("text.sbutils.config.category.autosilk", ModConfig.INSTANCE.getConfig().autoSilk);
                     return Command.SINGLE_SUCCESS;
                 })
+                .then(ClientCommandManager.literal("target")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.targetTool", ModConfig.INSTANCE.getConfig().targetTool);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.argument("tool", ModConfig.SilkTarget.SilkTargetArgumentType.silkTarget())
+                                .executes(context -> {
+                                    ModConfig.INSTANCE.getConfig().targetTool = ModConfig.SilkTarget.SilkTargetArgumentType.getSilkTarget(context, "tool");
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.targetTool", ModConfig.INSTANCE.getConfig().targetTool);
+                                    return Command.SINGLE_SUCCESS;
+                                })))
                 .then(ClientCommandManager.literal("delay")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.autoSilkDelay", ModConfig.INSTANCE.getConfig().autoSilkDelay);
@@ -64,6 +76,10 @@ public class AutoSilk {
                     dispatcher.execute("autosilk", context.getSource())
                 )
                 .redirect(autoSilkNode));
+    }
+
+    public static void onDisconnect() {
+        reset();
     }
 
     public static void onPlayerCloseScreen() {
@@ -391,7 +407,7 @@ public class AutoSilk {
         RETURN_ITEM_AND_RESET;
     }
 
-    public static void reset() {
+    private static void reset() {
         state = State.INSERT_LAPIS;
         lastActionPerformedAt = 0;
         screenHandler = null;

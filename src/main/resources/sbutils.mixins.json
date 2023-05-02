@@ -8,9 +8,7 @@
     "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",
-    "CreativeInventoryScreenMixin",
     "GameRendererMixin",
-    "HandledScreenMixin",
     "MessageHandlerMixin",
     "MinecraftClientMixin"
   ],

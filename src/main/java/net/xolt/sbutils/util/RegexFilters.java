@@ -13,6 +13,14 @@ public class RegexFilters {
 
     public static final Pattern playerMsgFilter = Pattern.compile("((\u00a7[0-9a-fk-or])*\\[.*\\](\u00a7[0-9a-fk-or])* )*[\u00a7_a-zA-Z0-9]+: .*");
 
+
+    // Enchant All
+
+    public static final Pattern enchantSingleSuccess = Pattern.compile("The enchantment .* has been applied to your item in hand\\.");
+    public static final Pattern enchantAllSuccess = Pattern.compile("All possible enchantments have been applied to the item in your hand\\.");
+    public static final Pattern unenchantSuccess = Pattern.compile("The enchantment .* has been removed from your item in hand\\.");
+    public static final Pattern enchantError = Pattern.compile("Error: .*");
+
     
     // Chat Filters
 
@@ -21,7 +29,7 @@ public class RegexFilters {
     public static final Pattern welcomeFilter = Pattern.compile("Welcome [\u00a7_a-zA-Z0-9]+ to Skyblock!");
     public static final Pattern friendJoinFilter = Pattern.compile("\\[Friends\\] [\u00a7_a-zA-Z0-9]+ has joined [a-zA-Z0-9]+");
     public static final Pattern motdFilter = Pattern.compile("============ Welcome to [\u00a7_a-zA-Z0-9]+'s Island ============|\\+ .*");
-    public static final Pattern voteFilter = Pattern.compile("\\[Broadcast\\] [\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for 1x Grass Block and 1x Voter Key! /vote");
+    public static final Pattern voteFilter = Pattern.compile("\\[Broadcast\\] [\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for .* and 1x Voter Key! /vote");
     public static final Pattern voteRewardFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ was (super |super duper )?lucky and received [a-zA-Z0-9/! ]+! ?");
     public static final Pattern raffleFilter = Pattern.compile("\\[SBRaffle\\].*");
     public static final Pattern cratesFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ has just opened a (Rare|Epic|Legendary) Crate!");
@@ -52,14 +60,6 @@ public class RegexFilters {
     // Auto Raffle
     
     public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle\\] Congratulations go to [\u00a7_a-zA-Z0-9]+ for winning [0-9]+ Grass block with [0-9]+ (ticket|tickets)");
-
-
-    // Auto Crate
-
-    public static final Pattern voterKeyFilter = Pattern.compile("Click the (Voting|Voter) Crate to use this key");
-    public static final Pattern commonKeyFilter = Pattern.compile("Click the Common Crate to use this key");
-    public static final Pattern voterCrateFilter = Pattern.compile("Voter");
-    public static final Pattern commonCrateFilter = Pattern.compile("Common");
 
 
     // Staff Detector

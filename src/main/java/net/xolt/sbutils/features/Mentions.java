@@ -8,9 +8,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.*;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.command.ColorArgumentType;
 import net.xolt.sbutils.util.Messenger;
-import net.xolt.sbutils.util.command.NotifSoundArgumentType;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.ArrayList;
@@ -107,9 +105,9 @@ public class Mentions {
                             Messenger.printSetting("text.sbutils.config.option.mentionSound", ModConfig.INSTANCE.getConfig().mentionSound);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.argument("sound", NotifSoundArgumentType.notifSound())
+                        .then(ClientCommandManager.argument("sound", ModConfig.NotifSound.NotifSoundArgumentType.notifSound())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionSound = NotifSoundArgumentType.getNotifSound(context, "sound");
+                                    ModConfig.INSTANCE.getConfig().mentionSound = ModConfig.NotifSound.NotifSoundArgumentType.getNotifSound(context, "sound");
                                     ModConfig.INSTANCE.save();
                                     Messenger.printChangedSetting("text.sbutils.config.option.mentionSound", ModConfig.INSTANCE.getConfig().mentionSound);
                                     return Command.SINGLE_SUCCESS;
@@ -138,9 +136,9 @@ public class Mentions {
                                     Messenger.printSetting("text.sbutils.config.option.highlightColor", ModConfig.INSTANCE.getConfig().highlightColor);
                                     return Command.SINGLE_SUCCESS;
                                 })
-                                .then(ClientCommandManager.argument("color", ColorArgumentType.color())
+                                .then(ClientCommandManager.argument("color", ModConfig.Color.ColorArgumentType.color())
                                         .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().highlightColor = ColorArgumentType.getColor(context, "color");
+                                            ModConfig.INSTANCE.getConfig().highlightColor = ModConfig.Color.ColorArgumentType.getColor(context, "color");
                                             ModConfig.INSTANCE.save();
                                             Messenger.printChangedSetting("text.sbutils.config.option.highlightColor", ModConfig.INSTANCE.getConfig().highlightColor);
                                             return Command.SINGLE_SUCCESS;
