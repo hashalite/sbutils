@@ -2,6 +2,7 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -33,18 +34,11 @@ public class Mentions {
                             Messenger.printSetting("text.sbutils.config.option.excludeServerMsgs", ModConfig.INSTANCE.getConfig().excludeServerMsgs);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeServerMsgs = true;
+                                    ModConfig.INSTANCE.getConfig().excludeServerMsgs = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeServerMsgs", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeServerMsgs = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeServerMsgs", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeServerMsgs", ModConfig.INSTANCE.getConfig().excludeServerMsgs);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("excludeSelf")
@@ -52,18 +46,11 @@ public class Mentions {
                             Messenger.printSetting("text.sbutils.config.option.excludeSelfMsgs", ModConfig.INSTANCE.getConfig().excludeSelfMsgs);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeSelfMsgs = true;
+                                    ModConfig.INSTANCE.getConfig().excludeSelfMsgs = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeSelfMsgs", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeSelfMsgs = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeSelfMsgs", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeSelfMsgs", ModConfig.INSTANCE.getConfig().excludeSelfMsgs);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("currentAccount")
@@ -71,18 +58,11 @@ public class Mentions {
                             Messenger.printSetting("text.sbutils.config.option.mentionsCurrentAccount", ModConfig.INSTANCE.getConfig().mentionsCurrentAccount);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionsCurrentAccount = true;
+                                    ModConfig.INSTANCE.getConfig().mentionsCurrentAccount = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionsCurrentAccount", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionsCurrentAccount = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionsCurrentAccount", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionsCurrentAccount", ModConfig.INSTANCE.getConfig().mentionsCurrentAccount);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("aliases")
@@ -117,18 +97,11 @@ public class Mentions {
                             Messenger.printSetting("text.sbutils.config.option.mentionHighlight", ModConfig.INSTANCE.getConfig().mentionHighlight);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionHighlight = true;
+                                    ModConfig.INSTANCE.getConfig().mentionHighlight = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionHighlight", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionHighlight = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionHighlight", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionHighlight", ModConfig.INSTANCE.getConfig().mentionHighlight);
                                     return Command.SINGLE_SUCCESS;
                                 }))
                         .then(ClientCommandManager.literal("color")

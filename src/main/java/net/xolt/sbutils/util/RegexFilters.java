@@ -49,6 +49,12 @@ public class RegexFilters {
     public static final Pattern outgoingMsgFilter = Pattern.compile("\\[me -> [\u00a7_a-zA-Z0-9]+\\] .*");
     public static final Pattern visitFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ is now visiting your island\\.");
     public static final Pattern dpWinnerFilter = Pattern.compile("(Winner #[0-9]+ is .*!)|(Dropping x[0-9]+ .*)");
+
+
+    // Event Notifier
+
+    public static final Pattern wanderingTraderFilter = Pattern.compile(". A Wandering Trader has been sighted somewhere at spawn offering a limited number of exclusive trades! *");
+    public static final Pattern vpLlamaFilter = Pattern.compile("\\[VoteParty\\] A Vote Party Llama has been sighted at the spawn!");
     
     
     // Auto Fix

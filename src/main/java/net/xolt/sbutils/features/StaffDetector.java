@@ -2,6 +2,7 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -25,18 +26,11 @@ public class StaffDetector {
                             Messenger.printSetting("text.sbutils.config.option.detectStaffJoin", ModConfig.INSTANCE.getConfig().detectStaffJoin);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().detectStaffJoin = true;
+                                    ModConfig.INSTANCE.getConfig().detectStaffJoin = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffJoin", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().detectStaffJoin = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffJoin", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffJoin", ModConfig.INSTANCE.getConfig().detectStaffJoin);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("detectLeave")
@@ -44,18 +38,11 @@ public class StaffDetector {
                             Messenger.printSetting("text.sbutils.config.option.detectStaffLeave", ModConfig.INSTANCE.getConfig().detectStaffLeave);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().detectStaffLeave = true;
+                                    ModConfig.INSTANCE.getConfig().detectStaffLeave = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffLeave", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().detectStaffLeave = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffLeave", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffLeave", ModConfig.INSTANCE.getConfig().detectStaffLeave);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("sound")

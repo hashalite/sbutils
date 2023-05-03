@@ -105,6 +105,16 @@ public class ModConfig {
     @ConfigEntry public boolean dpLogger = false;
 
 
+    // Event Notifier Settings
+
+    @ConfigEntry public boolean showLlamaTitle = false;
+    @ConfigEntry public boolean playLlamaSound = false;
+    @ConfigEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
+    @ConfigEntry public boolean showTraderTitle = false;
+    @ConfigEntry public boolean playTraderSound = false;
+    @ConfigEntry public NotifSound traderSound = NotifSound.BANJO;
+
+
     // Auto Mine Settings
 
     @ConfigEntry public boolean autoMine = false;

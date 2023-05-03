@@ -53,6 +53,9 @@ public class SbUtils implements ClientModInitializer {
             AutoReply.registerCommand(dispatcher);
             AutoCommand.registerCommand(dispatcher);
             AntiPlace.registerCommand(dispatcher);
+            Centered.registerCommand(dispatcher);
+            DeathCoords.registerCommand(dispatcher);
+            EventNotifier.registerCommand(dispatcher);
         });
 
         registerKeybindings();

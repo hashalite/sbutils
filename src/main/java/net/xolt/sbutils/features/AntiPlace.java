@@ -2,6 +2,7 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -28,18 +29,11 @@ public class AntiPlace {
                             Messenger.printSetting("text.sbutils.config.option.antiPlaceHeads", ModConfig.INSTANCE.getConfig().antiPlaceHeads);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().antiPlaceHeads = true;
+                                    ModConfig.INSTANCE.getConfig().antiPlaceHeads = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceHeads", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().antiPlaceHeads = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceHeads", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceHeads", ModConfig.INSTANCE.getConfig().antiPlaceHeads);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("grass")
@@ -47,18 +41,11 @@ public class AntiPlace {
                             Messenger.printSetting("text.sbutils.config.option.antiPlaceGrass", ModConfig.INSTANCE.getConfig().antiPlaceGrass);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().antiPlaceGrass = true;
+                                    ModConfig.INSTANCE.getConfig().antiPlaceGrass = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceGrass", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().antiPlaceGrass = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceGrass", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceGrass", ModConfig.INSTANCE.getConfig().antiPlaceGrass);
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 

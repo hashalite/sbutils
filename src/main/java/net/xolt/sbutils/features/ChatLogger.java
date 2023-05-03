@@ -2,6 +2,7 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -47,56 +48,35 @@ public class ChatLogger {
 //                            Messenger.printSetting("text.sbutils.config.option.shopLoggerIncoming", ModConfig.INSTANCE.getConfig().shopLoggerIncoming);
 //                            return Command.SINGLE_SUCCESS;
 //                        })
-//                        .then(ClientCommandManager.literal("true")
+//                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
 //                                .executes(context -> {
-//                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = true;
+//                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = BoolArgumentType.getBool(context, "enabled");
 //                                    ModConfig.INSTANCE.save();
-//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", true);
+//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", ModConfig.INSTANCE.getConfig().shopLoggerIncoming);
 //                                    return Command.SINGLE_SUCCESS;
 //                                }))
-//                        .then(ClientCommandManager.literal("false")
-//                                .executes(context -> {
-//                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = false;
-//                                    ModConfig.INSTANCE.save();
-//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", false);
-//                                    return Command.SINGLE_SUCCESS;
-//                                })))
 //                .then(ClientCommandManager.literal("outgoingShop")
 //                        .executes(context -> {
 //                            Messenger.printSetting("text.sbutils.config.option.shopLoggerOutgoing", ModConfig.INSTANCE.getConfig().shopLoggerOutgoing);
 //                            return Command.SINGLE_SUCCESS;
 //                        })
-//                        .then(ClientCommandManager.literal("true")
+//                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
 //                                .executes(context -> {
-//                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = true;
+//                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = BoolArgumentType.getBool(context, "enabled");
 //                                    ModConfig.INSTANCE.save();
-//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", true);
+//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", ModConfig.INSTANCE.getConfig().shopLoggerOutgoing);
 //                                    return Command.SINGLE_SUCCESS;
 //                                }))
-//                        .then(ClientCommandManager.literal("false")
-//                                .executes(context -> {
-//                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = false;
-//                                    ModConfig.INSTANCE.save();
-//                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", false);
-//                                    return Command.SINGLE_SUCCESS;
-//                                })))
                 .then(ClientCommandManager.literal("incomingMsg")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.msgLoggerIncoming", ModConfig.INSTANCE.getConfig().msgLoggerIncoming);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().msgLoggerIncoming = true;
+                                    ModConfig.INSTANCE.getConfig().msgLoggerIncoming = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerIncoming", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().msgLoggerIncoming = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerIncoming", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerIncoming", ModConfig.INSTANCE.getConfig().msgLoggerIncoming);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("outgoingMsg")
@@ -104,18 +84,11 @@ public class ChatLogger {
                             Messenger.printSetting("text.sbutils.config.option.msgLoggerOutgoing", ModConfig.INSTANCE.getConfig().msgLoggerOutgoing);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().msgLoggerOutgoing = true;
+                                    ModConfig.INSTANCE.getConfig().msgLoggerOutgoing = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerOutgoing", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().msgLoggerOutgoing = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerOutgoing", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerOutgoing", ModConfig.INSTANCE.getConfig().msgLoggerOutgoing);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("visit")
@@ -123,18 +96,11 @@ public class ChatLogger {
                             Messenger.printSetting("text.sbutils.config.option.visitLogger", ModConfig.INSTANCE.getConfig().visitLogger);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().visitLogger = true;
+                                    ModConfig.INSTANCE.getConfig().visitLogger = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.visitLogger", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().visitLogger = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.visitLogger", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.visitLogger", ModConfig.INSTANCE.getConfig().visitLogger);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("dp")
@@ -142,18 +108,11 @@ public class ChatLogger {
                             Messenger.printSetting("text.sbutils.config.option.dpLogger", ModConfig.INSTANCE.getConfig().dpLogger);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().dpLogger = true;
+                                    ModConfig.INSTANCE.getConfig().dpLogger = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.dpLogger", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().dpLogger = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.dpLogger", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.dpLogger", ModConfig.INSTANCE.getConfig().dpLogger);
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
@@ -214,6 +173,12 @@ public class ChatLogger {
                 return true;
             }
         }
+
+        for (ChatFilter filter : dpFilters) {
+            if (filter.isEnabled()) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -222,6 +187,7 @@ public class ChatLogger {
 //        result.addAll(shopFilters);
         result.addAll(messageFilters);
         result.addAll(visitFilters);
+        result.addAll(dpFilters);
         return result;
     }
 }

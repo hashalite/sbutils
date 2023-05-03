@@ -2,6 +2,7 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -120,21 +121,15 @@ public class AutoAdvert {
                                 })))
                 .then(ClientCommandManager.literal("whitelist")
                         .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.advertUseWhitelist", ModConfig.INSTANCE.getConfig().advertUseWhitelist);
                             Messenger.printListSetting("message.sbutils.autoAdvert.whitelist", ModConfig.INSTANCE.getConfig().advertWhitelist);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().advertUseWhitelist = true;
+                                    ModConfig.INSTANCE.getConfig().advertUseWhitelist = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.useWhitelist", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().advertUseWhitelist = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.useWhitelist", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.advertUseWhitelist", ModConfig.INSTANCE.getConfig().advertUseWhitelist);
                                     return Command.SINGLE_SUCCESS;
                                 }))
                         .then(ClientCommandManager.literal("add")

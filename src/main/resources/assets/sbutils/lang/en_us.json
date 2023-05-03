@@ -38,10 +38,8 @@
 
   "message.sbutils.enchantAll.complete": "Enchanting complete.",
   "message.sbutils.enchantAll.pleaseWait": "Please wait until the current item is finished enchanting.",
-  "message.sbutils.enchantAll.cancelInventoryInteract": "Cancelled /enchantall due to inventory interaction.",
   "message.sbutils.enchantAll.cancelSlotSwitch": "Cancelled /enchantall due to switching slots.",
   "message.sbutils.enchantAll.cooldown": "Enchant All cooldown initiated. Resuming in @ seconds.",
-  "message.sbutils.enchantAll.nothingEnchantable": "You don't have any enchantable items in your inventory.",
   "message.sbutils.enchantAll.cantEnchantItem": "This item can't be enchanted.",
 
   "message.sbutils.chatAppend.status": "@ is currently @ and set to @.",
@@ -49,6 +47,10 @@
   "message.sbutils.chatFilter.status": "Chat filter status:",
 
   "message.sbutils.chatLogger.status": "Chat logger status:",
+
+  "message.sbutils.eventNotifier.vpLlama": "VP Llama",
+  "message.sbutils.eventNotifier.wanderingTrader": "Trader",
+  "message.sbutils.eventNotifier.sighted": "@ Sighted!",
 
   "message.sbutils.autoMine.noPickaxe": "Disabling Auto Mine because you don't have any pickaxes to switch to, and Auto Fix isn't enabled.",
 
@@ -96,6 +98,13 @@
 
   "message.sbutils.convert.header": "@ can be written as:",
   "message.sbutils.convert.invalidCharacter": "Invalid character used in /convert.",
+
+  "message.sbutils.centered.suitable": "This island will be suitable for map art creation with a @ expansion.",
+  "message.sbutils.centered.extraSpace": "You will have @ extra blocks to the north, @ to the south, @ to the east, and @ to the west.",
+  "message.sbutils.centered.notSuitable": "This island is not suitable for map art creation.",
+
+  "message.sbutils.deathCoords.deathCoords": "Your last death was in the dimension @ at [@, @, @].",
+  "message.sbutils.deathCoords.noDeaths": "You haven't died yet.",
 
   "message.sbutils.openFolder.folderOpened": "Opened mod directory.",
   "message.sbutils.openFolder.cantOpen": "Unable to open mod directory.",
@@ -279,6 +288,23 @@
   "text.sbutils.config.option.visitLogger.tooltip": "Whether to log players visiting your island.",
   "text.sbutils.config.option.dpLogger": "Log Drop Party Messages",
   "text.sbutils.config.option.dpLogger.tooltip": "Whether to log messages from drop party events.",
+
+
+  "text.sbutils.config.category.eventnotifier": "Event Notifier",
+
+  "text.sbutils.config.group.eventNotifier": "Event Notifier Settings",
+  "text.sbutils.config.option.showLlamaTitle": "Show VP Llama Title",
+  "text.sbutils.config.option.showLlamaTitle.tooltip": "Shows a title when a vote party llama appears at spawn.",
+  "text.sbutils.config.option.playLlamaSound": "Play VP Llama Sound",
+  "text.sbutils.config.option.playLlamaSound.tooltip": "Plays a sound when a vote party llama appears at spawn.",
+  "text.sbutils.config.option.llamaSound": "VP Llama Sound",
+  "text.sbutils.config.option.llamaSound.tooltip": "The sound played when a vote party llama appears at spawn.",
+  "text.sbutils.config.option.showTraderTitle": "Show Trader Title",
+  "text.sbutils.config.option.showTraderTitle.tooltip": "Shows a title when a wandering trader appears at spawn.",
+  "text.sbutils.config.option.playTraderSound": "Play Trader Sound",
+  "text.sbutils.config.option.playTraderSound.tooltip": "Plays a sound when a wandering trader appears at spawn.",
+  "text.sbutils.config.option.traderSound": "Trader Sound",
+  "text.sbutils.config.option.traderSound.tooltip": "The sound played when a wandering trader appears at spawn.",
 
 
   "text.sbutils.config.category.automine": "Auto Mine",

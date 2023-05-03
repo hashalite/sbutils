@@ -2,6 +2,7 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -19,18 +20,11 @@ public class ChatAppend {
                             Messenger.printChatAppendStatus("text.sbutils.config.option.chatPrefix", ModConfig.INSTANCE.getConfig().addPrefix, ModConfig.INSTANCE.getConfig().chatPrefix);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().addPrefix = true;
+                                    ModConfig.INSTANCE.getConfig().addPrefix = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.addPrefix", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().addPrefix = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.addPrefix", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.addPrefix", ModConfig.INSTANCE.getConfig().addPrefix);
                                     return Command.SINGLE_SUCCESS;
                                 }))
                         .then(ClientCommandManager.literal("set")
@@ -46,18 +40,11 @@ public class ChatAppend {
                             Messenger.printChatAppendStatus("text.sbutils.config.option.chatSuffix", ModConfig.INSTANCE.getConfig().addSuffix, ModConfig.INSTANCE.getConfig().chatSuffix);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().addSuffix = true;
+                                    ModConfig.INSTANCE.getConfig().addSuffix = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.addSuffix", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().addSuffix = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.addSuffix", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.addSuffix", ModConfig.INSTANCE.getConfig().addSuffix);
                                     return Command.SINGLE_SUCCESS;
                                 }))
                         .then(ClientCommandManager.literal("set")

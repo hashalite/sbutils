@@ -35,6 +35,32 @@ public class Messenger {
         MC.player.sendMessage(prefix.append(message));
     }
 
+    public static void sendPlaceholderTitle(String message, Formatting placeholderFormat, Object ... args) {
+        MutableText messageText = Text.translatable(message).formatted(getMessageColor());
+        List<MutableText> placeholders = new ArrayList<>();
+        for (Object placeholder : args) {
+            placeholders.add(Text.translatable(String.valueOf(placeholder)).formatted(placeholderFormat));
+        }
+        sendTitle(insertPlaceholders(messageText, placeholders.toArray(MutableText[]::new)));
+    }
+
+    public static void sendTitle(String message) {
+        sendTitle(message, getMessageColor());
+    }
+
+    public static void sendTitle(String message, Formatting formatting) {
+        sendTitle(Text.translatable(message).formatted(formatting));
+    }
+
+    public static void sendTitle(Text message) {
+        sendTitle(message, 5, 30, 5);
+    }
+
+    public static void sendTitle(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+        MC.inGameHud.setTitleTicks(fadeInTicks, stayTicks, fadeOutTicks);
+        MC.inGameHud.setTitle(message);
+    }
+
     private static Formatting getMessageColor() {
         return ModConfig.INSTANCE.getConfig().messageColor.getFormatting();
     }
@@ -244,6 +270,12 @@ public class Messenger {
         MutableText enabledText = Text.translatable(enabled ? "message.sbutils.enabled" : "message.sbutils.disabled").formatted(getBooleanColor(enabled));
         MutableText valueText = Text.literal(value).formatted(getValueColor());
         printMessage(insertPlaceholders(message, typeText, enabledText, valueText));
+    }
+
+    public static void printMapArtSuitability(int size, int[] extraSpace) {
+        String expansion = size + "x" + size;
+        Messenger.printWithPlaceholders("message.sbutils.centered.suitable", expansion);
+        Messenger.printWithPlaceholders("message.sbutils.centered.extraSpace", extraSpace[3], extraSpace[2], extraSpace[0], extraSpace[1]);
     }
 
     private static Formatting getBooleanColor(boolean bool) {

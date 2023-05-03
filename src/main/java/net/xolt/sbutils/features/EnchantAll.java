@@ -2,6 +2,7 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -109,18 +110,11 @@ public class EnchantAll {
                             Messenger.printSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeFrost = true;
+                                    ModConfig.INSTANCE.getConfig().excludeFrost = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeFrost = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
@@ -174,18 +168,11 @@ public class EnchantAll {
                             Messenger.printSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(ClientCommandManager.literal("true")
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeFrost = true;
+                                    ModConfig.INSTANCE.getConfig().excludeFrost = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", true);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("false")
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeFrost = false;
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", false);
+                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 

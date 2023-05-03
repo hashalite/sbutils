@@ -24,6 +24,7 @@ public class ConfigGui {
                 .category(buildChatAppendCategory(defaults, config))
                 .category(buildChatFiltersCategory(defaults, config))
                 .category(buildChatLoggerCategory(defaults, config))
+                .category(buildEventNotifierCategory(defaults, config))
                 .category(buildAutoMineCategory(defaults, config))
                 .category(buildAutoFixCategory(defaults, config))
                 .category(buildToolSaverCategory(defaults, config))
@@ -618,6 +619,75 @@ public class ConfigGui {
                                         (value) -> config.dpLogger = value
                                 )
                                 .controller(TickBoxController::new)
+                                .build())
+                        .build())
+                .build();
+    }
+
+    private static ConfigCategory buildEventNotifierCategory(ModConfig defaults, ModConfig config) {
+        return ConfigCategory.createBuilder()
+                .name(Text.translatable("text.sbutils.config.category.eventnotifier"))
+                .group(OptionGroup.createBuilder()
+                        .name(Text.translatable("text.sbutils.config.group.eventNotifier"))
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.showLlamaTitle"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.showLlamaTitle.tooltip"))
+                                .binding(
+                                        defaults.showLlamaTitle,
+                                        () -> config.showLlamaTitle,
+                                        (value) -> config.showLlamaTitle = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.playLlamaSound"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.playLlamaSound.tooltip"))
+                                .binding(
+                                        defaults.playLlamaSound,
+                                        () -> config.playLlamaSound,
+                                        (value) -> config.playLlamaSound = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(ModConfig.NotifSound.class)
+                                .name(Text.translatable("text.sbutils.config.option.llamaSound"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.llamaSound.tooltip"))
+                                .binding(
+                                        defaults.llamaSound,
+                                        () -> config.llamaSound,
+                                        (value) -> config.llamaSound = value
+                                )
+                                .controller(EnumController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.showTraderTitle"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.showTraderTitle.tooltip"))
+                                .binding(
+                                        defaults.showTraderTitle,
+                                        () -> config.showTraderTitle,
+                                        (value) -> config.showTraderTitle = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.playTraderSound"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.playTraderSound.tooltip"))
+                                .binding(
+                                        defaults.playTraderSound,
+                                        () -> config.playTraderSound,
+                                        (value) -> config.playTraderSound = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(ModConfig.NotifSound.class)
+                                .name(Text.translatable("text.sbutils.config.option.traderSound"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.traderSound.tooltip"))
+                                .binding(
+                                        defaults.traderSound,
+                                        () -> config.traderSound,
+                                        (value) -> config.traderSound = value
+                                )
+                                .controller(EnumController::new)
                                 .build())
                         .build())
                 .build();
