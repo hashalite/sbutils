@@ -224,17 +224,6 @@ public class ConfigGui {
                                 .controller(DoubleFieldController::new)
                                 .build())
                         .build())
-                .group(ListOption.createBuilder(String.class)
-                        .name(Text.translatable("text.sbutils.config.option.joinCmdServers"))
-                        .tooltip(Text.translatable("text.sbutils.config.option.joinCmdServers.tooltip"))
-                        .binding(
-                                defaults.joinCmdServers,
-                                () -> config.joinCmdServers,
-                                (value) -> config.joinCmdServers = value
-                        )
-                        .controller(StringController::new)
-                        .initial("")
-                        .build())
                 .build();
     }
 

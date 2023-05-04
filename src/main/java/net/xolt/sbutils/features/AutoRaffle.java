@@ -7,7 +7,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.gui.screen.ProgressScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -15,7 +14,6 @@ import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
-import org.apache.logging.log4j.core.jmx.Server;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -84,7 +82,7 @@ public class AutoRaffle {
             reset();
         }
 
-        if (!ModConfig.INSTANCE.getConfig().autoRaffle || MC.getNetworkHandler() == null || MC.currentScreen instanceof ProgressScreen) {
+        if (!ModConfig.INSTANCE.getConfig().autoRaffle || MC.getNetworkHandler() == null) {
             return;
         }
 

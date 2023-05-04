@@ -48,7 +48,6 @@ public class ModConfig {
     @ConfigEntry public boolean joinCmdsEnabled = false;
     @ConfigEntry public double joinCmdInitialDelay = 0.0;
     @ConfigEntry public double joinCmdDelay = 0.0;
-    @ConfigEntry public List<String> joinCmdServers = List.of("server.skyblock.net");
 
 
     // Mentions Settings

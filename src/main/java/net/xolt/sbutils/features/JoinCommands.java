@@ -8,7 +8,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
@@ -16,10 +15,12 @@ import net.xolt.sbutils.util.Messenger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class JoinCommands {
+
     private static boolean waitingToSend;
     private static long joinedAt;
     private static long lastCommandSentAt;
@@ -183,23 +184,6 @@ public class JoinCommands {
             return;
         }
 
-        ClientPlayNetworkHandler networkHandler = MC.getNetworkHandler();
-        if (networkHandler == null) {
-            return;
-        }
-
-        boolean validServer = false;
-        for (String server : ModConfig.INSTANCE.getConfig().joinCmdServers) {
-            if (networkHandler.getConnection().getAddress().toString().contains(server)) {
-                validServer = true;
-                break;
-            }
-        }
-
-        if (!validServer) {
-            return;
-        }
-
         joinCommands = getJoinCommands();
 
         if (joinCommands == null || joinCommands.size() == 0) {
@@ -232,12 +216,8 @@ public class JoinCommands {
 
         List<String> joinCommands = new ArrayList<>(Arrays.asList(fileContents.split("[\\r\\n]+")));
 
-        for (int i = 0; i < joinCommands.size(); i++) {
-            String command = joinCommands.get(i);
-            if (command.length() == 0) {
-                joinCommands.remove(i);
-            }
-        }
+        joinCommands = joinCommands.stream().filter((command) -> command.length() > 0).collect(Collectors.toList());
+
         return joinCommands;
     }
 

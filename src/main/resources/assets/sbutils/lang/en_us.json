@@ -40,7 +40,10 @@
   "message.sbutils.enchantAll.pleaseWait": "Please wait until the current item is finished enchanting.",
   "message.sbutils.enchantAll.cancelSlotSwitch": "Cancelled /enchantall due to switching slots.",
   "message.sbutils.enchantAll.cooldown": "Enchant All cooldown initiated. Resuming in @ seconds.",
-  "message.sbutils.enchantAll.cantEnchantItem": "This item can't be enchanted.",
+  "message.sbutils.enchantAll.itemNotEnchantable": "You are not holding an enchantable item.",
+  "message.sbutils.enchantAll.noEnchantableItems": "You don't have any enchantable items in your inventory.",
+  "message.sbutils.enchantAll.noEnchantAllPermission": "You don't have access to the server-sided /enchantall command. If you are a SkyGod, set 'Enchant Mode' to 'Individual'.",
+  "message.sbutils.enchantAll.noEnchantPermission": "You don't have access to the /enchant command.",
 
   "message.sbutils.chatAppend.status": "@ is currently @ and set to @.",
 
@@ -191,8 +194,6 @@
   "text.sbutils.config.option.joinCmdInitialDelay.tooltip": "The delay between joining the server and sending the commands.",
   "text.sbutils.config.option.joinCmdDelay": "Delay",
   "text.sbutils.config.option.joinCmdDelay.tooltip": "The delay between each command.",
-  "text.sbutils.config.option.joinCmdServers": "Servers",
-  "text.sbutils.config.option.joinCmdServers.tooltip": "A list of servers to send join commands on.",
 
 
   "text.sbutils.config.category.mentions": "Mentions",

@@ -7,7 +7,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.gui.screen.ProgressScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
@@ -131,7 +130,7 @@ public class AutoFix {
             reset();
         }
 
-        if (!ModConfig.INSTANCE.getConfig().autoFix || EnchantAll.active() || MC.player == null || MC.currentScreen instanceof ProgressScreen) {
+        if (!ModConfig.INSTANCE.getConfig().autoFix || EnchantAll.active() || MC.player == null) {
             return;
         }
 

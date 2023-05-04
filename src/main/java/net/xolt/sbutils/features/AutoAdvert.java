@@ -9,7 +9,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.gui.screen.ProgressScreen;
+import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
@@ -252,16 +252,16 @@ public class AutoAdvert {
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().autoAdvert || ServerDetector.currentServer == null || MC.getNetworkHandler() == null) {
+        if (!ModConfig.INSTANCE.getConfig().autoAdvert || MC.getNetworkHandler() == null) {
             return;
         }
 
-        if (ModConfig.INSTANCE.getConfig().advertUseWhitelist && !userWhitelisted()) {
-            return;
-        }
-
-        if (MC.currentScreen instanceof ProgressScreen) {
+        if (MC.currentScreen instanceof DownloadingTerrainScreen) {
             joinedAt = System.currentTimeMillis();
+        }
+
+        if (ServerDetector.currentServer == null || (ModConfig.INSTANCE.getConfig().advertUseWhitelist && !userWhitelisted())) {
+            return;
         }
 
         if (delayLeft() > 0) {
@@ -282,6 +282,14 @@ public class AutoAdvert {
         sendAd();
         lastAdSentAt = System.currentTimeMillis();
         adIndex = (adIndex + 1) % prevAdList.size();
+    }
+
+    public static void onJoinGame() {
+        if (!ModConfig.INSTANCE.getConfig().autoAdvert) {
+            return;
+        }
+
+        joinedAt = System.currentTimeMillis();
     }
 
     private static int getUpdatedAdIndex(List<String> newAdList) {
@@ -369,7 +377,7 @@ public class AutoAdvert {
         int delayLeft = (int)Math.max(delay - (System.currentTimeMillis() - lastAdSentAt), 0L);
         int initialDelayLeft = (int)Math.max(initialDelay - (System.currentTimeMillis() - joinedAt), 0L);
 
-        return delayLeft + initialDelayLeft;
+        return Math.max(delayLeft, initialDelayLeft);
     }
 
     private static void reset() {

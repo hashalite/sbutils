@@ -27,6 +27,7 @@ public abstract class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onGameJoin", at = @At("TAIL"))
     private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         ServerDetector.onJoinGame();
+        AutoAdvert.onJoinGame();
         JoinCommands.onJoinGame();
         AutoRaffle.onJoinGame();
     }
