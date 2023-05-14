@@ -5,18 +5,25 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
 
+import java.util.List;
+
 public class OpenFolder {
 
+    private static final String COMMAND = "openfolder";
+    private static final String ALIAS = "dir";
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> openFolderNode = dispatcher.register(ClientCommandManager.literal("openfolder")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> openFolderNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(openFolder ->
                         onOpenFolderCommand()
                 ));
 
-        dispatcher.register(ClientCommandManager.literal("dir")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("openfolder", context.getSource())
                 )

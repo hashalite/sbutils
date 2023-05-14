@@ -8,16 +8,23 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
+
+import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class EventNotifier {
 
+    private static final String COMMAND = "eventnotifier";
+    private static final String ALIAS = "enotify";
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> eventNotifierNode = dispatcher.register(ClientCommandManager.literal("eventnotifier")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> eventNotifierNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .then(ClientCommandManager.literal("vpLlama")
                         .then(ClientCommandManager.literal("title")
                                 .executes(context -> {
@@ -93,7 +100,7 @@ public class EventNotifier {
                                             return Command.SINGLE_SUCCESS;
                                         })))));
 
-        dispatcher.register(ClientCommandManager.literal("enotify")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("eventnotifier", context.getSource())
                 )

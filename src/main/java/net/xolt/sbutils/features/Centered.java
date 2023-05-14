@@ -6,22 +6,28 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.util.math.BlockPos;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class Centered {
 
+    private static final String COMMAND = "centered";
+    private static final String ALIAS = "ctr";
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> centeredNode = dispatcher.register(ClientCommandManager.literal("centered")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> centeredNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context ->
                         onCenteredCommand()
                 ));
 
-        dispatcher.register(ClientCommandManager.literal("ctr")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("centered", context.getSource())
                 )

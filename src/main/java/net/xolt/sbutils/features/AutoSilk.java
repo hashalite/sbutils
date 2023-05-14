@@ -21,25 +21,31 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.EnchantmentScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 
+import java.util.List;
 import java.util.Optional;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoSilk {
+
+    private static final String COMMAND = "autosilk";
+    private static final String ALIAS = "silk";
+
     private static State state;
     private static long lastActionPerformedAt;
     private static EnchantmentScreenHandler screenHandler;
-
 
     public static void init() {
         reset();
     }
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(ClientCommandManager.literal("autosilk")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoSilk = !ModConfig.INSTANCE.getConfig().autoSilk;
                     ModConfig.INSTANCE.save();
@@ -71,7 +77,7 @@ public class AutoSilk {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("silk")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                     dispatcher.execute("autosilk", context.getSource())
                 )

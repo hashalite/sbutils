@@ -7,6 +7,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.ChatFilter;
 import net.xolt.sbutils.util.IOHandler;
@@ -17,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatLogger {
+
+    private static final String COMMAND = "chatlogger";
+    private static final String ALIAS = "logger";
 
 //    private static List<ChatFilter> shopFilters = List.of(
 //            new ChatFilter("text.sbutils.config.option.shopLoggerIncoming",
@@ -38,7 +42,8 @@ public class ChatLogger {
     );
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(ClientCommandManager.literal("chatlogger")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     Messenger.printEnabledFilters("message.sbutils.chatLogger.status", getFilters());
                     return Command.SINGLE_SUCCESS;
@@ -116,7 +121,7 @@ public class ChatLogger {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("logger")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("chatlogger", context.getSource()))
                 .redirect(chatLoggerNode));

@@ -7,20 +7,26 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
+import java.util.List;
 import java.util.UUID;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class StaffDetector {
 
+    private static final String COMMAND = "staffdetect";
+    private static final String ALIAS = "sd";
+
     private static boolean checkForNoStaff = false;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> staffDetectorNode = dispatcher.register(ClientCommandManager.literal("staffdetect")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> staffDetectorNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .then(ClientCommandManager.literal("detectJoin")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.detectStaffJoin", ModConfig.INSTANCE.getConfig().detectStaffJoin);
@@ -58,7 +64,7 @@ public class StaffDetector {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("sd")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("staffdetector", context.getSource())
                 )

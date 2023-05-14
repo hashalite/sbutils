@@ -7,17 +7,24 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
+
+import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoCommand {
 
+    private static final String COMMAND = "autocmd";
+    private static final String ALIAS = "acmd";
+
     private static long lastCmdSentAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> autoCommandNode = dispatcher.register(ClientCommandManager.literal("autocmd")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoCommandNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoCommandEnabled = !ModConfig.INSTANCE.getConfig().autoCommandEnabled;
                     ModConfig.INSTANCE.save();
@@ -54,7 +61,7 @@ public class AutoCommand {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("acmd")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("autocmd", context.getSource())
                 )

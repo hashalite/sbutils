@@ -8,16 +8,21 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoReply {
+
+    private static final String COMMAND = "autoreply";
+    private static final String ALIAS = "areply";
 
     private static long lastMsgSentAt;
     private static LinkedList<String> msgQueue;
@@ -27,7 +32,8 @@ public class AutoReply {
     }
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(ClientCommandManager.literal("autoreply")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoReply = !ModConfig.INSTANCE.getConfig().autoReply;
                     ModConfig.INSTANCE.save();
@@ -59,7 +65,7 @@ public class AutoReply {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("areply")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("autoreply", context.getSource())
                 )

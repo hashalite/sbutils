@@ -21,17 +21,24 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
+
+import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class ToolSaver {
 
+    private static final String COMMAND = "toolsaver";
+    private static final String ALIAS = "saver";
+
     private static long lastMessageSentAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(ClientCommandManager.literal("toolsaver")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().toolSaver = !ModConfig.INSTANCE.getConfig().toolSaver;
                     ModConfig.INSTANCE.save();
@@ -51,7 +58,7 @@ public class ToolSaver {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("saver")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                     dispatcher.execute("toolsaver", context.getSource())
                 )

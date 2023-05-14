@@ -10,14 +10,20 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
+import java.util.List;
+
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoRaffle {
+
+    private static final String COMMAND = "autoraffle";
+    private static final String ALIAS = "autoraf";
 
     private static boolean enabled;
     private static boolean waitingToBuy;
@@ -25,7 +31,8 @@ public class AutoRaffle {
     private static long checkedForGrassAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(ClientCommandManager.literal("autoraffle")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoRaffle = !ModConfig.INSTANCE.getConfig().autoRaffle;
                     ModConfig.INSTANCE.save();
@@ -69,7 +76,7 @@ public class AutoRaffle {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("autoraf")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("autoraffle", context.getSource())
                 )

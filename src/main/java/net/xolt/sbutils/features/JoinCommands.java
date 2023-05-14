@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
@@ -21,6 +22,9 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class JoinCommands {
 
+    private static final String COMMAND = "joincmds";
+    private static final String ALIAS = "jc";
+
     private static boolean waitingToSend;
     private static long joinedAt;
     private static long lastCommandSentAt;
@@ -28,7 +32,8 @@ public class JoinCommands {
     private static List<String> joinCommands;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(ClientCommandManager.literal("joincmds")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().joinCmdsEnabled = !ModConfig.INSTANCE.getConfig().joinCmdsEnabled;
                     ModConfig.INSTANCE.save();
@@ -102,7 +107,7 @@ public class JoinCommands {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("jc")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("joincmds", context.getSource())
                 )

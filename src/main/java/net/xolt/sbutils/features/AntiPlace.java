@@ -13,17 +13,24 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
+
+import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AntiPlace {
 
+    private static final String COMMAND = "antiplace";
+    private static final String ALIAS = "noplace";
+
     private static long lastMessageSentAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal("antiplace")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .then(ClientCommandManager.literal("heads")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.antiPlaceHeads", ModConfig.INSTANCE.getConfig().antiPlaceHeads);
@@ -49,7 +56,7 @@ public class AntiPlace {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("noplace")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("antiplace", context.getSource())
                 )

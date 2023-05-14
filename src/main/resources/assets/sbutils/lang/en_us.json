@@ -18,6 +18,7 @@
   "message.sbutils.autoAdvert.advertList": "Current advertisements:",
   "message.sbutils.autoAdvert.addSuccess": "Advertisement successfully added. Current advertisements:",
   "message.sbutils.autoAdvert.deleteSuccess": "Advertisement successfully removed. Current advertisements:",
+  "message.sbutils.autoAdvert.toggleSuccess": "Advertisement successfully toggled. Current advertisements:",
   "message.sbutils.autoAdvert.invalidIndex": "An advertisement with that index does not exist.",
   "message.sbutils.autoAdvert.reset": "Reset Auto Advert timer and ad index.",
   "message.sbutils.autoAdvert.noAds": "Disabling Auto Advert because @ is empty or doesn't exist.",

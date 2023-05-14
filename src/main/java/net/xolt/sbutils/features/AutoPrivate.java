@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.LimitedList;
 import net.xolt.sbutils.util.Messenger;
@@ -18,8 +19,12 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoPrivate {
 
+    private static final String COMMAND = "autoprivate";
+    private static final String ALIAS = "ap";
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> autoPrivateNode = dispatcher.register(ClientCommandManager.literal("autoprivate")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoPrivateNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoPrivate = !ModConfig.INSTANCE.getConfig().autoPrivate;
                     ModConfig.INSTANCE.save();
@@ -42,7 +47,7 @@ public class AutoPrivate {
                                                 onDelNameCommand(StringArgumentType.getString(context, "name"))
                                         )))));
 
-        dispatcher.register(ClientCommandManager.literal("ap")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("autoprivate", context.getSource())
                 )

@@ -9,16 +9,23 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PickaxeItem;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
+
+import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoMine {
 
+    private static final String COMMAND = "automine";
+    private static final String ALIAS = "mine";
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(ClientCommandManager.literal("automine")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoMine = !ModConfig.INSTANCE.getConfig().autoMine;
                     ModConfig.INSTANCE.save();
@@ -50,7 +57,7 @@ public class AutoMine {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("mine")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("automine", context.getSource()))
                 .redirect(autoMineNode));

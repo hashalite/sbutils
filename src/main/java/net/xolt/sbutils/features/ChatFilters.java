@@ -7,6 +7,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.ChatFilter;
 import net.xolt.sbutils.util.Messenger;
@@ -15,6 +16,9 @@ import net.xolt.sbutils.util.RegexFilters;
 import java.util.List;
 
 public class ChatFilters {
+
+    private static final String COMMAND = "chatfilter";
+    private static final String ALIAS = "filter";
 
     private static final List<ChatFilter> filters = List.of(
             new ChatFilter("text.sbutils.config.option.tipsFilterEnabled", List.of(RegexFilters.tipsFilter), () -> ModConfig.INSTANCE.getConfig().tipsFilterEnabled),
@@ -31,7 +35,8 @@ public class ChatFilters {
     );
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> chatFilterNode = dispatcher.register(ClientCommandManager.literal("chatfilter")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> chatFilterNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                         .executes(context -> {
                             Messenger.printEnabledFilters("message.sbutils.chatFilter.status", filters);
                             return Command.SINGLE_SUCCESS;
@@ -169,7 +174,7 @@ public class ChatFilters {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("filter")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("chatfilter", context.getSource())
                 )

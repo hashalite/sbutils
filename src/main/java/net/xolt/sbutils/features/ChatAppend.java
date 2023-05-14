@@ -8,13 +8,20 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 
+import java.util.List;
+
 public class ChatAppend {
 
+    private static final String COMMAND = "chatappend";
+    private static final String ALIAS = "append";
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> chatAppendNode = dispatcher.register(ClientCommandManager.literal("chatappend")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> chatAppendNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .then(ClientCommandManager.literal("prefix")
                         .executes(context -> {
                             Messenger.printChatAppendStatus("text.sbutils.config.option.chatPrefix", ModConfig.INSTANCE.getConfig().addPrefix, ModConfig.INSTANCE.getConfig().chatPrefix);
@@ -56,7 +63,7 @@ public class ChatAppend {
                                             return Command.SINGLE_SUCCESS;
                                         })))));
 
-        dispatcher.register(ClientCommandManager.literal("append")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("chatappend", context.getSource())
                 )

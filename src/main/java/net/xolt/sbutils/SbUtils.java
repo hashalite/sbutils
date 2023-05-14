@@ -15,10 +15,14 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SbUtils implements ClientModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("sbutils");
     public static final MinecraftClient MC = MinecraftClient.getInstance();
+    public static final List<String> commands = new ArrayList<>();
 
     public static KeyBinding configKey;
     public static KeyBinding islandKey;
@@ -56,6 +60,8 @@ public class SbUtils implements ClientModInitializer {
             Centered.registerCommand(dispatcher);
             DeathCoords.registerCommand(dispatcher);
             EventNotifier.registerCommand(dispatcher);
+
+
         });
 
         registerKeybindings();

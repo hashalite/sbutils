@@ -1,21 +1,32 @@
 package net.xolt.sbutils.mixins;
 
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.RootCommandNode;
 import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
+import net.minecraft.client.network.ClientDynamicRegistryType;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
+import net.minecraft.registry.CombinedDynamicRegistries;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.features.*;
 import net.xolt.sbutils.features.common.ServerDetector;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -23,6 +34,12 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPlayNetworkHandlerMixin {
+
+    @Shadow
+    private CombinedDynamicRegistries<ClientDynamicRegistryType> combinedDynamicRegistries;
+
+    @Shadow
+    private FeatureSet enabledFeatures;
 
     @Inject(method = "onGameJoin", at = @At("TAIL"))
     private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
@@ -84,6 +101,22 @@ public abstract class ClientPlayNetworkHandlerMixin {
     private void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
         AutoFix.onUpdateInventory();
         AutoSilk.onInventoryUpdate(packet);
+    }
+
+    // Remove conflicting server commands from command tree
+    // Prevents server command suggestions from interfering with sbutils command suggestions
+    @ModifyVariable(method = "onCommandTree", at = @At("HEAD"), argsOnly = true)
+    private CommandTreeS2CPacket onCommandTree(CommandTreeS2CPacket packet) {
+        RootCommandNode<CommandSource> rootNode = packet.getCommandTree(CommandRegistryAccess.of((RegistryWrapper.WrapperLookup)this.combinedDynamicRegistries.getCombinedRegistryManager(), this.enabledFeatures));
+        Collection<CommandNode<CommandSource>> nodes = rootNode.getChildren();
+
+        nodes.removeIf((node) -> SbUtils.commands.contains(node.getName()));
+
+        RootCommandNode<CommandSource> newRootNode = new RootCommandNode<>();
+
+        nodes.forEach(newRootNode::addChild);
+
+        return new CommandTreeS2CPacket(newRootNode);
     }
 
     @Inject(method = "sendPacket", at = @At("HEAD"))

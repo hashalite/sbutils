@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.util.Formatting;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.util.IOHandler;
@@ -21,13 +22,18 @@ import java.util.*;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoAdvert {
+
+    private static final String COMMAND = "autoadvert";
+    private static final String ALIAS = "advert";
+
     private static List<String> prevAdList;
     private static int adIndex;
     private static long lastAdSentAt;
     private static long joinedAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(ClientCommandManager.literal("autoadvert")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoAdvert = !ModConfig.INSTANCE.getConfig().autoAdvert;
                     ModConfig.INSTANCE.save();
@@ -75,25 +81,31 @@ public class AutoAdvert {
                                     Messenger.printChangedSetting("text.sbutils.config.option.classicAdFile", ModConfig.INSTANCE.getConfig().classicAdFile);
                                     return Command.SINGLE_SUCCESS;
                                 })))
-                .then(ClientCommandManager.literal("list")
-                        .executes(context ->
-                            onListCommand()
-                        ))
-                .then(ClientCommandManager.literal("add")
-                        .then(ClientCommandManager.argument("advert", StringArgumentType.greedyString())
+                .then(ClientCommandManager.literal("ads")
+                        .then(ClientCommandManager.literal("list")
                                 .executes(context ->
-                                        onAddCommand(StringArgumentType.getString(context, "advert"))
-                                )))
-                .then(ClientCommandManager.literal("del")
-                        .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                .executes(context ->
-                                        onDelCommand(IntegerArgumentType.getInteger(context, "index"))
-                                )))
-                .then(ClientCommandManager.literal("insert")
-                        .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                        onListCommand()
+                                ))
+                        .then(ClientCommandManager.literal("add")
                                 .then(ClientCommandManager.argument("advert", StringArgumentType.greedyString())
                                         .executes(context ->
-                                                onInsertCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "advert"))
+                                                onAddCommand(StringArgumentType.getString(context, "advert"))
+                                        )))
+                        .then(ClientCommandManager.literal("del")
+                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                        .executes(context ->
+                                                onDelCommand(IntegerArgumentType.getInteger(context, "index"))
+                                        )))
+                        .then(ClientCommandManager.literal("insert")
+                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                        .then(ClientCommandManager.argument("advert", StringArgumentType.greedyString())
+                                                .executes(context ->
+                                                        onInsertCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "advert"))
+                                                ))))
+                        .then(ClientCommandManager.literal("toggle")
+                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                        .executes(context ->
+                                                onToggleCommand(IntegerArgumentType.getInteger(context, "index"))
                                         ))))
                 .then(ClientCommandManager.literal("delay")
                         .executes(context -> {
@@ -149,7 +161,7 @@ public class AutoAdvert {
                             return Command.SINGLE_SUCCESS;
                         })));
 
-        dispatcher.register(ClientCommandManager.literal("advert")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("autoadvert", context.getSource())
                 )
@@ -186,14 +198,17 @@ public class AutoAdvert {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
+
         String adFile = getAdFile();
         List<String> adverts = getAdList();
-        if (index - 1 < 0 || index - 1 >= adverts.size()) {
+
+        int adjustedIndex = index - 1;
+        if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
             Messenger.printMessage("message.sbutils.autoAdvert.invalidIndex");
             return Command.SINGLE_SUCCESS;
         }
 
-        adverts.remove(index - 1);
+        adverts.remove(adjustedIndex);
         IOHandler.writeAdverts(adverts, adFile);
 
         Messenger.printListSetting("message.sbutils.autoAdvert.deleteSuccess", formatAdList(adverts));
@@ -206,18 +221,49 @@ public class AutoAdvert {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
+
         String adFile = getAdFile();
         List<String> adverts = getAdList();
-        if (index - 1 < 0 || index - 1 > adverts.size()) {
+
+        int adjustedIndex = index - 1;
+        if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
             Messenger.printMessage("message.sbutils.autoAdvert.invalidIndex");
             return Command.SINGLE_SUCCESS;
         }
 
-        adverts.add(index - 1, advert);
+        adverts.add(adjustedIndex, advert);
         IOHandler.writeAdverts(adverts, adFile);
 
         Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAdList(adverts));
 
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int onToggleCommand(int index) {
+        if (ServerDetector.currentServer == null) {
+            Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
+            return Command.SINGLE_SUCCESS;
+        }
+
+        String adFile = getAdFile();
+        List<String> adverts = getAdList();
+
+        int adjustedIndex = index - 1;
+        if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
+            Messenger.printMessage("message.sbutils.autoAdvert.invalidIndex");
+            return Command.SINGLE_SUCCESS;
+        }
+
+        String currentValue = adverts.get(adjustedIndex);
+        if (currentValue.startsWith("//")) {
+            adverts.set(adjustedIndex, currentValue.substring(2));
+        } else {
+            adverts.set(adjustedIndex, "//" + currentValue);
+        }
+
+        IOHandler.writeAdverts(adverts, adFile);
+
+        Messenger.printListSetting("message.sbutils.autoAdvert.toggleSuccess", formatAdList(adverts));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -269,7 +315,7 @@ public class AutoAdvert {
         }
 
         List<String> newAdList = getAdList();
-        if (newAdList.size() == 0) {
+        if (findNextAd(newAdList, -1) == -1) {
             ModConfig.INSTANCE.getConfig().autoAdvert = false;
             ModConfig.INSTANCE.save();
             reset();
@@ -281,7 +327,6 @@ public class AutoAdvert {
         prevAdList = newAdList;
         sendAd();
         lastAdSentAt = System.currentTimeMillis();
-        adIndex = (adIndex + 1) % prevAdList.size();
     }
 
     public static void onJoinGame() {
@@ -294,16 +339,32 @@ public class AutoAdvert {
 
     private static int getUpdatedAdIndex(List<String> newAdList) {
         if (newAdList == null || prevAdList == null || prevAdList.size() != newAdList.size()) {
-            return 0;
+            return findNextAd(newAdList, -1);
         }
 
         for (int i = 0; i < prevAdList.size(); i++) {
             if (!prevAdList.get(i).equals(newAdList.get(i))) {
-                return 0;
+                return findNextAd(newAdList, -1);
             }
         }
 
-        return adIndex;
+        return findNextAd(newAdList, adIndex);
+    }
+
+    private static int findNextAd(List<String> newAdList, int index) {
+        if (newAdList == null) {
+            return -1;
+        }
+
+        int startIndex = index + 1;
+        for (int i = 0; i < newAdList.size(); i++) {
+            int currentIndex = (startIndex + i) % newAdList.size();
+            if (!newAdList.get(currentIndex).startsWith("//")) {
+                return currentIndex;
+            }
+        }
+
+        return -1;
     }
 
     private static List<String> getAdList() {
@@ -322,7 +383,17 @@ public class AutoAdvert {
     }
 
     private static List<String> formatAdList(List<String> ads) {
-        return ads.stream().map((ad) -> ad.replaceAll("&([0-9a-fk-or])", Formatting.FORMATTING_CODE_PREFIX + "$1")).toList();
+        List<String> commentsFormatted = ads.stream().map((ad) -> {
+            if (ad.startsWith("//")) {
+                ad = ad.substring(2);
+                ad = ad.replaceAll("&([0-9a-fk-or])", "");
+                return Formatting.FORMATTING_CODE_PREFIX + "7" + Formatting.FORMATTING_CODE_PREFIX + "m" + ad;
+            } else {
+                return ad;
+            }
+        }).toList();
+
+        return commentsFormatted.stream().map((ad) -> ad.replaceAll("&([0-9a-fk-or])", Formatting.FORMATTING_CODE_PREFIX + "$1")).toList();
     }
 
     private static String getAdFile() {

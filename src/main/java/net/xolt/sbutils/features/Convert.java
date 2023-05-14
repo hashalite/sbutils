@@ -7,12 +7,18 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Convert {
+
+    private static final String COMMAND = "convert";
+    private static final String ALIAS = "cv";
+
     private static final Map<String, Integer> units = new LinkedHashMap<>();
 
     static {
@@ -22,13 +28,14 @@ public class Convert {
     }
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> convertNode = dispatcher.register(ClientCommandManager.literal("convert")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> convertNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .then(ClientCommandManager.argument("input", StringArgumentType.greedyString())
                         .executes(toStacks ->
                                 processCommand(StringArgumentType.getString(toStacks, "input"))
                         )));
 
-        dispatcher.register(ClientCommandManager.literal("cv")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("convert", context.getSource())
                 )

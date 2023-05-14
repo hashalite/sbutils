@@ -9,16 +9,21 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
+import java.util.List;
 import java.util.regex.Matcher;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoFix {
+
+    private static final String COMMAND = "autofix";
+    private static final String ALIAS = "af";
 
     private static boolean enabled;
     private static boolean fixing;
@@ -37,7 +42,8 @@ public class AutoFix {
     }
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(ClientCommandManager.literal("autofix")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().autoFix = !ModConfig.INSTANCE.getConfig().autoFix;
                     ModConfig.INSTANCE.save();
@@ -117,7 +123,7 @@ public class AutoFix {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("af")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("autofix", context.getSource())
                 )

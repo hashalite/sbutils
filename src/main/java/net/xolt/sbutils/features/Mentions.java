@@ -8,6 +8,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.*;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
@@ -21,8 +22,12 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class Mentions {
 
+    private static final String COMMAND = "mentions";
+    private static final String ALIAS = "ment";
+
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        LiteralCommandNode<FabricClientCommandSource> mentionsNode = dispatcher.register(ClientCommandManager.literal("mentions")
+        SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> mentionsNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .executes(context -> {
                     ModConfig.INSTANCE.getConfig().mentions = !ModConfig.INSTANCE.getConfig().mentions;
                     ModConfig.INSTANCE.save();
@@ -117,7 +122,7 @@ public class Mentions {
                                             return Command.SINGLE_SUCCESS;
                                         })))));
 
-        dispatcher.register(ClientCommandManager.literal("ment")
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute("mentions", context.getSource())
                 )

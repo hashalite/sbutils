@@ -20,6 +20,7 @@ import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
@@ -33,6 +34,11 @@ import java.util.Map;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class EnchantAll {
+
+    private static final String ENCHANT_COMMAND = "enchantall";
+    private static final String ENCHANT_ALIAS = "eall";
+    private static final String UNENCHANT_COMMAND = "unenchantall";
+    private static final String UNENCHANT_ALIAS = "ueall";
 
     private static boolean enchanting;
     private static boolean unenchanting;
@@ -50,7 +56,8 @@ public class EnchantAll {
     }
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(ClientCommandManager.literal("enchantall")
+        SbUtils.commands.addAll(List.of(ENCHANT_COMMAND, ENCHANT_ALIAS, UNENCHANT_COMMAND, UNENCHANT_ALIAS));
+        final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(ClientCommandManager.literal(ENCHANT_COMMAND)
                 .executes(context ->
                         onEnchantAllCommand(false, false)
                 )
@@ -119,8 +126,7 @@ public class EnchantAll {
                                     return Command.SINGLE_SUCCESS;
                                 }))));
 
-
-        final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(ClientCommandManager.literal("unenchantall")
+        final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(ClientCommandManager.literal(UNENCHANT_COMMAND)
                 .executes(context ->
                         onEnchantAllCommand(true, false)
                 )
@@ -163,27 +169,15 @@ public class EnchantAll {
                                     ModConfig.INSTANCE.save();
                                     Messenger.printChangedSetting("text.sbutils.config.option.cooldownTime", ModConfig.INSTANCE.getConfig().cooldownTime);
                                     return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("excludeFrost")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeFrost = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
-                                    return Command.SINGLE_SUCCESS;
                                 }))));
 
-        dispatcher.register(ClientCommandManager.literal("eall")
+        dispatcher.register(ClientCommandManager.literal(ENCHANT_ALIAS)
                 .executes(context ->
                         dispatcher.execute("enchantall", context.getSource())
                 )
                 .redirect(enchantAllNode));
 
-        dispatcher.register(ClientCommandManager.literal("ueall")
+        dispatcher.register(ClientCommandManager.literal(UNENCHANT_ALIAS)
                 .executes(context ->
                         dispatcher.execute("unenchantall", context.getSource())
                 )
@@ -200,19 +194,20 @@ public class EnchantAll {
             return Command.SINGLE_SUCCESS;
         }
 
+        enchanting = !unenchant;
+        unenchanting = unenchant;
+        prevSelectedSlot = MC.player.getInventory().selectedSlot;
+        inventory = inv;
+
         if (done()) {
             if (inv) {
                 Messenger.printMessage("message.sbutils.enchantAll.noEnchantableItems", Formatting.RED);
             } else {
                 Messenger.printMessage("message.sbutils.enchantAll.itemNotEnchantable", Formatting.RED);
             }
+            reset();
             return Command.SINGLE_SUCCESS;
         }
-
-        enchanting = !unenchant;
-        unenchanting = unenchant;
-        prevSelectedSlot = MC.player.getInventory().selectedSlot;
-        inventory = inv;
 
         return Command.SINGLE_SUCCESS;
     }
