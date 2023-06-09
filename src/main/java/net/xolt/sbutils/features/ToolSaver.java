@@ -60,7 +60,7 @@ public class ToolSaver {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                    dispatcher.execute("toolsaver", context.getSource())
+                    dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(toolSaverNode));
     }

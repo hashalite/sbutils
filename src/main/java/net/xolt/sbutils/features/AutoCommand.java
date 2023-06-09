@@ -63,7 +63,7 @@ public class AutoCommand {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("autocmd", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(autoCommandNode));
     }

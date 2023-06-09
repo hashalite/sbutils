@@ -49,7 +49,7 @@ public class AutoPrivate {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("autoprivate", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(autoPrivateNode));
     }

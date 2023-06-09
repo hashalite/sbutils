@@ -29,8 +29,6 @@ public class AutoFix {
     private static boolean fixing;
     private static boolean waitingForResponse;
     private static boolean findMostDamaged;
-    private static boolean returnAndSwapBack;
-    private static boolean disable;
     private static long lastActionPerformedAt;
     private static int itemPrevSlot;
     private static int prevSelectedSlot;
@@ -125,7 +123,7 @@ public class AutoFix {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("autofix", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(autoFixNode));
     }
@@ -148,11 +146,13 @@ public class AutoFix {
         if (waitingForResponse && System.currentTimeMillis() - lastActionPerformedAt > ModConfig.INSTANCE.getConfig().fixRetryDelay * 1000) {
             waitingForResponse = false;
             if (tries > ModConfig.INSTANCE.getConfig().maxFixRetries) {
-                disable = true;
-                if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND) {
-                    returnAndSwapBack = true;
-                }
                 Messenger.printWithPlaceholders("message.sbutils.autoFix.maxTriesReached", tries);
+                if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND) {
+                    returnAndSwapBack();
+                }
+                ModConfig.INSTANCE.getConfig().autoFix = false;
+                ModConfig.INSTANCE.save();
+                reset();
             }
         }
 
@@ -164,21 +164,22 @@ public class AutoFix {
             return;
         }
 
-        if (disable) {
-            ModConfig.INSTANCE.getConfig().autoFix = false;
-            ModConfig.INSTANCE.save();
-            reset();
-        }
+        doAutoFix();
+    }
 
-        if (returnAndSwapBack) {
-            if (InvUtils.canSwapSlot(itemPrevSlot)) {
-                returnAndSwapBack();
-            }
-            fixing = false;
-            returnAndSwapBack = false;
+    public static void onDisconnect() {
+        reset();
+    }
+
+    public static void onUpdateInventory() {
+        if (!ModConfig.INSTANCE.getConfig().autoFix || fixing) {
             return;
         }
 
+        findMostDamaged = true;
+    }
+
+    private static void doAutoFix() {
         if (!fixing) {
             if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot)) {
                 fixing = true;
@@ -217,18 +218,6 @@ public class AutoFix {
         }
     }
 
-    public static void onDisconnect() {
-        reset();
-    }
-
-    public static void onUpdateInventory() {
-        if (!ModConfig.INSTANCE.getConfig().autoFix || fixing) {
-            return;
-        }
-
-        findMostDamaged = true;
-    }
-
     public static void processMessage(Text message) {
         if (!waitingForResponse) {
             return;
@@ -240,23 +229,21 @@ public class AutoFix {
             String secondsText = fixFailMatcher.group(6);
             int minutes = minutesText.length() > 0 ? Integer.parseInt(minutesText) : 0;
             int seconds = secondsText.length() > 0 ? Integer.parseInt(secondsText) : 0;
-            lastActionPerformedAt = calculateLastCommandSentAt((((long)minutes * 60000) + ((long)seconds * 1000) + 2000));
             if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND) {
-                returnAndSwapBack = true;
+                returnAndSwapBack();
             }
-            waitingForResponse = false;
-            tries = 0;
+            reset();
+            lastActionPerformedAt = calculateLastCommandSentAt((((long)minutes * 60000) + ((long)seconds * 1000) + 2000));
             return;
         }
 
         Matcher fixSuccessMatcher = RegexFilters.fixSuccessFilter.matcher(message.getString());
         if (fixSuccessMatcher.matches()) {
-            lastActionPerformedAt = System.currentTimeMillis();
             if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND) {
-                returnAndSwapBack = true;
+                returnAndSwapBack();
             }
-            waitingForResponse = false;
-            tries = 0;
+            reset();
+            lastActionPerformedAt = System.currentTimeMillis();
         }
     }
 
@@ -302,7 +289,7 @@ public class AutoFix {
     }
 
     private static void returnAndSwapBack() {
-        if (MC.player == null && itemPrevSlot != -1) {
+        if (MC.player == null && itemPrevSlot != -1 || !InvUtils.canSwapSlot(itemPrevSlot)) {
             return;
         }
 
@@ -332,8 +319,6 @@ public class AutoFix {
         fixing = false;
         waitingForResponse = false;
         findMostDamaged = true;
-        returnAndSwapBack = false;
-        disable = false;
         lastActionPerformedAt = 0;
         itemPrevSlot = -1;
         prevSelectedSlot = 0;

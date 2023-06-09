@@ -412,6 +412,24 @@
   "text.sbutils.config.option.autoSilkDelay.tooltip": "The delay between each enchanting action.",
 
 
+  "text.sbutils.config.category.autocrate": "Auto Crate",
+
+  "text.sbutils.config.group.autoCrate": "Auto Crate Settings",
+  "text.sbutils.config.option.autoCrate": "Auto Crate Enabled",
+  "text.sbutils.config.option.autoCrate.tooltip": "Opens crate keys automatically.",
+  "text.sbutils.config.option.crateMode": "Crate Mode",
+  "text.sbutils.config.option.crateMode.voter" : "Voter",
+  "text.sbutils.config.option.crateMode.common" : "Common",
+  "text.sbutils.config.option.crateMode.rare" : "Rare",
+  "text.sbutils.config.option.crateMode.epic" : "Epic",
+  "text.sbutils.config.option.crateMode.legendary" : "Legendary",
+  "text.sbutils.config.option.crateMode.tooltip": "The type of crate to target.",
+  "text.sbutils.config.option.crateDelay": "Crate Delay",
+  "text.sbutils.config.option.crateDelay.tooltip": "After the current crate finishes, how long to wait before opening the next.",
+  "text.sbutils.config.option.crateDistance": "Crate Distance",
+  "text.sbutils.config.option.crateDistance.tooltip": "The maximum distance from the crate.",
+
+
   "text.sbutils.config.category.staffdetector": "Staff Detector",
 
   "text.sbutils.config.group.staffDetector": "Staff Detector Settings",

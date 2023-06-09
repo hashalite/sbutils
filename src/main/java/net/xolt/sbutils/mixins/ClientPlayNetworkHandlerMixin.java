@@ -49,6 +49,11 @@ public abstract class ClientPlayNetworkHandlerMixin {
         AutoRaffle.onJoinGame();
     }
 
+    @Inject(method = "onCloseScreen", at = @At("HEAD"))
+    private void onCloseScreen(CloseScreenS2CPacket packet, CallbackInfo ci) {
+        AutoCrate.onServerCloseScreen();
+    }
+
     @Inject(method = "onPlayerRemove", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void onPlayerRemove(PlayerRemoveS2CPacket packet, CallbackInfo ci, Iterator var2, UUID uUID, PlayerListEntry playerListEntry) {
         StaffDetector.onPlayerLeave(playerListEntry);

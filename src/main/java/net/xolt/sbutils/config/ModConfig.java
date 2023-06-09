@@ -96,8 +96,8 @@ public class ModConfig {
 
     // Chat Logger Settings
 
-    //@ConfigEntry public boolean shopLoggerIncoming = false;
-    //@ConfigEntry public boolean shopLoggerOutgoing = false;
+    @ConfigEntry public boolean shopLoggerIncoming = false;
+    @ConfigEntry public boolean shopLoggerOutgoing = false;
     @ConfigEntry public boolean msgLoggerIncoming = false;
     @ConfigEntry public boolean msgLoggerOutgoing = false;
     @ConfigEntry public boolean visitLogger = false;
@@ -176,6 +176,14 @@ public class ModConfig {
     @ConfigEntry public boolean autoSilk = false;
     @ConfigEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
     @ConfigEntry public double autoSilkDelay = 0.25;
+
+
+    // Auto Crate Settings
+
+    @ConfigEntry public boolean autoCrate = false;
+    @ConfigEntry public CrateMode crateMode = CrateMode.COMMON;
+    @ConfigEntry public double crateDelay = 0.25;
+    @ConfigEntry public double crateDistance = 4.0;
 
 
     // Staff Detector Settings
@@ -400,6 +408,42 @@ public class ModConfig {
 
             public static NotifSound getNotifSound(CommandContext<?> context, String id) {
                 return context.getArgument(id, NotifSound.class);
+            }
+        }
+    }
+
+    public enum CrateMode implements NameableEnum, StringIdentifiable {
+        VOTER("text.sbutils.config.option.crateMode.voter"),
+        COMMON("text.sbutils.config.option.crateMode.common"),
+        RARE("text.sbutils.config.option.crateMode.rare"),
+        EPIC("text.sbutils.config.option.crateMode.epic"),
+        LEGENDARY("text.sbutils.config.option.crateMode.legendary");
+
+        private final String name;
+
+        CrateMode(String name) {
+            this.name = name;
+        }
+
+        public String asString() {
+            return getDisplayName().getString();
+        }
+
+        public Text getDisplayName() {
+            return Text.translatable(name);
+        }
+
+        public static class CrateModeArgumentType extends EnumArgumentType<CrateMode> {
+            private CrateModeArgumentType() {
+                super(StringIdentifiable.createCodec(CrateMode::values), CrateMode::values);
+            }
+
+            public static CrateModeArgumentType crateMode() {
+                return new CrateModeArgumentType();
+            }
+
+            public static CrateMode getCrateMode(CommandContext<?> context, String id) {
+                return context.getArgument(id, CrateMode.class);
             }
         }
     }

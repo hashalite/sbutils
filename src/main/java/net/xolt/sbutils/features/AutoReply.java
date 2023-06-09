@@ -67,7 +67,7 @@ public class AutoReply {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("autoreply", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(autoReplyNode));
     }

@@ -29,7 +29,7 @@ public class DeathCoords {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("deathcoords", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(deathCoordsNode));
     }

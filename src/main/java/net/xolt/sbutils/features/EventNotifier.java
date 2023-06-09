@@ -102,7 +102,7 @@ public class EventNotifier {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("eventnotifier", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(eventNotifierNode));
     }

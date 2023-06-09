@@ -37,7 +37,7 @@ public class Convert {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("convert", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(convertNode));
     }

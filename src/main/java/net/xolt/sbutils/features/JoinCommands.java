@@ -109,7 +109,7 @@ public class JoinCommands {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("joincmds", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(joinCommandsNode));
     }

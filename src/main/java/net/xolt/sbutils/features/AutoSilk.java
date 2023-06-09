@@ -79,7 +79,7 @@ public class AutoSilk {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                    dispatcher.execute("autosilk", context.getSource())
+                    dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(autoSilkNode));
     }

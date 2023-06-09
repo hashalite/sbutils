@@ -66,7 +66,7 @@ public class StaffDetector {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("staffdetector", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(staffDetectorNode));
     }

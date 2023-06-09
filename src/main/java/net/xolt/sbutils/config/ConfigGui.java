@@ -34,6 +34,7 @@ public class ConfigGui {
                 .category(buildAutoRaffleCategory(defaults, config))
                 .category(buildAutoPrivateCategory(defaults, config))
                 .category(buildAutoSilkCategory(defaults, config))
+                .category(buildAutoCrateCategory(defaults, config))
                 .category(buildStaffDetectorCategory(defaults, config))
                 .save(ModConfig.INSTANCE::save))
                 .generateScreen(parent);
@@ -549,26 +550,26 @@ public class ConfigGui {
                 .name(Text.translatable("text.sbutils.config.category.chatlogger"))
                 .group(OptionGroup.createBuilder()
                         .name(Text.translatable("text.sbutils.config.group.chatLogger"))
-//                        .option(Option.createBuilder(boolean.class)
-//                                .name(Text.translatable("text.sbutils.config.option.shopLoggerIncoming"))
-//                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerIncoming.tooltip"))
-//                                .binding(
-//                                        defaults.shopLoggerIncoming,
-//                                        () -> config.shopLoggerIncoming,
-//                                        (value) -> config.shopLoggerIncoming = value
-//                                )
-//                                .controller(TickBoxController::new)
-//                                .build())
-//                        .option(Option.createBuilder(boolean.class)
-//                                .name(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing"))
-//                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing.tooltip"))
-//                                .binding(
-//                                        defaults.shopLoggerOutgoing,
-//                                        () -> config.shopLoggerOutgoing,
-//                                        (value) -> config.shopLoggerOutgoing = value
-//                                )
-//                                .controller(TickBoxController::new)
-//                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.shopLoggerIncoming"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerIncoming.tooltip"))
+                                .binding(
+                                        defaults.shopLoggerIncoming,
+                                        () -> config.shopLoggerIncoming,
+                                        (value) -> config.shopLoggerIncoming = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.shopLoggerOutgoing.tooltip"))
+                                .binding(
+                                        defaults.shopLoggerOutgoing,
+                                        () -> config.shopLoggerOutgoing,
+                                        (value) -> config.shopLoggerOutgoing = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
                         .option(Option.createBuilder(boolean.class)
                                 .name(Text.translatable("text.sbutils.config.option.msgLoggerIncoming"))
                                 .tooltip(Text.translatable("text.sbutils.config.option.msgLoggerIncoming.tooltip"))
@@ -1037,6 +1038,55 @@ public class ConfigGui {
                                         defaults.autoSilkDelay,
                                         () -> config.autoSilkDelay,
                                         (value) -> config.autoSilkDelay = value
+                                )
+                                .controller(DoubleFieldController::new)
+                                .build())
+                        .build())
+                .build();
+    }
+
+    private static ConfigCategory buildAutoCrateCategory(ModConfig defaults, ModConfig config) {
+        return ConfigCategory.createBuilder()
+                .name(Text.translatable("text.sbutils.config.category.autocrate"))
+                .group(OptionGroup.createBuilder()
+                        .name(Text.translatable("text.sbutils.config.group.autoCrate"))
+                        .option(Option.createBuilder(boolean.class)
+                                .name(Text.translatable("text.sbutils.config.option.autoCrate"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.autoCrate.tooltip"))
+                                .binding(
+                                        defaults.autoCrate,
+                                        () -> config.autoCrate,
+                                        (value) -> config.autoCrate = value
+                                )
+                                .controller(TickBoxController::new)
+                                .build())
+                        .option(Option.createBuilder(ModConfig.CrateMode.class)
+                                .name(Text.translatable("text.sbutils.config.option.crateMode"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.crateMode.tooltip"))
+                                .binding(
+                                        defaults.crateMode,
+                                        () -> config.crateMode,
+                                        (value) -> config.crateMode = value
+                                )
+                                .controller(EnumController::new)
+                                .build())
+                        .option(Option.createBuilder(double.class)
+                                .name(Text.translatable("text.sbutils.config.option.crateDelay"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.crateDelay.tooltip"))
+                                .binding(
+                                        defaults.crateDelay,
+                                        () -> config.crateDelay,
+                                        (value) -> config.crateDelay = value
+                                )
+                                .controller(DoubleFieldController::new)
+                                .build())
+                        .option(Option.createBuilder(double.class)
+                                .name(Text.translatable("text.sbutils.config.option.crateDistance"))
+                                .tooltip(Text.translatable("text.sbutils.config.option.crateDistance.tooltip"))
+                                .binding(
+                                        defaults.crateDistance,
+                                        () -> config.crateDistance,
+                                        (value) -> config.crateDistance = value
                                 )
                                 .controller(DoubleFieldController::new)
                                 .build())

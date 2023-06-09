@@ -30,7 +30,7 @@ public class RegexFilters {
     public static final Pattern welcomeFilter = Pattern.compile("Welcome [\u00a7_a-zA-Z0-9]+ to Skyblock!");
     public static final Pattern friendJoinFilter = Pattern.compile("\\[Friends\\] [\u00a7_a-zA-Z0-9]+ has joined [a-zA-Z0-9]+");
     public static final Pattern motdFilter = Pattern.compile("============ Welcome to [\u00a7_a-zA-Z0-9]+'s Island ============|\\+ .*");
-    public static final Pattern voteFilter = Pattern.compile("\\[Broadcast\\] [\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for .* and 1x Voter Key! /vote");
+    public static final Pattern voteFilter = Pattern.compile("\\[Vote\\] [\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for .* and 1x Voter Key! /vote");
     public static final Pattern voteRewardFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ was (super |super duper )?lucky and received [a-zA-Z0-9/! ]+! ?");
     public static final Pattern raffleFilter = Pattern.compile("\\[SBRaffle\\].*");
     public static final Pattern cratesFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ has just opened a (Rare|Epic|Legendary) Crate!");
@@ -40,12 +40,8 @@ public class RegexFilters {
 
     // Chat Logger
     
-    public static final Pattern incomingBuyFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ bought [0-9]+ [ a-zA-Z()]+ from you for [0-9]+ Grass\\.");
-    public static final Pattern incomingSellFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ sold [0-9]+ [ a-zA-Z()]+ to you for [0-9]+ Grass\\.");
-    public static final Pattern incomingBarterFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ bartered [0-9]+ of their [ a-zA-Z()]+ for [0-9]+ of your [ a-zA-Z()]+\\.");
-    public static final Pattern outgoingBuyFilter = Pattern.compile("You bought [0-9]+ [ a-zA-Z()]+ from [\u00a7_a-zA-Z0-9]+ for [0-9]+ Grass\\.");
-    public static final Pattern outgoingSellFilter = Pattern.compile("You sold [0-9]+ [ a-zA-Z()]+ to [\u00a7_a-zA-Z0-9]+ for [0-9]+ Grass\\.");
-    public static final Pattern outgoingBarterFilter = Pattern.compile("You bartered [0-9]+ of your [ a-zA-Z()]+ for [0-9]+ of [\u00a7_a-zA-Z0-9]+'s [ a-zA-Z()]+\\.");
+    public static final Pattern incomingTransactionFilter = Pattern.compile("Shop transaction completed by [\u00a7_a-zA-Z0-9]+ at X: -?[0-9]+ Y: -?[0-9]+ Z: -?[0-9]+ - Remaining trades: [0-9]+");
+    public static final Pattern outgoingTransactionFilter = Pattern.compile("Transaction succeeded.");
     public static final Pattern incomingMsgFilter = Pattern.compile("\\[([\u00a7_a-zA-Z0-9]+) -> me\\] .*");
     public static final Pattern outgoingMsgFilter = Pattern.compile("\\[me -> [\u00a7_a-zA-Z0-9]+\\] .*");
     public static final Pattern visitFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ is now visiting your island\\.");
@@ -67,6 +63,20 @@ public class RegexFilters {
     // Auto Raffle
     
     public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle\\] Congratulations go to [\u00a7_a-zA-Z0-9]+ for winning [0-9]+ Grass block with [0-9]+ (ticket|tickets)");
+
+
+    // Auto Crate
+
+    public static final Pattern voterKeyFilter = Pattern.compile("Click the (Voting|Voter) Crate to use this key");
+    public static final Pattern commonKeyFilter = Pattern.compile("Click the Common Crate to use this key");
+    public static final Pattern rareKeyFilter = Pattern.compile("Click the Rare Crate to use this key");
+    public static final Pattern epicKeyFilter = Pattern.compile("Click the Epic Crate to use this key");
+    public static final Pattern legendaryKeyFilter = Pattern.compile("Click the Legendary Crate to use this key");
+    public static final Pattern voterCrateFilter = Pattern.compile("Voter|Vote Crate");;
+    public static final Pattern commonCrateFilter = Pattern.compile("Common|Common Crate");
+    public static final Pattern rareCrateFilter = Pattern.compile("Rare|Rare Crate");
+    public static final Pattern epicCrateFilter = Pattern.compile("Epic|Epic Crate");
+    public static final Pattern legendaryCrateFilter = Pattern.compile("Legendary|Legendary Crate");
 
 
     // Staff Detector

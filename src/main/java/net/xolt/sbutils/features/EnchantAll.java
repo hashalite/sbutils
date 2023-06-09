@@ -173,13 +173,13 @@ public class EnchantAll {
 
         dispatcher.register(ClientCommandManager.literal(ENCHANT_ALIAS)
                 .executes(context ->
-                        dispatcher.execute("enchantall", context.getSource())
+                        dispatcher.execute(ENCHANT_COMMAND, context.getSource())
                 )
                 .redirect(enchantAllNode));
 
         dispatcher.register(ClientCommandManager.literal(UNENCHANT_ALIAS)
                 .executes(context ->
-                        dispatcher.execute("unenchantall", context.getSource())
+                        dispatcher.execute(UNENCHANT_COMMAND, context.getSource())
                 )
                 .redirect(unenchantAllNode));
     }

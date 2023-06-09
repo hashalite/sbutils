@@ -25,7 +25,7 @@ public class OpenFolder {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("openfolder", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(openFolderNode));
     }

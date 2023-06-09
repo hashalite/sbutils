@@ -47,6 +47,7 @@ public class SbUtils implements ClientModInitializer {
             ChatFilters.registerCommand(dispatcher);
             ChatLogger.registerCommand(dispatcher);
             JoinCommands.registerCommand(dispatcher);
+            AutoCrate.registerCommand(dispatcher);
             AutoSilk.registerCommand(dispatcher);
             Mentions.registerCommand(dispatcher);
             ToolSaver.registerCommand(dispatcher);
@@ -60,8 +61,6 @@ public class SbUtils implements ClientModInitializer {
             Centered.registerCommand(dispatcher);
             DeathCoords.registerCommand(dispatcher);
             EventNotifier.registerCommand(dispatcher);
-
-
         });
 
         registerKeybindings();

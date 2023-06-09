@@ -124,7 +124,7 @@ public class Mentions {
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
-                        dispatcher.execute("mentions", context.getSource())
+                        dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(mentionsNode));
     }
