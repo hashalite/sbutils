@@ -40,7 +40,7 @@ public class RegexFilters {
 
     // Chat Logger
     
-    public static final Pattern incomingTransactionFilter = Pattern.compile("Shop transaction completed by [\u00a7_a-zA-Z0-9]+ at X: -?[0-9]+ Y: -?[0-9]+ Z: -?[0-9]+ - Remaining trades: [0-9]+");
+    public static final Pattern incomingTransactionFilter = Pattern.compile("Shop transaction completed by [\u00a7_a-zA-Z0-9]+ at X: -?[0-9]+ Y: -?[0-9]+ Z: -?[0-9]+ - Remaining trades: (/|[0-9]+) \\(Owned: (/|[0-9]+x \\[.*\\]), Wanted: (/|[0-9]+x \\[.*\\])\\)");
     public static final Pattern outgoingTransactionFilter = Pattern.compile("Transaction succeeded.");
     public static final Pattern incomingMsgFilter = Pattern.compile("\\[([\u00a7_a-zA-Z0-9]+) -> me\\] .*");
     public static final Pattern outgoingMsgFilter = Pattern.compile("\\[me -> [\u00a7_a-zA-Z0-9]+\\] .*");
@@ -81,5 +81,5 @@ public class RegexFilters {
 
     // Staff Detector
 
-    public static final Pattern staffFilter = Pattern.compile("\\[Helper\\].*|\\[Mod\\].*|\\[Dev\\].*|\\[Manager\\].*");
+    public static final Pattern staffFilter = Pattern.compile("\\[Helper\\].*|\\[Mod\\].*|\\[Dev\\].*|\\[Manager\\].*|\\[Admin\\].*");
 }
