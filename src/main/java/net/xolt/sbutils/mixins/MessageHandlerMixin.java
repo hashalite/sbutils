@@ -6,7 +6,6 @@ import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.features.*;
-import net.xolt.sbutils.features.common.ServerDetector;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -52,7 +51,6 @@ public class MessageHandlerMixin {
     }
 
     private static void preFilterMessage(Text message) {
-        ServerDetector.processMessage(message);
         ChatLogger.processMessage(message);
         AutoFix.processMessage(message);
         AutoRaffle.processMessage(message);

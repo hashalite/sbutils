@@ -1,15 +1,14 @@
 package net.xolt.sbutils.config;
 
 import com.google.gson.*;
-import dev.isxander.yacl.config.ConfigEntry;
-import dev.isxander.yacl.config.ConfigInstance;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-
-import dev.isxander.yacl.config.GsonConfigInstance;
+import dev.isxander.yacl3.config.ConfigEntry;
+import dev.isxander.yacl3.config.ConfigInstance;
+import dev.isxander.yacl3.config.GsonConfigInstance;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;

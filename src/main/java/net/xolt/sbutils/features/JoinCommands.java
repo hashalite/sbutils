@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
 
@@ -115,7 +116,7 @@ public class JoinCommands {
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().joinCmdsEnabled || !waitingToSend) {
+        if (!ModConfig.INSTANCE.getConfig().joinCmdsEnabled || !ServerDetector.isOnSkyblock() || !waitingToSend) {
             return;
         }
 
