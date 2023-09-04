@@ -1,9 +1,9 @@
 package net.xolt.sbutils.config;
 
 import com.mojang.brigadier.context.CommandContext;
-import dev.isxander.yacl.api.NameableEnum;
-import dev.isxander.yacl.config.ConfigEntry;
-import dev.isxander.yacl.config.ConfigInstance;
+import dev.isxander.yacl3.api.NameableEnum;
+import dev.isxander.yacl3.config.ConfigEntry;
+import dev.isxander.yacl3.config.ConfigInstance;
 import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -53,11 +53,12 @@ public class ModConfig {
     // Mentions Settings
 
     @ConfigEntry public boolean mentions = false;
-    @ConfigEntry public boolean excludeServerMsgs = true;
-    @ConfigEntry public boolean excludeSelfMsgs = true;
+    @ConfigEntry public boolean playMentionSound = true;
     @ConfigEntry public NotifSound mentionSound = NotifSound.EXPERIENCE;
     @ConfigEntry public boolean mentionHighlight = true;
     @ConfigEntry public Color highlightColor = Color.GOLD;
+    @ConfigEntry public boolean excludeServerMsgs = true;
+    @ConfigEntry public boolean excludeSelfMsgs = true;
     @ConfigEntry public boolean mentionsCurrentAccount = true;
     @ConfigEntry public List<String> mentionsAliases = List.of();
 

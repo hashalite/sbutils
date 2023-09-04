@@ -1,6 +1,6 @@
 package net.xolt.sbutils.util;
 
-import dev.isxander.yacl.api.NameableEnum;
+import dev.isxander.yacl3.api.NameableEnum;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -129,13 +129,13 @@ public class Messenger {
         printSetting(setting, value, false);
     }
 
-    public static void printAutoAdvertInfo(boolean enabled, boolean serverNull, int adIndex, int remainingDelay, boolean userWhitelisted, boolean whitelistEnabled) {
+    public static void printAutoAdvertInfo(boolean enabled, boolean onSkyblock, int adIndex, int remainingDelay, boolean userWhitelisted, boolean whitelistEnabled) {
         if (!enabled) {
             printSetting("text.sbutils.config.category.autoadvert", false);
             return;
         }
 
-        if (serverNull) {
+        if (onSkyblock) {
             printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return;
         }

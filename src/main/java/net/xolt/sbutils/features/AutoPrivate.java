@@ -95,7 +95,7 @@ public class AutoPrivate {
     }
 
     public static boolean onSignEditorOpen(SignEditorOpenS2CPacket packet) {
-        if (!ModConfig.INSTANCE.getConfig().autoPrivate) {
+        if (!ModConfig.INSTANCE.getConfig().autoPrivate || !packet.isFront()) {
             return false;
         }
         return updateSign(packet);
@@ -113,7 +113,7 @@ public class AutoPrivate {
             lines[i] = names.get(i);
         }
 
-        MC.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(packet.getPos(), "[private]", "", lines[0], lines[1]));
+        MC.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(packet.getPos(), true, "[private]", "", lines[0], lines[1]));
         return true;
     }
 }

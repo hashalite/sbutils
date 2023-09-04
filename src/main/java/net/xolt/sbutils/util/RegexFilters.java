@@ -4,10 +4,6 @@ import java.util.regex.Pattern;
 
 public class RegexFilters {
 
-    // Auto Advert
-
-    public static final Pattern skyblockJoinFilter = Pattern.compile("Welcome [\u00a7_a-zA-Z0-9]+, to Skyblock!");
-
 
     // Mentions
 
@@ -82,4 +78,10 @@ public class RegexFilters {
     // Staff Detector
 
     public static final Pattern staffFilter = Pattern.compile("\\[Helper\\].*|\\[Mod\\].*|\\[Dev\\].*|\\[Manager\\].*|\\[Admin\\].*");
+
+
+
+    // Server Detector
+
+    public static final Pattern addressFilter = Pattern.compile("server.(skyblock.net|skywars.com)\\./.*");
 }

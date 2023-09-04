@@ -42,7 +42,7 @@ public class AutoAdvert {
                 })
                 .then(ClientCommandManager.literal("info")
                         .executes(context -> {
-                            Messenger.printAutoAdvertInfo(ModConfig.INSTANCE.getConfig().autoAdvert, ServerDetector.currentServer == null, getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.INSTANCE.getConfig().advertUseWhitelist);
+                            Messenger.printAutoAdvertInfo(ModConfig.INSTANCE.getConfig().autoAdvert, ServerDetector.isOnSkyblock(), getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.INSTANCE.getConfig().advertUseWhitelist);
                             return Command.SINGLE_SUCCESS;
                         }))
                 .then(ClientCommandManager.literal("sbFile")
@@ -169,7 +169,7 @@ public class AutoAdvert {
     }
 
     private static int onListCommand() {
-        if (ServerDetector.currentServer == null) {
+        if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -179,7 +179,7 @@ public class AutoAdvert {
     }
 
     private static int onAddCommand(String advert) {
-        if (ServerDetector.currentServer == null) {
+        if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -194,7 +194,7 @@ public class AutoAdvert {
     }
 
     private static int onDelCommand(int index) {
-        if (ServerDetector.currentServer == null) {
+        if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -217,7 +217,7 @@ public class AutoAdvert {
     }
 
     private static int onInsertCommand(int index, String advert) {
-        if (ServerDetector.currentServer == null) {
+        if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -240,7 +240,7 @@ public class AutoAdvert {
     }
 
     private static int onToggleCommand(int index) {
-        if (ServerDetector.currentServer == null) {
+        if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return Command.SINGLE_SUCCESS;
         }
@@ -306,7 +306,7 @@ public class AutoAdvert {
             joinedAt = System.currentTimeMillis();
         }
 
-        if (ServerDetector.currentServer == null || (ModConfig.INSTANCE.getConfig().advertUseWhitelist && !userWhitelisted())) {
+        if (!ServerDetector.isOnSkyblock() || (ModConfig.INSTANCE.getConfig().advertUseWhitelist && !userWhitelisted())) {
             return;
         }
 
@@ -398,10 +398,13 @@ public class AutoAdvert {
 
     private static String getAdFile() {
         String adFile;
-        if (ServerDetector.currentServer == null) {
+        if (!ServerDetector.isOnSkyblock()) {
             return null;
         } else {
             switch (ServerDetector.currentServer) {
+                case SKYBLOCK:
+                    adFile = ModConfig.INSTANCE.getConfig().skyblockAdFile;
+                    break;
                 case ECONOMY:
                     adFile = ModConfig.INSTANCE.getConfig().economyAdFile;
                     break;
@@ -409,8 +412,7 @@ public class AutoAdvert {
                     adFile = ModConfig.INSTANCE.getConfig().classicAdFile;
                     break;
                 default:
-                    adFile = ModConfig.INSTANCE.getConfig().skyblockAdFile;
-                    break;
+                    return null;
             }
         }
 

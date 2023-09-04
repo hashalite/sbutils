@@ -34,6 +34,18 @@ public class Mentions {
                     Messenger.printChangedSetting("text.sbutils.config.category.mentions", ModConfig.INSTANCE.getConfig().mentions);
                     return Command.SINGLE_SUCCESS;
                 })
+                .then(ClientCommandManager.literal("playSound")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.playMentionSound", ModConfig.INSTANCE.getConfig().playMentionSound);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
+                                .executes(context -> {
+                                    ModConfig.INSTANCE.getConfig().playMentionSound = BoolArgumentType.getBool(context, "enabled");
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.playMentionSound", ModConfig.INSTANCE.getConfig().playMentionSound);
+                                    return Command.SINGLE_SUCCESS;
+                                })))
                 .then(ClientCommandManager.literal("excludeServer")
                         .executes(context -> {
                             Messenger.printSetting("text.sbutils.config.option.excludeServerMsgs", ModConfig.INSTANCE.getConfig().excludeServerMsgs);
@@ -160,7 +172,7 @@ public class Mentions {
     }
 
     public static void processMessage(Text message) {
-        if (!ModConfig.INSTANCE.getConfig().mentions || !isValidMessage(message)) {
+        if (!ModConfig.INSTANCE.getConfig().mentions || !ModConfig.INSTANCE.getConfig().playMentionSound || !isValidMessage(message)) {
             return;
         }
 

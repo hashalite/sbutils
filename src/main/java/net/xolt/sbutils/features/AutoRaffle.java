@@ -111,17 +111,17 @@ public class AutoRaffle {
     }
 
     public static void buyTickets() {
-        if (ServerDetector.currentServer == null) {
+        if (!ServerDetector.isOnSkyblock()) {
             return;
         } else {
             switch (ServerDetector.currentServer) {
+                case SKYBLOCK:
+                    buySkyblockTickets();
+                    break;
                 case ECONOMY:
                     buyEconomyTickets();
                     break;
-                case CLASSIC:
-                    break;
                 default:
-                    buySkyblockTickets();
                     break;
             }
         }
