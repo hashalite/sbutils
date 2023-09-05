@@ -135,7 +135,7 @@ public class Messenger {
             return;
         }
 
-        if (onSkyblock) {
+        if (!onSkyblock) {
             printMessage("message.sbutils.autoAdvert.notOnSkyblock");
             return;
         }
