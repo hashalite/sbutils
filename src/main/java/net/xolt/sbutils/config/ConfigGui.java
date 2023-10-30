@@ -16,6 +16,7 @@ public class ConfigGui {
                 .category(buildAutoAdvertCategory(defaults, config))
                 .category(buildJoinCommandsCategory(defaults, config))
                 .category(buildMentionsCategory(defaults, config))
+                .category(buildNoGMTCategory(defaults, config))
                 .category(buildEnchantAllCategory(defaults, config))
                 .category(buildChatAppendCategory(defaults, config))
                 .category(buildChatFiltersCategory(defaults, config))
@@ -300,6 +301,16 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.excludeSender"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.excludeSender.tooltip")))
+                                .binding(
+                                        defaults.excludeSender,
+                                        () -> config.excludeSender,
+                                        (value) -> config.excludeSender = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
+                                .build())
+                        .option(Option.<Boolean>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.mentionsCurrentAccount"))
                                 .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentionsCurrentAccount.tooltip")))
                                 .binding(
@@ -320,6 +331,45 @@ public class ConfigGui {
                         )
                         .controller(StringControllerBuilder::create)
                         .initial("")
+                        .build())
+                .build();
+    }
+
+    private static ConfigCategory buildNoGMTCategory(ModConfig defaults, ModConfig config) {
+        return ConfigCategory.createBuilder()
+                .name(Text.translatable("text.sbutils.config.category.nogmt"))
+                .group(OptionGroup.createBuilder()
+                        .name(Text.translatable("text.sbutils.config.group.noGMT"))
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.noGMT"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.noGMT.tooltip")))
+                                .binding(
+                                        defaults.noGMT,
+                                        () -> config.noGMT,
+                                        (value) -> config.noGMT = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
+                                .build())
+                        .option(Option.<String>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.timeZone"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.timeZone.tooltip")))
+                                .binding(
+                                        defaults.timeZone,
+                                        () -> config.timeZone,
+                                        (value) -> config.timeZone = value
+                                )
+                                .controller(StringControllerBuilder::create)
+                                .build())
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.showTimeZone"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.showTimeZone.tooltip")))
+                                .binding(
+                                        defaults.showTimeZone,
+                                        () -> config.showTimeZone,
+                                        (value) -> config.showTimeZone = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
+                                .build())
                         .build())
                 .build();
     }

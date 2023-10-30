@@ -57,6 +57,9 @@
   "message.sbutils.eventNotifier.sighted": "@ Sighted!",
 
   "message.sbutils.autoMine.noPickaxe": "Disabling Auto Mine because you don't have any pickaxes to switch to, and Auto Fix isn't enabled.",
+  "message.sbutils.autoMine.timerNotSet": "Auto Mine timer is not set.",
+  "message.sbutils.autoMine.enabledFor": "@ enabled for @.",
+  "message.sbutils.autoMine.disabledIn": "@ will be disabled in @.",
 
   "message.sbutils.autoFix.infoWithMinutes": "Fixing next item in @ minutes and @ seconds.",
   "message.sbutils.autoFix.infoJustSeconds": "Fixing next item in @ seconds.",
@@ -214,10 +217,23 @@
   "text.sbutils.config.option.excludeServerMsgs.tooltip": "Doesn't notify you about server messages.",
   "text.sbutils.config.option.excludeSelfMsgs": "Exclude Self Messages",
   "text.sbutils.config.option.excludeSelfMsgs.tooltip": "Doesn't notify you about your own messages.",
+  "text.sbutils.config.option.excludeSender": "Exclude Sender",
+  "text.sbutils.config.option.excludeSender.tooltip": "Ignores the sender (the prefix/name of the player) when checking for mentions.",
   "text.sbutils.config.option.mentionsCurrentAccount": "Current Account Mentions",
   "text.sbutils.config.option.mentionsCurrentAccount.tooltip": "Notifies you when your username is mentioned in chat.",
   "text.sbutils.config.option.mentionsAliases": "Aliases",
   "text.sbutils.config.option.mentionsAliases.tooltip": "A list of strings you would like to be notified for.",
+
+
+  "text.sbutils.config.category.nogmt": "No GMT",
+
+  "text.sbutils.config.group.noGMT": "No GMT Settings",
+  "text.sbutils.config.option.noGMT": "No GMT Enabled",
+  "text.sbutils.config.option.noGMT.tooltip": "Replaces GMT date/time in /mail and /email with a preferred timezone.",
+  "text.sbutils.config.option.timeZone": "Time Zone",
+  "text.sbutils.config.option.timeZone.tooltip": "Set a preferred time zone, or leave blank to use system time.",
+  "text.sbutils.config.option.showTimeZone": "Show Time Zone",
+  "text.sbutils.config.option.showTimeZone.tooltip": "Displays the new time zone in parenthesis next to the date/time.",
 
 
   "text.sbutils.config.category.enchantall": "Enchant All",

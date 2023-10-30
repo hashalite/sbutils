@@ -281,4 +281,19 @@ public class Messenger {
     private static Formatting getBooleanColor(boolean bool) {
         return bool ? Formatting.GREEN : Formatting.RED;
     }
+
+    public static void printAutoMineEnabledFor(int i) {
+        printWithPlaceholders("message.sbutils.autoMine.enabledFor", "text.sbutils.config.category.automine", formatTime(i));
+    }
+
+    public static void printAutoMineTime(int i) {
+        printWithPlaceholders("message.sbutils.autoMine.disabledIn", "text.sbutils.config.category.automine", formatTime(i));
+    }
+
+    private static String formatTime(int ticks) {
+        int hours = ticks / 72000;
+        int minutes = (ticks % 72000) / 1200;
+        int seconds = ((ticks % 72000) % 1200) / 20;
+        return (hours > 0 ? hours + "h" : "") + (minutes > 0 ? minutes + "m" : "") + seconds + "s";
+    }
 }

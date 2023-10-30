@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.AirBlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.encryption.NetworkEncryptionUtils;
@@ -48,6 +49,7 @@ public class EnchantAll {
     private static boolean pause;
     private static boolean cooldown;
     private static int prevSelectedSlot;
+    private static int itemPrevSlot;
     private static int commandCount;
     private static long lastActionPerformedAt;
 
@@ -209,6 +211,12 @@ public class EnchantAll {
             return Command.SINGLE_SUCCESS;
         }
 
+        if (inv && !(MC.player.getMainHandStack().getItem() instanceof AirBlockItem) && getEnchantsForItem(MC.player.getMainHandStack(), unenchant).size() < 1) {
+            int emptySlot = InvUtils.findEmptyHotbarSlot();
+            if (emptySlot != -1)
+                MC.player.getInventory().selectedSlot = prevSelectedSlot = emptySlot;
+        }
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -234,6 +242,11 @@ public class EnchantAll {
         }
 
         if (done()) {
+            if (inventory && itemPrevSlot != -1) {
+                if (!InvUtils.canSwapSlot(itemPrevSlot))
+                    return;
+                InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot);
+            }
             Messenger.printMessage("message.sbutils.enchantAll.complete");
             reset();
             return;
@@ -321,10 +334,17 @@ public class EnchantAll {
             }
             int enchantableSlot = findEnchantableSlot(unenchant);
             if (enchantableSlot != -1) {
+                if (itemPrevSlot != -1) {
+                    if (!InvUtils.canSwapSlot(itemPrevSlot))
+                        return;
+                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot);
+                    itemPrevSlot = -1;
+                }
                 if (!InvUtils.canSwapSlot(enchantableSlot)) {
                     return;
                 }
                 InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selectedSlot);
+                itemPrevSlot = enchantableSlot;
                 pause = true;
             }
             return;
@@ -465,6 +485,7 @@ public class EnchantAll {
         pause = false;
         cooldown = false;
         prevSelectedSlot = -1;
+        itemPrevSlot = -1;
         commandCount = 0;
     }
 

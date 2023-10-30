@@ -7,7 +7,7 @@ public class RegexFilters {
 
     // Mentions
 
-    public static final Pattern playerMsgFilter = Pattern.compile("((\u00a7[0-9a-fk-or])*\\[.*\\](\u00a7[0-9a-fk-or])* )*[\u00a7_a-zA-Z0-9]+: .*");
+    public static final Pattern playerMsgFilter = Pattern.compile("(((\u00a7[0-9a-fk-or])*\\[.*\\](\u00a7[0-9a-fk-or])* )*[\u00a7_a-zA-Z0-9]+: ).*");
 
 
     // Enchant All
@@ -79,6 +79,12 @@ public class RegexFilters {
 
     public static final Pattern staffFilter = Pattern.compile("\\[Helper\\].*|\\[Mod\\].*|\\[Dev\\].*|\\[Manager\\].*|\\[Admin\\].*");
 
+
+    // No GMT
+
+    public static final Pattern emailFilter = Pattern.compile("\\[[0-9]+\\] \\[([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+)\\] .*");
+    public static final Pattern mailGuiFilter = Pattern.compile("Skyblock Mail");
+    public static final Pattern mailLoreFilter = Pattern.compile("Sent at ([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+ (AM|PM)).*");
 
 
     // Server Detector

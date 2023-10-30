@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Matcher;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -68,6 +69,18 @@ public class Mentions {
                                     ModConfig.INSTANCE.getConfig().excludeSelfMsgs = BoolArgumentType.getBool(context, "enabled");
                                     ModConfig.INSTANCE.save();
                                     Messenger.printChangedSetting("text.sbutils.config.option.excludeSelfMsgs", ModConfig.INSTANCE.getConfig().excludeSelfMsgs);
+                                    return Command.SINGLE_SUCCESS;
+                                })))
+                .then(ClientCommandManager.literal("excludeSender")
+                        .executes(context -> {
+                            Messenger.printSetting("text.sbutils.config.option.excludeSender", ModConfig.INSTANCE.getConfig().excludeSender);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
+                                .executes(context -> {
+                                    ModConfig.INSTANCE.getConfig().excludeSender = BoolArgumentType.getBool(context, "enabled");
+                                    ModConfig.INSTANCE.save();
+                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeSender", ModConfig.INSTANCE.getConfig().excludeSender);
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("currentAccount")
@@ -188,13 +201,16 @@ public class Mentions {
 
         Text newMessage = message;
 
+        Matcher playerMsgMatcher = RegexFilters.playerMsgFilter.matcher(message.getString());
+        int prefixLen = ModConfig.INSTANCE.getConfig().excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
+
         if (ModConfig.INSTANCE.getConfig().mentionsCurrentAccount) {
-            newMessage = highlight(newMessage, MC.player.getGameProfile().getName());
+            newMessage = highlight(newMessage, MC.player.getGameProfile().getName(), prefixLen);
         }
 
         for (String alias : ModConfig.INSTANCE.getConfig().mentionsAliases) {
             if (!alias.equals("")) {
-                newMessage = highlight(newMessage, alias);
+                newMessage = highlight(newMessage, alias, prefixLen);
             }
         }
 
@@ -207,6 +223,13 @@ public class Mentions {
         }
 
         String msgString = message.getString().toLowerCase(Locale.ROOT);
+
+        if (ModConfig.INSTANCE.getConfig().excludeSender) {
+            Matcher matcher = RegexFilters.playerMsgFilter.matcher(msgString);
+            if (matcher.matches()) {
+                msgString = msgString.replace(matcher.group(1), "");
+            }
+        }
 
         if (ModConfig.INSTANCE.getConfig().mentionsCurrentAccount && msgString.contains(MC.player.getGameProfile().getName().toLowerCase())) {
             return true;
@@ -249,16 +272,25 @@ public class Mentions {
         return true;
     }
 
-    private static Text highlight(Text text, String target) {
-        if (text.getSiblings().size() == 0) {
-            return highlight(text.getContent(), text.getStyle(), target);
+    private static Text highlight(Text text, String target, int prefixLen) {
+        int prefixRemaining = prefixLen;
+        MutableText highlighted;
+        if (prefixRemaining > 0) {
+            highlighted = MutableText.of(text.getContent()).setStyle(text.getStyle());
+            prefixRemaining -= highlighted.getString().length();
         } else {
-            MutableText highlighted = highlight(text.getContent(), text.getStyle(), target);
-            for (Text sibling : text.getSiblings()) {
-                highlighted.append(highlight(sibling, target));
-            }
-            return highlighted;
+            highlighted = highlight(text.getContent(), text.getStyle(), target);
         }
+
+        for (Text sibling : text.getSiblings()) {
+            if (prefixRemaining > 0) {
+                highlighted.append(sibling);
+                prefixRemaining -= sibling.getString().length();
+                continue;
+            }
+            highlighted.append(highlight(sibling, target, 0));
+        }
+        return highlighted;
     }
 
     private static MutableText highlight(TextContent content, Style oldStyle, String target) {
