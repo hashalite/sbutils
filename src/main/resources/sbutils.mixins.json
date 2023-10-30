@@ -11,7 +11,9 @@
     "CommandDispatcherMixin",
     "GameRendererMixin",
     "MessageHandlerMixin",
-    "MinecraftClientMixin"
+    "MinecraftClientMixin",
+    "ScreenHandlerMixin",
+    "TimeArgumentTypeAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

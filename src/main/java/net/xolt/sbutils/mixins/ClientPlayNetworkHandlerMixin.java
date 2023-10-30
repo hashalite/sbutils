@@ -12,6 +12,7 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.xolt.sbutils.features.*;
 import net.xolt.sbutils.features.common.ServerDetector;
+import net.xolt.sbutils.util.Messenger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,18 +28,6 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPlayNetworkHandlerMixin {
-
-    @Shadow
-    private FeatureSet enabledFeatures;
-
-    @Shadow
-    @Final
-    private ClientConnection connection;
-
-    @Shadow
-    public abstract void onCommandTree(CommandTreeS2CPacket packet);
-
-    @Shadow public abstract DynamicRegistryManager getRegistryManager();
 
     @Inject(method = "onGameJoin", at = @At("TAIL"))
     private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
@@ -110,6 +99,11 @@ public abstract class ClientPlayNetworkHandlerMixin {
     private void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
         AutoFix.onUpdateInventory();
         AutoSilk.onInventoryUpdate(packet);
+    }
+
+    @Inject(method = "onInventory", at = @At("HEAD"))
+    private void onInventory(InventoryS2CPacket packet, CallbackInfo ci) {
+
     }
 
     @Inject(method = "onCommandTree", at = @At("TAIL"))

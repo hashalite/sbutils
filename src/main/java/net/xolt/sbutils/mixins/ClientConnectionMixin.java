@@ -19,6 +19,7 @@ public class ClientConnectionMixin {
         JoinCommands.onDisconnect();
         AutoSilk.onDisconnect();
         AutoFix.onDisconnect();
+        AutoMine.onDisconnect();
 
         if (ModConfig.INSTANCE.getConfig().autoSilk || ModConfig.INSTANCE.getConfig().autoCrate || ModConfig.INSTANCE.getConfig().autoMine) {
             ModConfig.INSTANCE.getConfig().autoSilk = false;

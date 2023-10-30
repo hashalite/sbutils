@@ -6,6 +6,7 @@ import net.minecraft.network.message.MessageSignatureData;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.Mentions;
+import net.xolt.sbutils.features.NoGMT;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -26,10 +27,20 @@ public abstract class ChatHudMixin {
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", at = @At("HEAD"), cancellable = true)
     public void onAddMessage(Text message, MessageSignatureData signature, MessageIndicator indicator, CallbackInfo ci) {
-        if (ModConfig.INSTANCE.getConfig().mentions && ModConfig.INSTANCE.getConfig().mentionHighlight && Mentions.isValidMessage(message) && Mentions.mentioned(message)) {
+        Text modified = message;
+        if (ModConfig.INSTANCE.getConfig().mentions && ModConfig.INSTANCE.getConfig().mentionHighlight && Mentions.isValidMessage(modified) && Mentions.mentioned(modified)) {
             ci.cancel();
+            modified = Mentions.modifyMessage(modified);
+        }
+
+        if (NoGMT.shouldModify(modified)) {
+            ci.cancel();
+            modified = NoGMT.modifyMessage(modified);
+        }
+
+        if (ci.isCancelled()) {
             callLogChatMessage(message, indicator);
-            callAddMessage(Mentions.modifyMessage(message), signature, MC.inGameHud.getTicks(), indicator, false);
+            callAddMessage(modified, signature, MC.inGameHud.getTicks(), indicator, false);
         }
     }
 }

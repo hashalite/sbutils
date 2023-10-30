@@ -59,8 +59,16 @@ public class ModConfig {
     @ConfigEntry public Color highlightColor = Color.GOLD;
     @ConfigEntry public boolean excludeServerMsgs = true;
     @ConfigEntry public boolean excludeSelfMsgs = true;
+    @ConfigEntry public boolean excludeSender = false;
     @ConfigEntry public boolean mentionsCurrentAccount = true;
     @ConfigEntry public List<String> mentionsAliases = List.of();
+
+
+    // No GMT Settings
+
+    @ConfigEntry public boolean noGMT = false;
+    @ConfigEntry public String timeZone = "";
+    @ConfigEntry public boolean showTimeZone = true;
 
 
     // Enchant All Settings
