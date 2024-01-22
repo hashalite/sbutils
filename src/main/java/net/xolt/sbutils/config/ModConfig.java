@@ -1,206 +1,231 @@
 package net.xolt.sbutils.config;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import dev.isxander.yacl3.api.NameableEnum;
-import dev.isxander.yacl3.config.ConfigEntry;
-import dev.isxander.yacl3.config.ConfigInstance;
+import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import dev.isxander.yacl3.config.v2.api.SerialEntry;
+import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
-import net.xolt.sbutils.util.LimitedList;
+import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
 
-import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ModConfig {
 
-    public static final ConfigInstance<ModConfig> INSTANCE = new ModConfigInstance<>(ModConfig.class, Path.of("./sbutils/sbutils.json"));
+    public static final ConfigClassHandler<ModConfig> HANDLER = ConfigClassHandler.createBuilder(ModConfig.class)
+            .id(new Identifier("sbutils", "config"))
+            .serializer(config -> GsonConfigSerializerBuilder.create(config)
+                    .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
+                    .appendGsonBuilder(builder -> builder.registerTypeHierarchyAdapter(KeyValueController.KeyValuePair.class, new KeyValueController.KeyValuePair.KeyValueTypeAdapter()))
+                    .appendGsonBuilder(builder -> builder.setFieldNamingPolicy(FieldNamingPolicy.IDENTITY))
+                    .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
+                    .build()).build();
 
     // Mod Settings
 
-    @ConfigEntry public String messagePrefix = "[@]";
-    @ConfigEntry public Color sbutilsColor = Color.YELLOW;
-    @ConfigEntry public Color prefixColor = Color.AQUA;
-    @ConfigEntry public Color messageColor = Color.AQUA;
-    @ConfigEntry public Color valueColor = Color.WHITE;
+    @SerialEntry
+    public String messagePrefix = "[@]";
+    @SerialEntry public Color sbutilsColor = Color.YELLOW;
+    @SerialEntry public Color prefixColor = Color.AQUA;
+    @SerialEntry public Color messageColor = Color.AQUA;
+    @SerialEntry public Color valueColor = Color.WHITE;
 
 
     // Auto Advert Settings
 
-    @ConfigEntry public boolean autoAdvert = false;
-    @ConfigEntry public String skyblockAdFile = "skyblock";
-    @ConfigEntry public String economyAdFile = "economy";
-    @ConfigEntry public String classicAdFile = "classic";
-    @ConfigEntry public double advertDelay = 300.0;
-    @ConfigEntry public double advertInitialDelay = 10.0;
-    @ConfigEntry public boolean advertUseWhitelist = false;
-    @ConfigEntry public List<String> advertWhitelist = List.of();
+    @SerialEntry public boolean autoAdvert = false;
+    @SerialEntry public String skyblockAdFile = "skyblock";
+    @SerialEntry public String economyAdFile = "economy";
+    @SerialEntry public String classicAdFile = "classic";
+    @SerialEntry public double advertDelay = 300.0;
+    @SerialEntry public double advertInitialDelay = 10.0;
+    @SerialEntry public boolean advertUseWhitelist = false;
+    @SerialEntry public List<String> advertWhitelist = List.of();
 
 
     // Join Commands Settings
 
-    @ConfigEntry public boolean joinCmdsEnabled = false;
-    @ConfigEntry public double joinCmdInitialDelay = 0.0;
-    @ConfigEntry public double joinCmdDelay = 0.0;
+    @SerialEntry public boolean joinCmdsEnabled = false;
+    @SerialEntry public double joinCmdInitialDelay = 0.0;
+    @SerialEntry public double joinCmdDelay = 0.0;
 
 
     // Mentions Settings
 
-    @ConfigEntry public boolean mentions = false;
-    @ConfigEntry public boolean playMentionSound = true;
-    @ConfigEntry public NotifSound mentionSound = NotifSound.EXPERIENCE;
-    @ConfigEntry public boolean mentionHighlight = true;
-    @ConfigEntry public Color highlightColor = Color.GOLD;
-    @ConfigEntry public boolean excludeServerMsgs = true;
-    @ConfigEntry public boolean excludeSelfMsgs = true;
-    @ConfigEntry public boolean excludeSender = false;
-    @ConfigEntry public boolean mentionsCurrentAccount = true;
-    @ConfigEntry public List<String> mentionsAliases = List.of();
+    @SerialEntry public boolean mentions = false;
+    @SerialEntry public boolean playMentionSound = true;
+    @SerialEntry public NotifSound mentionSound = NotifSound.EXPERIENCE;
+    @SerialEntry public boolean mentionHighlight = true;
+    @SerialEntry public Color highlightColor = Color.GOLD;
+    @SerialEntry public boolean excludeServerMsgs = true;
+    @SerialEntry public boolean excludeSelfMsgs = true;
+    @SerialEntry public boolean excludeSender = false;
+    @SerialEntry public boolean mentionsCurrentAccount = true;
+    @SerialEntry public List<String> mentionsAliases = List.of();
 
 
     // No GMT Settings
 
-    @ConfigEntry public boolean noGMT = false;
-    @ConfigEntry public String timeZone = "";
-    @ConfigEntry public boolean showTimeZone = true;
+    @SerialEntry public boolean noGMT = false;
+    @SerialEntry public String timeZone = "";
+    @SerialEntry public boolean showTimeZone = true;
 
 
     // Enchant All Settings
 
-    @ConfigEntry public EnchantMode enchantMode = EnchantMode.ALL;
-    @ConfigEntry public double enchantDelay = 0.55;
-    @ConfigEntry public int cooldownFrequency = 12;
-    @ConfigEntry public double cooldownTime = 6.0;
-    @ConfigEntry public boolean excludeFrost = true;
+    @SerialEntry public EnchantMode enchantMode = EnchantMode.ALL;
+    @SerialEntry public double enchantDelay = 0.55;
+    @SerialEntry public int cooldownFrequency = 12;
+    @SerialEntry public double cooldownTime = 6.0;
+    @SerialEntry public boolean excludeFrost = true;
 
 
     // Chat Append Settings
 
-    @ConfigEntry public boolean addPrefix = false;
-    @ConfigEntry public String chatPrefix = "";
-    @ConfigEntry public boolean addSuffix = false;
-    @ConfigEntry public String chatSuffix = "";
+    @SerialEntry public boolean addPrefix = false;
+    @SerialEntry public String chatPrefix = "";
+    @SerialEntry public boolean addSuffix = false;
+    @SerialEntry public String chatSuffix = "";
 
 
     // Chat Filters Settings
 
-    @ConfigEntry public boolean tipsFilterEnabled = false;
-    @ConfigEntry public boolean advancementsFilterEnabled = false;
-    @ConfigEntry public boolean welcomeFilterEnabled = false;
-    @ConfigEntry public boolean friendJoinFilterEnabled = false;
-    @ConfigEntry public boolean motdFilterEnabled = false;
-    @ConfigEntry public boolean voteFilterEnabled = false;
-    @ConfigEntry public boolean voteRewardFilterEnabled = false;
-    @ConfigEntry public boolean raffleFilterEnabled = false;
-    @ConfigEntry public boolean cratesFilterEnabled = false;
-    @ConfigEntry public boolean perishedInVoidFilterEnabled = false;
-    @ConfigEntry public boolean skyChatFilterEnabled = false;
+    @SerialEntry public boolean tipsFilterEnabled = false;
+    @SerialEntry public boolean advancementsFilterEnabled = false;
+    @SerialEntry public boolean welcomeFilterEnabled = false;
+    @SerialEntry public boolean friendJoinFilterEnabled = false;
+    @SerialEntry public boolean motdFilterEnabled = false;
+    @SerialEntry public boolean voteFilterEnabled = false;
+    @SerialEntry public boolean voteRewardFilterEnabled = false;
+    @SerialEntry public boolean raffleFilterEnabled = false;
+    @SerialEntry public boolean cratesFilterEnabled = false;
+    @SerialEntry public boolean perishedInVoidFilterEnabled = false;
+    @SerialEntry public boolean skyChatFilterEnabled = false;
 
 
     // Chat Logger Settings
 
-    @ConfigEntry public boolean shopLoggerIncoming = false;
-    @ConfigEntry public boolean shopLoggerOutgoing = false;
-    @ConfigEntry public boolean msgLoggerIncoming = false;
-    @ConfigEntry public boolean msgLoggerOutgoing = false;
-    @ConfigEntry public boolean visitLogger = false;
-    @ConfigEntry public boolean dpLogger = false;
+    @SerialEntry public boolean shopLoggerIncoming = false;
+    @SerialEntry public boolean shopLoggerOutgoing = false;
+    @SerialEntry public boolean msgLoggerIncoming = false;
+    @SerialEntry public boolean msgLoggerOutgoing = false;
+    @SerialEntry public boolean visitLogger = false;
+    @SerialEntry public boolean dpLogger = false;
 
 
     // Event Notifier Settings
 
-    @ConfigEntry public boolean showLlamaTitle = false;
-    @ConfigEntry public boolean playLlamaSound = false;
-    @ConfigEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
-    @ConfigEntry public boolean showTraderTitle = false;
-    @ConfigEntry public boolean playTraderSound = false;
-    @ConfigEntry public NotifSound traderSound = NotifSound.BANJO;
+    @SerialEntry public boolean showLlamaTitle = false;
+    @SerialEntry public boolean playLlamaSound = false;
+    @SerialEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
+    @SerialEntry public boolean showTraderTitle = false;
+    @SerialEntry public boolean playTraderSound = false;
+    @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
 
 
     // Auto Mine Settings
 
-    @ConfigEntry public boolean autoMine = false;
-    @ConfigEntry public boolean autoSwitch = true;
-    @ConfigEntry public int switchDurability = 20;
+    @SerialEntry public boolean autoMine = false;
+    @SerialEntry public boolean autoSwitch = true;
+    @SerialEntry public int switchDurability = 20;
 
 
     // Auto Fix Settings
 
-    @ConfigEntry public boolean autoFix = false;
-    @ConfigEntry public FixMode autoFixMode = FixMode.HAND;
-    @ConfigEntry public double maxFixPercent = 0.2;
-    @ConfigEntry public double autoFixDelay = 120.0;
-    @ConfigEntry public double fixRetryDelay = 3.0;
-    @ConfigEntry public int maxFixRetries = 3;
+    @SerialEntry public boolean autoFix = false;
+    @SerialEntry public FixMode autoFixMode = FixMode.HAND;
+    @SerialEntry public double maxFixPercent = 0.2;
+    @SerialEntry public double autoFixDelay = 120.0;
+    @SerialEntry public double fixRetryDelay = 3.0;
+    @SerialEntry public int maxFixRetries = 3;
 
 
     // Tool Saver Settings
 
-    @ConfigEntry public boolean toolSaver = false;
-    @ConfigEntry public int toolSaverDurability = 20;
+    @SerialEntry public boolean toolSaver = false;
+    @SerialEntry public int toolSaverDurability = 20;
 
 
     // Anti Place Settings
 
-    @ConfigEntry public boolean antiPlaceHeads = false;
-    @ConfigEntry public boolean antiPlaceGrass = false;
+    @SerialEntry public boolean antiPlaceHeads = false;
+    @SerialEntry public boolean antiPlaceGrass = false;
 
 
     // Auto Command Settings
 
-    @ConfigEntry public boolean autoCommandEnabled = false;
-    @ConfigEntry public String autoCommand = "";
-    @ConfigEntry public double autoCommandDelay = 45.0;
+    @SerialEntry public boolean autoCommandEnabled = false;
+    @SerialEntry public double minAutoCommandDelay = 1.5;
+    @SerialEntry public List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> autoCommands = List.of(new KeyValuePair<>("", new KeyValuePair<>(5.0, false)));
 
 
     // Auto Reply Settings
 
-    @ConfigEntry public boolean autoReply = false;
-    @ConfigEntry public String autoResponse = "I am currently AFK. Please /mail me and I'll get back to you later!";
-    @ConfigEntry public double autoReplyDelay = 1.0;
+    @SerialEntry public boolean autoReply = false;
+    @SerialEntry public String autoResponse = "I am currently AFK. Please /mail me and I'll get back to you later!";
+    @SerialEntry public double autoReplyDelay = 1.0;
 
 
     // Auto Raffle Settings
 
-    @ConfigEntry public boolean autoRaffle = false;
-    @ConfigEntry public int skyblockRaffleTickets = 2;
-    @ConfigEntry public int economyRaffleTickets = 5;
-    @ConfigEntry public double grassCheckDelay = 5.0;
+    @SerialEntry public boolean autoRaffle = false;
+    @SerialEntry public int skyblockRaffleTickets = 2;
+    @SerialEntry public int economyRaffleTickets = 5;
+    @SerialEntry public double grassCheckDelay = 5.0;
 
 
     // Auto Private Settings
 
-    @ConfigEntry public boolean autoPrivate = false;
-    @ConfigEntry public List<String> autoPrivateNames = new LimitedList<>(2);
+    @SerialEntry public boolean autoPrivate = false;
+    @SerialEntry public List<String> autoPrivateNames = new ArrayList<>();
 
 
     // Auto Silk Settings
 
-    @ConfigEntry public boolean autoSilk = false;
-    @ConfigEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
-    @ConfigEntry public double autoSilkDelay = 0.25;
+    @SerialEntry public boolean autoSilk = false;
+    @SerialEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
+    @SerialEntry public double autoSilkDelay = 0.25;
+    @SerialEntry public boolean showSilkButton = true;
+    @SerialEntry public CornerButtonPos silkButtonPos = CornerButtonPos.BOTTOM_LEFT;
 
 
     // Auto Crate Settings
 
-    @ConfigEntry public boolean autoCrate = false;
-    @ConfigEntry public CrateMode crateMode = CrateMode.COMMON;
-    @ConfigEntry public double crateDelay = 0.25;
-    @ConfigEntry public double crateDistance = 4.0;
+    @SerialEntry public boolean autoCrate = false;
+    @SerialEntry public CrateMode crateMode = CrateMode.COMMON;
+    @SerialEntry public double crateDelay = 0.25;
+    @SerialEntry public double crateDistance = 4.0;
+
+
+    // Auto Kit Settings
+
+    @SerialEntry public boolean autoKit = false;
+    @SerialEntry public double autoKitCommandDelay = 1.0;
+    @SerialEntry public double autoKitClaimDelay = 10.0;
+    @SerialEntry public double autoKitSystemDelay = 10.0;
+    @SerialEntry public List<Kit> autoKits = List.of();
 
 
     // Staff Detector Settings
 
-    @ConfigEntry public boolean detectStaffJoin = false;
-    @ConfigEntry public boolean detectStaffLeave = false;
-    @ConfigEntry public boolean playStaffSound = false;
-    @ConfigEntry public NotifSound staffDetectSound = NotifSound.BIT;
+    @SerialEntry public boolean detectStaffJoin = false;
+    @SerialEntry public boolean detectStaffLeave = false;
+    @SerialEntry public boolean playStaffSound = false;
+    @SerialEntry public NotifSound staffDetectSound = NotifSound.BIT;
 
 
     public enum Color implements NameableEnum, StringIdentifiable {
@@ -363,6 +388,42 @@ public class ModConfig {
         }
     }
 
+    public enum CornerButtonPos implements NameableEnum, StringIdentifiable {
+        TOP_LEFT("top_left"),
+        TOP_RIGHT("top_right"),
+        BOTTOM_LEFT("bottom_left"),
+        BOTTOM_RIGHT("bottom_right");
+
+        private final String name;
+
+        CornerButtonPos(String name) {
+            this.name = name;
+        }
+
+        public Text getDisplayName() {
+            return Text.translatable(name);
+        }
+
+        @Override
+        public String asString() {
+            return getDisplayName().getString();
+        }
+
+        public static class CornerButtonPosArgumentType extends EnumArgumentType<CornerButtonPos> {
+            private CornerButtonPosArgumentType() {
+                super(StringIdentifiable.createCodec(ModConfig.CornerButtonPos::values), ModConfig.CornerButtonPos::values);
+            }
+
+            public static CornerButtonPosArgumentType cornerButtonPos() {
+                return new CornerButtonPosArgumentType();
+            }
+
+            public static CornerButtonPos getCornerButtonPos(CommandContext<?> context, String id) {
+                return context.getArgument(id, CornerButtonPos.class);
+            }
+        }
+    }
+
     public enum NotifSound implements NameableEnum, StringIdentifiable {
         EXPERIENCE(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.getId().toShortTranslationKey(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP),
         LAY_EGG(SoundEvents.ENTITY_CHICKEN_EGG.getId().toShortTranslationKey(), SoundEvents.ENTITY_CHICKEN_EGG),
@@ -453,6 +514,95 @@ public class ModConfig {
 
             public static CrateMode getCrateMode(CommandContext<?> context, String id) {
                 return context.getArgument(id, CrateMode.class);
+            }
+        }
+    }
+
+    public enum Kit implements NameableEnum, StringIdentifiable {
+
+        SKYTITAN("Skytitan", 24, List.of(
+                new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.IRON_INGOT, 8), new ItemStack(Items.REDSTONE, 64), new ItemStack(Items.SAND, 8),
+                new ItemStack(Items.GRASS_BLOCK, 15), new ItemStack(Items.DIAMOND, 3)
+        )),
+        SKYGOD("Skygod", 48, List.of(
+                new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.IRON_INGOT, 16), new ItemStack(Items.REDSTONE, 64), new ItemStack(Items.SAND, 15),
+                new ItemStack(Items.GRASS_BLOCK, 15), new ItemStack(Items.DIAMOND, 1)
+        )),
+        SKYLORD("Skylord", 48, List.of(
+                new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.IRON_INGOT, 12), new ItemStack(Items.REDSTONE, 64), new ItemStack(Items.SAND, 10),
+                new ItemStack(Items.GRASS_BLOCK, 10)
+        )),
+        SKYKING("Skyking", 72, List.of(
+                new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.DIAMOND_PICKAXE), new ItemStack(Items.IRON_INGOT, 6), new ItemStack(Items.REDSTONE, 64), new ItemStack(Items.SAND, 5),
+                new ItemStack(Items.GRASS_BLOCK, 10)
+        )),
+        SKYKNIGHT("Skyknight", 72, List.of(
+                new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
+                new ItemStack(Items.IRON_INGOT, 6), new ItemStack(Items.REDSTONE, 64)
+        )),
+        SPAWNER("Spawner", 168, List.of(
+                new ItemStack(Items.SPAWNER, 1)
+        )),
+        IRON("Iron", 24, List.of(
+                new ItemStack(Items.IRON_INGOT, 12)
+        )),
+        WOOL("Wool", 24, List.of(
+                new ItemStack(Items.WHITE_WOOL, 64), new ItemStack(Items.ORANGE_WOOL, 64), new ItemStack(Items.MAGENTA_WOOL, 64), new ItemStack(Items.LIGHT_BLUE_WOOL, 64),
+                new ItemStack(Items.YELLOW_WOOL, 64), new ItemStack(Items.LIME_WOOL, 64), new ItemStack(Items.PINK_WOOL, 64), new ItemStack(Items.GRAY_WOOL, 64),
+                new ItemStack(Items.LIGHT_GRAY_WOOL, 64), new ItemStack(Items.CYAN_WOOL, 64), new ItemStack(Items.PURPLE_WOOL, 64), new ItemStack(Items.BLUE_WOOL, 64),
+                new ItemStack(Items.BROWN_WOOL, 64), new ItemStack(Items.GREEN_WOOL, 64), new ItemStack(Items.RED_WOOL, 64), new ItemStack(Items.BLACK_WOOL, 64)
+                )),
+        WOOD("Wood", 24, List.of(
+                new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64),
+                new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64)
+                )),
+        COBBLE("Cobble", 24, List.of(
+                new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64)
+        ));
+
+        private final String name;
+        private final int cooldown;
+        private final List<ItemStack> items;
+
+        Kit(String name, int interval, List<ItemStack> items) {
+            this.name = name;
+            this.items = items;
+            this.cooldown = interval;
+        }
+
+        public int getCooldown() {
+            return cooldown;
+        }
+
+        public List<ItemStack> getItems() {
+            return items;
+        }
+
+        public Text getDisplayName() {
+            return Text.translatable(name);
+        }
+
+        @Override
+        public String asString() {
+            return getDisplayName().getString();
+        }
+
+        public static class KitArgumentType extends EnumArgumentType<Kit> {
+            private KitArgumentType() {
+                super(StringIdentifiable.createCodec(ModConfig.Kit::values), ModConfig.Kit::values);
+            }
+
+            public static KitArgumentType kit() {
+                return new KitArgumentType();
+            }
+
+            public static Kit getKit(CommandContext<?> context, String id) {
+                return context.getArgument(id, Kit.class);
             }
         }
     }

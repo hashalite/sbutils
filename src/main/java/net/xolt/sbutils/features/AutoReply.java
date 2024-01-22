@@ -1,16 +1,13 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.Messenger;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.LinkedList;
@@ -33,37 +30,11 @@ public class AutoReply {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().autoReply = !ModConfig.INSTANCE.getConfig().autoReply;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.autoreply", ModConfig.INSTANCE.getConfig().autoReply);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("response")
-                        .executes(context ->{
-                            Messenger.printSetting("text.sbutils.config.option.autoResponse", ModConfig.INSTANCE.getConfig().autoResponse);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("response", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoResponse = StringArgumentType.getString(context, "response");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoResponse", ModConfig.INSTANCE.getConfig().autoResponse);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("delay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.autoReplyDelay", ModConfig.INSTANCE.getConfig().autoReplyDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("seconds", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoReplyDelay = DoubleArgumentType.getDouble(context, "seconds");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoReplyDelay", ModConfig.INSTANCE.getConfig().autoReplyDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "autoreply", () -> ModConfig.HANDLER.instance().autoReply, (value) -> ModConfig.HANDLER.instance().autoReply = value)
+                    .then(CommandUtils.string("response", "response", "autoResponse", () -> ModConfig.HANDLER.instance().autoResponse, (value) -> ModConfig.HANDLER.instance().autoResponse = value))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoReplyDelay", () -> ModConfig.HANDLER.instance().autoReplyDelay, (value) -> ModConfig.HANDLER.instance().autoReplyDelay = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -73,17 +44,17 @@ public class AutoReply {
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().autoReply || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoReply || MC.getNetworkHandler() == null) {
             return;
         }
 
-        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.INSTANCE.getConfig().autoReplyDelay * 1000.0) {
+        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.instance().autoReplyDelay * 1000.0) {
             sendMessage();
         }
     }
 
     public static void processMessage(Text message) {
-        if (!ModConfig.INSTANCE.getConfig().autoReply) {
+        if (!ModConfig.HANDLER.instance().autoReply) {
             return;
         }
 
@@ -94,7 +65,7 @@ public class AutoReply {
     }
 
     private static void queueResponse(String sender) {
-        msgQueue.offer("msg " + sender + " " + ModConfig.INSTANCE.getConfig().autoResponse);
+        msgQueue.offer("msg " + sender + " " + ModConfig.HANDLER.instance().autoResponse);
     }
 
     private static void sendMessage() {

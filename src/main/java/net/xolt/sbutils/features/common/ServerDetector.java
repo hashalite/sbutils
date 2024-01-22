@@ -3,6 +3,7 @@ package net.xolt.sbutils.features.common;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.command.CommandSource;
 import net.xolt.sbutils.features.AutoAdvert;
+import net.xolt.sbutils.features.AutoKit;
 import net.xolt.sbutils.util.RegexFilters;
 
 import static net.xolt.sbutils.SbUtils.MC;
@@ -32,42 +33,42 @@ public class ServerDetector {
     private static void determineServer() {
         if (!receivedCommandTree || !receivedTabHeader || MC.getNetworkHandler() == null
                 || !RegexFilters.addressFilter.matcher(MC.getNetworkHandler().getConnection().getAddress().toString()).matches()) {
-            currentServer = null;
-            onSwitchServer();
+            updateServer(null);
             return;
         }
 
         for (CommandNode<CommandSource> node : MC.getNetworkHandler().getCommandDispatcher().getRoot().getChildren()) {
             switch (node.getName()) {
                 case "crophoppers:crophoppers":
-                    currentServer  = SbServer.ECONOMY;
-                    onSwitchServer();
+                    updateServer(SbServer.ECONOMY);
                     return;
                 case "mineversesidebar:sidebar":
-                    currentServer = SbServer.HUB;
-                    onSwitchServer();
+                    updateServer(SbServer.HUB);
                     return;
                 case "plugman:plugman":
-                    currentServer = SbServer.SKYBLOCK;
-                    onSwitchServer();
+                    updateServer(SbServer.SKYBLOCK);
                     return;
             }
         }
 
         if (tabHeader.contains("Skyblock Classic")) {
-            currentServer = SbServer.CLASSIC;
-            onSwitchServer();
+            updateServer(SbServer.CLASSIC);
             return;
         }
 
         if (tabHeader.contains("SkyWars")) {
-            currentServer = SbServer.SKYWARS;
-            onSwitchServer();
+            updateServer(SbServer.SKYWARS);
             return;
         }
 
-        currentServer = null;
-        onSwitchServer();
+        updateServer(null);
+    }
+
+    private static void updateServer(SbServer server) {
+        if (currentServer == server)
+            return;
+        currentServer = server;
+        onSwitchServer(server);
     }
 
     public static void onDisconnect() {
@@ -78,8 +79,9 @@ public class ServerDetector {
         resetServer();
     }
 
-    public static void onSwitchServer() {
+    public static void onSwitchServer(SbServer server) {
         AutoAdvert.refreshPrevAdlist();
+        AutoKit.onSwitchServer(server);
     }
 
     public static boolean isOnSkyblock() {

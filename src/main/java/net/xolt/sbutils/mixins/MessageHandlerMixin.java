@@ -57,6 +57,7 @@ public class MessageHandlerMixin {
         AutoReply.processMessage(message);
         EnchantAll.processMessage(message);
         EventNotifier.processMessage(message);
+        AutoKit.processMessage(message);
     }
 
     private static void postFilterMessage(Text message) {

@@ -19,7 +19,7 @@ public class ScreenHandlerMixin {
 
     @ModifyVariable(method = "setStackInSlot", at = @At("HEAD"), argsOnly = true)
     private ItemStack onSetStackInSlot(ItemStack stack) {
-        if (ModConfig.INSTANCE.getConfig().noGMT && MC.currentScreen instanceof GenericContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.currentScreen.getTitle().getString()).matches()) {
+        if (ModConfig.HANDLER.instance().noGMT && MC.currentScreen instanceof GenericContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.currentScreen.getTitle().getString()).matches()) {
             return NoGMT.replaceTimeInLore(stack);
         }
         return stack;
@@ -27,7 +27,7 @@ public class ScreenHandlerMixin {
 
     @ModifyVariable(method = "updateSlotStacks", at = @At("HEAD"), argsOnly = true)
     private List<ItemStack> onSetStackInSlot(List<ItemStack> stacks) {
-        if (ModConfig.INSTANCE.getConfig().noGMT && MC.currentScreen instanceof GenericContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.currentScreen.getTitle().getString()).matches()) {
+        if (ModConfig.HANDLER.instance().noGMT && MC.currentScreen instanceof GenericContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.currentScreen.getTitle().getString()).matches()) {
             return NoGMT.replaceTimeInLores(stacks);
         }
         return stacks;

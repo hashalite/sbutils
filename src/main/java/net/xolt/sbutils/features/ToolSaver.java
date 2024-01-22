@@ -1,8 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -23,6 +21,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.List;
@@ -38,25 +37,10 @@ public class ToolSaver {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().toolSaver = !ModConfig.INSTANCE.getConfig().toolSaver;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.toolsaver", ModConfig.INSTANCE.getConfig().toolSaver);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("durability")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.toolSaverDurability", ModConfig.INSTANCE.getConfig().toolSaverDurability);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("durability", IntegerArgumentType.integer())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().toolSaverDurability = IntegerArgumentType.getInteger(context, "durability");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.toolSaverDurability", ModConfig.INSTANCE.getConfig().toolSaverDurability);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "toolsaver", () -> ModConfig.HANDLER.instance().toolSaver, (value) -> ModConfig.HANDLER.instance().toolSaver = value)
+                    .then(CommandUtils.integer("durability", "durability", "toolSaverDurability", () -> ModConfig.HANDLER.instance().toolSaverDurability, (value) -> ModConfig.HANDLER.instance().toolSaverDurability = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -66,7 +50,7 @@ public class ToolSaver {
     }
 
     public static boolean shouldCancelBlockInteract(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult) {
-        if (!ModConfig.INSTANCE.getConfig().toolSaver) {
+        if (!ModConfig.HANDLER.instance().toolSaver) {
             return false;
         }
 
@@ -85,7 +69,7 @@ public class ToolSaver {
     }
 
     public static boolean shouldCancelEntityInteract(PlayerEntity player, Entity entity, Hand hand) {
-        if (!ModConfig.INSTANCE.getConfig().toolSaver) {
+        if (!ModConfig.HANDLER.instance().toolSaver) {
             return false;
         }
 
@@ -110,7 +94,7 @@ public class ToolSaver {
     }
 
     public static boolean shouldCancelAttack() {
-        if (!ModConfig.INSTANCE.getConfig().toolSaver || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().toolSaver || MC.player == null) {
             return false;
         }
 
@@ -129,7 +113,7 @@ public class ToolSaver {
             return false;
         }
 
-        return item.getMaxDamage() - item.getDamage() <= ModConfig.INSTANCE.getConfig().toolSaverDurability;
+        return item.getMaxDamage() - item.getDamage() <= ModConfig.HANDLER.instance().toolSaverDurability;
     }
 
     private static void notifyBlocked() {

@@ -1,8 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -10,6 +8,7 @@ import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.ChatFilter;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -21,158 +20,35 @@ public class ChatFilters {
     private static final String ALIAS = "filter";
 
     private static final List<ChatFilter> filters = List.of(
-            new ChatFilter("text.sbutils.config.option.tipsFilterEnabled", List.of(RegexFilters.tipsFilter), () -> ModConfig.INSTANCE.getConfig().tipsFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.advancementsFilterEnabled", List.of(RegexFilters.advancementsFilter), () -> ModConfig.INSTANCE.getConfig().advancementsFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.welcomeFilterEnabled", List.of(RegexFilters.welcomeFilter), () -> ModConfig.INSTANCE.getConfig().welcomeFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.friendJoinFilterEnabled", List.of(RegexFilters.friendJoinFilter), () -> ModConfig.INSTANCE.getConfig().friendJoinFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.motdFilterEnabled", List.of(RegexFilters.motdFilter), () -> ModConfig.INSTANCE.getConfig().motdFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.voteFilterEnabled", List.of(RegexFilters.voteFilter), () -> ModConfig.INSTANCE.getConfig().voteFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.voteRewardFilterEnabled", List.of(RegexFilters.voteRewardFilter), () -> ModConfig.INSTANCE.getConfig().voteRewardFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.raffleFilterEnabled", List.of(RegexFilters.raffleFilter), () -> ModConfig.INSTANCE.getConfig().raffleFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.cratesFilterEnabled", List.of(RegexFilters.cratesFilter), () -> ModConfig.INSTANCE.getConfig().cratesFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.perishedInVoidFilterEnabled", List.of(RegexFilters.perishedInVoidFilter), () -> ModConfig.INSTANCE.getConfig().perishedInVoidFilterEnabled),
-            new ChatFilter("text.sbutils.config.option.skyChatFilterEnabled", List.of(RegexFilters.skyChatFilter), () -> ModConfig.INSTANCE.getConfig().skyChatFilterEnabled)
+            new ChatFilter("text.sbutils.config.option.tipsFilterEnabled", List.of(RegexFilters.tipsFilter), () -> ModConfig.HANDLER.instance().tipsFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.advancementsFilterEnabled", List.of(RegexFilters.advancementsFilter), () -> ModConfig.HANDLER.instance().advancementsFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.welcomeFilterEnabled", List.of(RegexFilters.welcomeFilter), () -> ModConfig.HANDLER.instance().welcomeFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.friendJoinFilterEnabled", List.of(RegexFilters.friendJoinFilter), () -> ModConfig.HANDLER.instance().friendJoinFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.motdFilterEnabled", List.of(RegexFilters.motdFilter), () -> ModConfig.HANDLER.instance().motdFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.voteFilterEnabled", List.of(RegexFilters.voteFilter), () -> ModConfig.HANDLER.instance().voteFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.voteRewardFilterEnabled", List.of(RegexFilters.voteRewardFilter), () -> ModConfig.HANDLER.instance().voteRewardFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.raffleFilterEnabled", List.of(RegexFilters.raffleFilter), () -> ModConfig.HANDLER.instance().raffleFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.cratesFilterEnabled", List.of(RegexFilters.cratesFilter), () -> ModConfig.HANDLER.instance().cratesFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.perishedInVoidFilterEnabled", List.of(RegexFilters.perishedInVoidFilter), () -> ModConfig.HANDLER.instance().perishedInVoidFilterEnabled),
+            new ChatFilter("text.sbutils.config.option.skyChatFilterEnabled", List.of(RegexFilters.skyChatFilter), () -> ModConfig.HANDLER.instance().skyChatFilterEnabled)
     );
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> chatFilterNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                        .executes(context -> {
-                            Messenger.printEnabledFilters("message.sbutils.chatFilter.status", filters);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                .then(ClientCommandManager.literal("tips")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.tipsFilterEnabled", ModConfig.INSTANCE.getConfig().tipsFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().tipsFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.tipsFilterEnabled", ModConfig.INSTANCE.getConfig().tipsFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("advancements")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.advancementsFilterEnabled", ModConfig.INSTANCE.getConfig().advancementsFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().advancementsFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.advancementsFilterEnabled", ModConfig.INSTANCE.getConfig().advancementsFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("welcome")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.welcomeFilterEnabled", ModConfig.INSTANCE.getConfig().welcomeFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().welcomeFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.welcomeFilterEnabled", ModConfig.INSTANCE.getConfig().welcomeFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("friendJoin")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.friendJoinFilterEnabled", ModConfig.INSTANCE.getConfig().friendJoinFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().friendJoinFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.friendJoinFilterEnabled", ModConfig.INSTANCE.getConfig().friendJoinFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("motd")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.motdFilterEnabled", ModConfig.INSTANCE.getConfig().friendJoinFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().motdFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.motdFilterEnabled", ModConfig.INSTANCE.getConfig().motdFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("vote")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.voteFilterEnabled", ModConfig.INSTANCE.getConfig().voteFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().voteFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.voteFilterEnabled", ModConfig.INSTANCE.getConfig().voteFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("voteReward")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.voteRewardFilterEnabled", ModConfig.INSTANCE.getConfig().voteRewardFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().voteRewardFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.voteRewardFilterEnabled", ModConfig.INSTANCE.getConfig().voteRewardFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("raffle")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.raffleFilterEnabled", ModConfig.INSTANCE.getConfig().raffleFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().raffleFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.raffleFilterEnabled", ModConfig.INSTANCE.getConfig().raffleFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("crates")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.cratesFilterEnabled", ModConfig.INSTANCE.getConfig().cratesFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().cratesFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.cratesFilterEnabled", ModConfig.INSTANCE.getConfig().cratesFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("perished")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.perishedInVoidFilterEnabled", ModConfig.INSTANCE.getConfig().perishedInVoidFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().perishedInVoidFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.perishedInVoidFilterEnabled", ModConfig.INSTANCE.getConfig().perishedInVoidFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("skyChat")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.skyChatFilterEnabled", ModConfig.INSTANCE.getConfig().skyChatFilterEnabled);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().skyChatFilterEnabled = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.skyChatFilterEnabled", ModConfig.INSTANCE.getConfig().skyChatFilterEnabled);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> chatFilterNode = dispatcher.register(
+                CommandUtils.runnable(COMMAND, () -> Messenger.printEnabledFilters("message.sbutils.chatFilter.status", filters))
+                    .then(CommandUtils.bool("tips", "tipsFilterEnabled", () -> ModConfig.HANDLER.instance().tipsFilterEnabled, (value) -> ModConfig.HANDLER.instance().tipsFilterEnabled = value))
+                    .then(CommandUtils.bool("advancements", "advancementsFilterEnabled", () -> ModConfig.HANDLER.instance().advancementsFilterEnabled, (value) -> ModConfig.HANDLER.instance().advancementsFilterEnabled = value))
+                    .then(CommandUtils.bool("welcome", "welcomeFilterEnabled", () -> ModConfig.HANDLER.instance().welcomeFilterEnabled, (value) -> ModConfig.HANDLER.instance().welcomeFilterEnabled = value))
+                    .then(CommandUtils.bool("friendJoin", "friendJoinFilterEnabled", () -> ModConfig.HANDLER.instance().friendJoinFilterEnabled, (value) -> ModConfig.HANDLER.instance().friendJoinFilterEnabled = value))
+                    .then(CommandUtils.bool("motd", "motdFilterEnabled", () -> ModConfig.HANDLER.instance().motdFilterEnabled, (value) -> ModConfig.HANDLER.instance().motdFilterEnabled = value))
+                    .then(CommandUtils.bool("vote", "voteFilterEnabled", () -> ModConfig.HANDLER.instance().voteFilterEnabled, (value) -> ModConfig.HANDLER.instance().voteFilterEnabled = value))
+                    .then(CommandUtils.bool("voteReward", "voteRewardFilterEnabled", () -> ModConfig.HANDLER.instance().voteRewardFilterEnabled, (value) -> ModConfig.HANDLER.instance().voteRewardFilterEnabled = value))
+                    .then(CommandUtils.bool("raffle", "raffleFilterEnabled", () -> ModConfig.HANDLER.instance().raffleFilterEnabled, (value) -> ModConfig.HANDLER.instance().raffleFilterEnabled = value))
+                    .then(CommandUtils.bool("crates", "cratesFilterEnabled", () -> ModConfig.HANDLER.instance().cratesFilterEnabled, (value) -> ModConfig.HANDLER.instance().cratesFilterEnabled = value))
+                    .then(CommandUtils.bool("perished", "perishedInVoidFilterEnabled", () -> ModConfig.HANDLER.instance().perishedInVoidFilterEnabled, (value) -> ModConfig.HANDLER.instance().perishedInVoidFilterEnabled = value))
+                    .then(CommandUtils.bool("skyChat", "skyChatFilterEnabled", () -> ModConfig.HANDLER.instance().skyChatFilterEnabled, (value) -> ModConfig.HANDLER.instance().skyChatFilterEnabled = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->

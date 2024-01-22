@@ -1,9 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -13,6 +10,7 @@ import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -32,49 +30,12 @@ public class AutoRaffle {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().autoRaffle = !ModConfig.INSTANCE.getConfig().autoRaffle;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.autoraffle", ModConfig.INSTANCE.getConfig().autoRaffle);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("sbTickets")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.skyblockRaffleTickets", ModConfig.INSTANCE.getConfig().skyblockRaffleTickets);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().skyblockRaffleTickets = Math.min(Math.max(IntegerArgumentType.getInteger(context, "amount"), 1), 2);
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.skyblockRaffleTickets", ModConfig.INSTANCE.getConfig().skyblockRaffleTickets);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("ecoTickets")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.economyRaffleTickets", ModConfig.INSTANCE.getConfig().economyRaffleTickets);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().economyRaffleTickets = Math.min(Math.max(IntegerArgumentType.getInteger(context, "amount"), 1), 5);
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.economyRaffleTickets", ModConfig.INSTANCE.getConfig().economyRaffleTickets);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("checkDelay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.grassCheckDelay", ModConfig.INSTANCE.getConfig().grassCheckDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("seconds", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().grassCheckDelay = DoubleArgumentType.getDouble(context, "seconds");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.grassCheckDelay", ModConfig.INSTANCE.getConfig().grassCheckDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "autoraffle", () -> ModConfig.HANDLER.instance().autoRaffle, (value) -> ModConfig.HANDLER.instance().autoRaffle = value)
+                    .then(CommandUtils.integer("sbTickets", "amount", "skyblockRaffleTickets", () -> ModConfig.HANDLER.instance().skyblockRaffleTickets, (value) -> ModConfig.HANDLER.instance().skyblockRaffleTickets = value))
+                    .then(CommandUtils.integer("ecoTickets", "amount", "economyRaffleTickets", () -> ModConfig.HANDLER.instance().economyRaffleTickets, (value) -> ModConfig.HANDLER.instance().economyRaffleTickets = value))
+                    .then(CommandUtils.doubl("checkDelay", "seconds", "grassCheckDelay", () -> ModConfig.HANDLER.instance().grassCheckDelay, (value) -> ModConfig.HANDLER.instance().grassCheckDelay = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -84,28 +45,28 @@ public class AutoRaffle {
     }
 
     public static void tick() {
-        if (enabled != ModConfig.INSTANCE.getConfig().autoRaffle) {
-            enabled = ModConfig.INSTANCE.getConfig().autoRaffle;
+        if (enabled != ModConfig.HANDLER.instance().autoRaffle) {
+            enabled = ModConfig.HANDLER.instance().autoRaffle;
             reset();
         }
 
-        if (!ModConfig.INSTANCE.getConfig().autoRaffle || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoRaffle || MC.getNetworkHandler() == null) {
             return;
         }
 
-        if (waitingToBuy && System.currentTimeMillis() - checkedForGrassAt > ModConfig.INSTANCE.getConfig().grassCheckDelay * 1000.0) {
+        if (waitingToBuy && System.currentTimeMillis() - checkedForGrassAt > ModConfig.HANDLER.instance().grassCheckDelay * 1000.0) {
             buyTickets();
         }
     }
 
     public static void processMessage(Text message) {
-        if (ModConfig.INSTANCE.getConfig().autoRaffle && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
+        if (ModConfig.HANDLER.instance().autoRaffle && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
             reset();
         }
     }
 
     public static void onJoinGame() {
-        if (ModConfig.INSTANCE.getConfig().autoRaffle) {
+        if (ModConfig.HANDLER.instance().autoRaffle) {
             reset();
         }
     }
@@ -132,7 +93,7 @@ public class AutoRaffle {
             return;
         }
 
-        int numTickets = Math.min(Math.max(ModConfig.INSTANCE.getConfig().skyblockRaffleTickets, 1), 2);
+        int numTickets = Math.min(Math.max(ModConfig.HANDLER.instance().skyblockRaffleTickets, 1), 2);
         int grassCount = getGrassCount();
         if (grassCount < 1) {
             waitingToBuy = true;
@@ -155,7 +116,7 @@ public class AutoRaffle {
             return;
         }
 
-        int buyAmount = Math.min(Math.max(ModConfig.INSTANCE.getConfig().economyRaffleTickets, 1), 5);
+        int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().economyRaffleTickets, 1), 5);
         MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
         Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);

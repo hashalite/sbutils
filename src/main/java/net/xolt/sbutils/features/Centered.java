@@ -1,12 +1,12 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.util.math.BlockPos;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.math.BigDecimal;
@@ -22,10 +22,9 @@ public class Centered {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> centeredNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context ->
-                        onCenteredCommand()
-                ));
+        final LiteralCommandNode<FabricClientCommandSource> centeredNode = dispatcher.register(
+                CommandUtils.runnable(COMMAND, Centered::onCenteredCommand)
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -34,9 +33,9 @@ public class Centered {
                 .redirect(centeredNode));
     }
 
-    private static int onCenteredCommand() {
+    private static void onCenteredCommand() {
         if (MC.player == null) {
-            return Command.SINGLE_SUCCESS;
+            return;
         }
         BlockPos pos = MC.player.getBlockPos();
         if (isCentered(pos, 149)) {
@@ -48,7 +47,6 @@ public class Centered {
         } else {
             Messenger.printMessage("message.sbutils.centered.notSuitable");
         }
-        return Command.SINGLE_SUCCESS;
     }
 
     private static boolean isCentered(BlockPos pos, int islandSize) {

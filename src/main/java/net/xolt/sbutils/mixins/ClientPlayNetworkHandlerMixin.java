@@ -3,22 +3,12 @@ package net.xolt.sbutils.mixins;
 import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
-import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.xolt.sbutils.features.*;
 import net.xolt.sbutils.features.common.ServerDetector;
-import net.xolt.sbutils.util.Messenger;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -35,6 +25,8 @@ public abstract class ClientPlayNetworkHandlerMixin {
         AutoAdvert.onJoinGame();
         JoinCommands.onJoinGame();
         AutoRaffle.onJoinGame();
+        AutoKit.onJoinGame();
+        AutoFix.onJoinGame();
     }
 
     @Inject(method = "onCloseScreen", at = @At("HEAD"))
@@ -98,31 +90,12 @@ public abstract class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onScreenHandlerSlotUpdate", at = @At("TAIL"))
     private void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
         AutoFix.onUpdateInventory();
-        AutoSilk.onInventoryUpdate(packet);
-    }
-
-    @Inject(method = "onInventory", at = @At("HEAD"))
-    private void onInventory(InventoryS2CPacket packet, CallbackInfo ci) {
-
+        AutoKit.onUpdateInventory();
+        AutoSilk.onUpdateInvSlot(packet);
     }
 
     @Inject(method = "onCommandTree", at = @At("TAIL"))
     private void afterCommandTree(CommandTreeS2CPacket packet, CallbackInfo ci) {
         ServerDetector.afterCommandTree();
-    }
-
-    @Inject(method = "sendPacket", at = @At("HEAD"))
-    private void onSendPacket(Packet<?> packet, CallbackInfo ci) {
-        if (packet instanceof ClickSlotC2SPacket) {
-            AutoFix.onUpdateInventory();
-        }
-    }
-
-    @ModifyVariable(method = "sendPacket", at = @At("HEAD"), argsOnly = true)
-    private Packet<?> onSendPacket(Packet<?> packet) {
-        if (packet instanceof ChatMessageC2SPacket) {
-            return ChatAppend.processSentMessage((ChatMessageC2SPacket)packet);
-        }
-        return packet;
     }
 }

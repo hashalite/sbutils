@@ -2,7 +2,6 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -14,6 +13,7 @@ import net.minecraft.item.PickaxeItem;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.mixins.TimeArgumentTypeAccessor;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
 
@@ -30,61 +30,26 @@ public class AutoMine {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().autoMine = !ModConfig.INSTANCE.getConfig().autoMine;
-                    ModConfig.INSTANCE.save();
-                    if (!ModConfig.INSTANCE.getConfig().autoMine) {
-                        reset();
-                    }
-                    Messenger.printChangedSetting("text.sbutils.config.category.automine", ModConfig.INSTANCE.getConfig().autoMine);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("timer")
-                        .executes(context -> {
-                            if (timer <= 0) {
-                                Messenger.printMessage("message.sbutils.autoMine.timerNotSet");
-                                return Command.SINGLE_SUCCESS;
-                            }
-                            Messenger.printAutoMineTime(timer);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("duration", getTimeArgumentType())
-                                .executes(context -> {
-                                    timer = IntegerArgumentType.getInteger(context, "duration");
-                                    ModConfig.INSTANCE.getConfig().autoMine = true;
-                                    Messenger.printAutoMineEnabledFor(timer);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("switch")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.autoSwitch", ModConfig.INSTANCE.getConfig().autoSwitch);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoSwitch = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoSwitch", ModConfig.INSTANCE.getConfig().autoSwitch);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("durability")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.switchDurability", ModConfig.INSTANCE.getConfig().switchDurability);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("durability", IntegerArgumentType.integer())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().switchDurability = IntegerArgumentType.getInteger(context, "durability");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.switchDurability", ModConfig.INSTANCE.getConfig().switchDurability);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "automine", () -> ModConfig.HANDLER.instance().autoMine, (value) -> {ModConfig.HANDLER.instance().autoMine = value; if (!value) reset();})
+                    .then(CommandUtils.runnable("timer", () -> Messenger.printAutoMineTime(timer))
+                            .then(ClientCommandManager.argument("duration", getTimeArgumentType())
+                                    .executes(context -> onTimerCommand(IntegerArgumentType.getInteger(context, "duration")))))
+                    .then(CommandUtils.bool("switch", "autoSwitch", () -> ModConfig.HANDLER.instance().autoSwitch, (value) -> ModConfig.HANDLER.instance().autoSwitch = value))
+                    .then(CommandUtils.integer("durability", "durability", "switchDurability", () -> ModConfig.HANDLER.instance().switchDurability, (value) -> ModConfig.HANDLER.instance().switchDurability = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute(COMMAND, context.getSource()))
                 .redirect(autoMineNode));
+    }
+
+    private static int onTimerCommand(int time) {
+        timer = time;
+        ModConfig.HANDLER.instance().autoMine = true;
+        Messenger.printAutoMineEnabledFor(timer);
+        return Command.SINGLE_SUCCESS;
     }
 
     private static TimeArgumentType getTimeArgumentType() {
@@ -100,15 +65,15 @@ public class AutoMine {
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().autoMine || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoMine || MC.player == null) {
             return;
         }
 
         if (timer > 0) {
             timer--;
             if (timer == 0) {
-                ModConfig.INSTANCE.getConfig().autoMine = false;
-                ModConfig.INSTANCE.save();
+                ModConfig.HANDLER.instance().autoMine = false;
+                ModConfig.HANDLER.save();
                 MC.options.attackKey.setPressed(false);
                 Messenger.printChangedSetting("text.sbutils.config.category.automine", false);
                 return;
@@ -118,13 +83,13 @@ public class AutoMine {
         ItemStack holding = MC.player.getInventory().getMainHandStack();
         int minDurability = getMinDurability();
 
-        if (ModConfig.INSTANCE.getConfig().autoSwitch && !AutoFix.fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamage() <= minDurability) {
+        if (ModConfig.HANDLER.instance().autoSwitch && !AutoFix.fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamage() <= minDurability) {
             int newPickaxeSlot = findNewPickaxe();
             if (newPickaxeSlot != -1) {
                 InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selectedSlot);
-            } else if (!ModConfig.INSTANCE.getConfig().autoFix) {
-                ModConfig.INSTANCE.getConfig().autoMine = false;
-                ModConfig.INSTANCE.save();
+            } else if (!ModConfig.HANDLER.instance().autoFix) {
+                ModConfig.HANDLER.instance().autoMine = false;
+                ModConfig.HANDLER.save();
                 Messenger.printMessage("message.sbutils.autoMine.noPickaxe");
                 return;
             }
@@ -145,7 +110,7 @@ public class AutoMine {
             return -1;
         }
 
-        int minDurability = Math.max(ModConfig.INSTANCE.getConfig().switchDurability, ModConfig.INSTANCE.getConfig().toolSaver ? ModConfig.INSTANCE.getConfig().toolSaverDurability : 0);
+        int minDurability = Math.max(ModConfig.HANDLER.instance().switchDurability, ModConfig.HANDLER.instance().toolSaver ? ModConfig.HANDLER.instance().toolSaverDurability : 0);
 
         for (int i = 0; i < MC.player.getInventory().size(); i++) {
             ItemStack itemStack = MC.player.getInventory().getStack(i);
@@ -161,7 +126,7 @@ public class AutoMine {
     }
 
     private static int getMinDurability() {
-        return Math.max(ModConfig.INSTANCE.getConfig().autoSwitch ? ModConfig.INSTANCE.getConfig().switchDurability : -1, ModConfig.INSTANCE.getConfig().toolSaver ? ModConfig.INSTANCE.getConfig().toolSaverDurability : -1);
+        return Math.max(ModConfig.HANDLER.instance().autoSwitch ? ModConfig.HANDLER.instance().switchDurability : -1, ModConfig.HANDLER.instance().toolSaver ? ModConfig.HANDLER.instance().toolSaverDurability : -1);
     }
 
     private static void reset() {

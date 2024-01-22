@@ -1,9 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -11,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
@@ -34,6 +32,7 @@ public class AutoFix {
     private static int prevSelectedSlot;
     private static int selectedSlot;
     private static int tries;
+    private static long joinedAt;
 
     public static void init() {
         reset();
@@ -41,85 +40,16 @@ public class AutoFix {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().autoFix = !ModConfig.INSTANCE.getConfig().autoFix;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.autofix", ModConfig.INSTANCE.getConfig().autoFix);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("info")
-                        .executes(context -> {
-                            Messenger.printAutoFixInfo(ModConfig.INSTANCE.getConfig().autoFix, fixing, findMostDamaged(), delayLeft());
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                .then(ClientCommandManager.literal("reset")
-                        .executes(context -> {
-                            Messenger.printMessage("message.sbutils.autoFix.reset");
-                            reset();
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                .then(ClientCommandManager.literal("mode")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.autoFixMode", ModConfig.INSTANCE.getConfig().autoFixMode);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("mode", ModConfig.FixMode.FixModeArgumentType.fixMode())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoFixMode = ModConfig.FixMode.FixModeArgumentType.getFixMode(context, "mode");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoFixMode", ModConfig.INSTANCE.getConfig().autoFixMode);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("percent")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.maxFixPercent", ModConfig.INSTANCE.getConfig().maxFixPercent);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("percent", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().maxFixPercent = DoubleArgumentType.getDouble(context, "percent");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.maxFixPercent", ModConfig.INSTANCE.getConfig().maxFixPercent);
-                                    findMostDamaged = true;
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("delay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.autoFixDelay", ModConfig.INSTANCE.getConfig().autoFixDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoFixDelay = DoubleArgumentType.getDouble(context, "delay");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoFixDelay", ModConfig.INSTANCE.getConfig().autoFixDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("retryDelay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.fixRetryDelay", ModConfig.INSTANCE.getConfig().fixRetryDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().fixRetryDelay = DoubleArgumentType.getDouble(context, "delay");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.fixRetryDelay", ModConfig.INSTANCE.getConfig().fixRetryDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("maxRetries")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.maxFixRetries", ModConfig.INSTANCE.getConfig().maxFixRetries);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("retries", IntegerArgumentType.integer())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().maxFixRetries = IntegerArgumentType.getInteger(context, "retries");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.maxFixRetries", ModConfig.INSTANCE.getConfig().maxFixRetries);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "autofix", () -> ModConfig.HANDLER.instance().autoFix, (value) -> ModConfig.HANDLER.instance().autoFix = value)
+                    .then(CommandUtils.runnable("info", () -> Messenger.printAutoFixInfo(ModConfig.HANDLER.instance().autoFix, fixing, findMostDamaged(), delayLeft())))
+                    .then(CommandUtils.runnable("reset", () -> {reset(); Messenger.printMessage("message.sbutils.autoFix.reset");}))
+                    .then(CommandUtils.getterSetter("mode", "mode", "autoFixMode", () -> ModConfig.HANDLER.instance().autoFixMode, (value) -> ModConfig.HANDLER.instance().autoFixMode = value, ModConfig.FixMode.FixModeArgumentType.fixMode(), ModConfig.FixMode.FixModeArgumentType::getFixMode))
+                    .then(CommandUtils.doubl("percent", "percent", "maxFixPercent", () -> ModConfig.HANDLER.instance().maxFixPercent, (value) -> {ModConfig.HANDLER.instance().maxFixPercent = value; onChangeMaxFixPercent();}))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoFixDelay", () -> ModConfig.HANDLER.instance().autoFixDelay, (value) -> ModConfig.HANDLER.instance().autoFixDelay = value))
+                    .then(CommandUtils.doubl("retryDelay", "seconds", "fixRetryDelay", () -> ModConfig.HANDLER.instance().fixRetryDelay, (value) -> ModConfig.HANDLER.instance().fixRetryDelay = value))
+                    .then(CommandUtils.integer("maxRetries", "retries", "maxFixRetries", () -> ModConfig.HANDLER.instance().maxFixRetries, (value) -> ModConfig.HANDLER.instance().maxFixRetries = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -129,29 +59,35 @@ public class AutoFix {
     }
 
     public static void tick() {
-        if (enabled != ModConfig.INSTANCE.getConfig().autoFix) {
-            enabled = ModConfig.INSTANCE.getConfig().autoFix;
+        if (enabled != ModConfig.HANDLER.instance().autoFix) {
+            enabled = ModConfig.HANDLER.instance().autoFix;
             reset();
         }
 
-        if (!ModConfig.INSTANCE.getConfig().autoFix || EnchantAll.active() || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoFix || EnchantAll.active() || MC.player == null) {
             return;
         }
+
+        long currentTime = System.currentTimeMillis();
+
+        // 10s delay needed due to chat messages being held for 10 seconds upon joining
+        if (currentTime - joinedAt < 10000)
+            return;
 
         if (findMostDamaged && !fixing) {
             itemPrevSlot = findMostDamaged();
             findMostDamaged = false;
         }
 
-        if (waitingForResponse && System.currentTimeMillis() - lastActionPerformedAt > ModConfig.INSTANCE.getConfig().fixRetryDelay * 1000) {
+        if (waitingForResponse && currentTime - lastActionPerformedAt > ModConfig.HANDLER.instance().fixRetryDelay * 1000) {
             waitingForResponse = false;
-            if (tries > ModConfig.INSTANCE.getConfig().maxFixRetries) {
+            if (tries > ModConfig.HANDLER.instance().maxFixRetries) {
                 Messenger.printWithPlaceholders("message.sbutils.autoFix.maxTriesReached", tries);
-                if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND) {
+                if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND) {
                     returnAndSwapBack();
                 }
-                ModConfig.INSTANCE.getConfig().autoFix = false;
-                ModConfig.INSTANCE.save();
+                ModConfig.HANDLER.instance().autoFix = false;
+                ModConfig.HANDLER.save();
                 reset();
             }
         }
@@ -167,15 +103,23 @@ public class AutoFix {
         doAutoFix();
     }
 
+    public static void onJoinGame() {
+        joinedAt = System.currentTimeMillis();
+    }
+
     public static void onDisconnect() {
         reset();
     }
 
     public static void onUpdateInventory() {
-        if (!ModConfig.INSTANCE.getConfig().autoFix || fixing) {
+        if (!ModConfig.HANDLER.instance().autoFix || fixing) {
             return;
         }
 
+        findMostDamaged = true;
+    }
+
+    public static void onChangeMaxFixPercent() {
         findMostDamaged = true;
     }
 
@@ -184,7 +128,7 @@ public class AutoFix {
             if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot)) {
                 fixing = true;
 
-                if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.ALL) {
+                if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.ALL) {
                     return;
                 }
 
@@ -227,9 +171,9 @@ public class AutoFix {
         if (fixFailMatcher.matches()) {
             String minutesText = fixFailMatcher.group(3);
             String secondsText = fixFailMatcher.group(6);
-            int minutes = minutesText.length() > 0 ? Integer.parseInt(minutesText) : 0;
-            int seconds = secondsText.length() > 0 ? Integer.parseInt(secondsText) : 0;
-            if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND) {
+            int minutes = minutesText == null || minutesText.isEmpty() ? 0 : Integer.parseInt(minutesText);
+            int seconds = secondsText == null || secondsText.isEmpty() ? 0 : Integer.parseInt(secondsText);
+            if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND) {
                 returnAndSwapBack();
             }
             reset();
@@ -239,7 +183,7 @@ public class AutoFix {
 
         Matcher fixSuccessMatcher = RegexFilters.fixSuccessFilter.matcher(message.getString());
         if (fixSuccessMatcher.matches()) {
-            if (ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND) {
+            if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND) {
                 returnAndSwapBack();
             }
             reset();
@@ -268,7 +212,7 @@ public class AutoFix {
 
             double maxDamage = itemStack.getMaxDamage();
 
-            if (ModConfig.INSTANCE.getConfig().maxFixPercent > -1 && (maxDamage - (double)itemStack.getDamage()) / maxDamage > ModConfig.INSTANCE.getConfig().maxFixPercent) {
+            if (ModConfig.HANDLER.instance().maxFixPercent > -1 && (maxDamage - (double)itemStack.getDamage()) / maxDamage > ModConfig.HANDLER.instance().maxFixPercent) {
                 continue;
             }
 
@@ -284,7 +228,7 @@ public class AutoFix {
         if (MC.getNetworkHandler() == null) {
             return;
         }
-        String command = ModConfig.INSTANCE.getConfig().autoFixMode == ModConfig.FixMode.HAND ? "fix" : "fix all";
+        String command = ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND ? "fix" : "fix all";
         MC.getNetworkHandler().sendChatCommand(command);
     }
 
@@ -298,7 +242,7 @@ public class AutoFix {
     }
 
     private static int delay() {
-        return (int)(ModConfig.INSTANCE.getConfig().autoFixDelay * 1000.0) + 2000;
+        return (int)(ModConfig.HANDLER.instance().autoFixDelay * 1000.0) + 2000;
     }
 
     private static int delayLeft() {

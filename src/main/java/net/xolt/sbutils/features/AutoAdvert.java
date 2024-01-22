@@ -2,20 +2,22 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
+import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.*;
 
@@ -33,133 +35,34 @@ public class AutoAdvert {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().autoAdvert = !ModConfig.INSTANCE.getConfig().autoAdvert;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.autoadvert", ModConfig.INSTANCE.getConfig().autoAdvert);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("info")
-                        .executes(context -> {
-                            Messenger.printAutoAdvertInfo(ModConfig.INSTANCE.getConfig().autoAdvert, ServerDetector.isOnSkyblock(), getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.INSTANCE.getConfig().advertUseWhitelist);
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                .then(ClientCommandManager.literal("sbFile")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.skyblockAdFile", getAdFile());
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("filename", StringArgumentType.string())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().skyblockAdFile = StringArgumentType.getString(context, "filename");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.skyblockAdFile", ModConfig.INSTANCE.getConfig().skyblockAdFile);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("ecoFile")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.economyAdFile", getAdFile());
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("filename", StringArgumentType.string())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().economyAdFile = StringArgumentType.getString(context, "filename");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.economyAdFile", ModConfig.INSTANCE.getConfig().economyAdFile);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("classicFile")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.classicAdFile", getAdFile());
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("filename", StringArgumentType.string())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().classicAdFile = StringArgumentType.getString(context, "filename");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.classicAdFile", ModConfig.INSTANCE.getConfig().classicAdFile);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("ads")
-                        .then(ClientCommandManager.literal("list")
-                                .executes(context ->
-                                        onListCommand()
-                                ))
-                        .then(ClientCommandManager.literal("add")
-                                .then(ClientCommandManager.argument("advert", StringArgumentType.greedyString())
-                                        .executes(context ->
-                                                onAddCommand(StringArgumentType.getString(context, "advert"))
-                                        )))
-                        .then(ClientCommandManager.literal("del")
-                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                        .executes(context ->
-                                                onDelCommand(IntegerArgumentType.getInteger(context, "index"))
-                                        )))
-                        .then(ClientCommandManager.literal("insert")
-                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                        .then(ClientCommandManager.argument("advert", StringArgumentType.greedyString())
-                                                .executes(context ->
-                                                        onInsertCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "advert"))
-                                                ))))
-                        .then(ClientCommandManager.literal("toggle")
-                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                        .executes(context ->
-                                                onToggleCommand(IntegerArgumentType.getInteger(context, "index"))
-                                        ))))
-                .then(ClientCommandManager.literal("delay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.advertDelay", ModConfig.INSTANCE.getConfig().advertDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("seconds", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().advertDelay = DoubleArgumentType.getDouble(context, "seconds");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.advertDelay", ModConfig.INSTANCE.getConfig().advertDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("initialDelay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.advertInitialDelay", ModConfig.INSTANCE.getConfig().advertInitialDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("seconds", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().advertDelay = DoubleArgumentType.getDouble(context, "seconds");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.advertInitialDelay", ModConfig.INSTANCE.getConfig().advertInitialDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("whitelist")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.advertUseWhitelist", ModConfig.INSTANCE.getConfig().advertUseWhitelist);
-                            Messenger.printListSetting("message.sbutils.autoAdvert.whitelist", ModConfig.INSTANCE.getConfig().advertWhitelist);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().advertUseWhitelist = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.advertUseWhitelist", ModConfig.INSTANCE.getConfig().advertUseWhitelist);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("add")
-                                .then(ClientCommandManager.argument("user", StringArgumentType.string())
-                                        .executes(context ->
-                                                onAddUserCommand(StringArgumentType.getString(context, "user"))
-                                        )))
-                        .then(ClientCommandManager.literal("del")
-                                .then(ClientCommandManager.argument("user", StringArgumentType.string())
-                                        .executes(context ->
-                                                onDelUserCommand(StringArgumentType.getString(context, "user"))
-                                        ))))
-                .then(ClientCommandManager.literal("reset")
-                        .executes(context -> {
-                            reset();
-                            Messenger.printMessage("message.sbutils.autoAdvert.reset");
-                            return Command.SINGLE_SUCCESS;
-                        })));
+        final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "autoadvert", () -> ModConfig.HANDLER.instance().autoAdvert, (value) -> ModConfig.HANDLER.instance().autoAdvert = value)
+                    .then(CommandUtils.runnable("info", () -> Messenger.printAutoAdvertInfo(ModConfig.HANDLER.instance().autoAdvert, ServerDetector.isOnSkyblock(), getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.HANDLER.instance().advertUseWhitelist)))
+                    .then(CommandUtils.string("sbFile", "filename", "skyblockAdFile", () -> ModConfig.HANDLER.instance().skyblockAdFile, (value) -> ModConfig.HANDLER.instance().skyblockAdFile = value))
+                    .then(CommandUtils.string("ecoFile", "filename", "economyAdFile", () -> ModConfig.HANDLER.instance().economyAdFile, (value) -> ModConfig.HANDLER.instance().economyAdFile = value))
+                    .then(CommandUtils.string("classicFile", "filename", "classicAdFile", () -> ModConfig.HANDLER.instance().classicAdFile, (value) -> ModConfig.HANDLER.instance().classicAdFile = value))
+                    .then(CommandUtils.stringList("ads", "advert", "message.sbutils.autoAdvert.advertList",
+                            () -> formatAds(getAdList()),
+                            AutoAdvert::onAddCommand,
+                            AutoAdvert::onDelCommand,
+                            AutoAdvert::onInsertCommand)
+                            .then(ClientCommandManager.literal("toggle")
+                                    .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                            .executes(context ->
+                                                    onToggleCommand(IntegerArgumentType.getInteger(context, "index"))
+                                            ))))
+                    .then(CommandUtils.doubl("delay", "seconds", "advertDelay", () -> ModConfig.HANDLER.instance().advertDelay, (value) -> ModConfig.HANDLER.instance().advertDelay = value))
+                    .then(CommandUtils.doubl("initialDelay", "seconds", "advertInitialDelay", () -> ModConfig.HANDLER.instance().advertInitialDelay, (value) -> ModConfig.HANDLER.instance().advertInitialDelay = value))
+                    .then(CommandUtils.stringList("whitelist", "user", "message.sbutils.autoAdvert.whitelist",
+                            () -> ModConfig.HANDLER.instance().advertWhitelist,
+                            AutoAdvert::onAddUserCommand,
+                            AutoAdvert::onDelUserCommand,
+                            AutoAdvert::onInsertUserCommand))
+                    .then(CommandUtils.runnable("reset", () -> {
+                        reset();
+                        Messenger.printMessage("message.sbutils.autoAdvert.reset");
+                    }))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -168,35 +71,23 @@ public class AutoAdvert {
                 .redirect(autoAdvertNode));
     }
 
-    private static int onListCommand() {
+    private static void onAddCommand(String advert) {
         if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
-            return Command.SINGLE_SUCCESS;
-        }
-
-        Messenger.printListSetting("message.sbutils.autoAdvert.advertList", formatAdList(getAdList()));
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int onAddCommand(String advert) {
-        if (!ServerDetector.isOnSkyblock()) {
-            Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
         String adFile = getAdFile();
         List<String> adverts = getAdList();
         adverts.add(advert);
         IOHandler.writeAdverts(adverts, adFile);
 
-        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAdList(adverts));
-
-        return Command.SINGLE_SUCCESS;
+        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAds(adverts));
     }
 
-    private static int onDelCommand(int index) {
+    private static void onDelCommand(int index) {
         if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         String adFile = getAdFile();
@@ -205,21 +96,19 @@ public class AutoAdvert {
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
             Messenger.printMessage("message.sbutils.autoAdvert.invalidIndex");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         adverts.remove(adjustedIndex);
         IOHandler.writeAdverts(adverts, adFile);
 
-        Messenger.printListSetting("message.sbutils.autoAdvert.deleteSuccess", formatAdList(adverts));
-
-        return Command.SINGLE_SUCCESS;
+        Messenger.printListSetting("message.sbutils.autoAdvert.deleteSuccess", formatAds(adverts));
     }
 
-    private static int onInsertCommand(int index, String advert) {
+    private static void onInsertCommand(int index, String advert) {
         if (!ServerDetector.isOnSkyblock()) {
             Messenger.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         String adFile = getAdFile();
@@ -228,15 +117,13 @@ public class AutoAdvert {
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
             Messenger.printMessage("message.sbutils.autoAdvert.invalidIndex");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         adverts.add(adjustedIndex, advert);
         IOHandler.writeAdverts(adverts, adFile);
 
-        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAdList(adverts));
-
-        return Command.SINGLE_SUCCESS;
+        Messenger.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAds(adverts));
     }
 
     private static int onToggleCommand(int index) {
@@ -263,42 +150,60 @@ public class AutoAdvert {
 
         IOHandler.writeAdverts(adverts, adFile);
 
-        Messenger.printListSetting("message.sbutils.autoAdvert.toggleSuccess", formatAdList(adverts));
+        Messenger.printListSetting("message.sbutils.autoAdvert.toggleSuccess", formatAds(adverts));
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int onAddUserCommand(String user) {
-        List<String> whitelist = new ArrayList<>(ModConfig.INSTANCE.getConfig().advertWhitelist);
+    private static void onAddUserCommand(String user) {
+        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().advertWhitelist);
 
         if (whitelist.contains(user)) {
             Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddFail", user);
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         whitelist.add(user);
-        ModConfig.INSTANCE.getConfig().advertWhitelist = whitelist;
-        ModConfig.INSTANCE.save();
+        ModConfig.HANDLER.instance().advertWhitelist = whitelist;
+        ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddSuccess", user);
-        return Command.SINGLE_SUCCESS;
     }
 
-    private static int onDelUserCommand(String user) {
-        List<String> whitelist = new ArrayList<>(ModConfig.INSTANCE.getConfig().advertWhitelist);
+    private static void onDelUserCommand(int index) {
+        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().advertWhitelist);
 
-        if (!whitelist.contains(user)) {
-            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistDelFail", user);
-            return Command.SINGLE_SUCCESS;
+        int adjustedIndex = index - 1;
+        if (adjustedIndex >= whitelist.size() || adjustedIndex < 0) {
+            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistInvalidIndex", index);
+            return;
         }
 
-        whitelist.remove(user);
-        ModConfig.INSTANCE.getConfig().advertWhitelist = whitelist;
-        ModConfig.INSTANCE.save();
+        String user = whitelist.remove(adjustedIndex);
+        ModConfig.HANDLER.instance().advertWhitelist = whitelist;
+        ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistDelSuccess", user);
-        return Command.SINGLE_SUCCESS;
+    }
+
+    private static void onInsertUserCommand(int index, String user) {
+        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().advertWhitelist);
+
+        int adjustedIndex = index - 1;
+        if (adjustedIndex > whitelist.size() || adjustedIndex < 0) {
+            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistInvalidIndex", index);
+        }
+
+        if (whitelist.contains(user)) {
+            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddFail", user);
+            return;
+        }
+
+        whitelist.add(adjustedIndex, user);
+        ModConfig.HANDLER.instance().advertWhitelist = whitelist;
+        ModConfig.HANDLER.save();
+        Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddSuccess", user);
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().autoAdvert || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoAdvert || MC.getNetworkHandler() == null) {
             return;
         }
 
@@ -306,7 +211,7 @@ public class AutoAdvert {
             joinedAt = System.currentTimeMillis();
         }
 
-        if (!ServerDetector.isOnSkyblock() || (ModConfig.INSTANCE.getConfig().advertUseWhitelist && !userWhitelisted())) {
+        if (!ServerDetector.isOnSkyblock() || (ModConfig.HANDLER.instance().advertUseWhitelist && !userWhitelisted())) {
             return;
         }
 
@@ -316,8 +221,8 @@ public class AutoAdvert {
 
         List<String> newAdList = getAdList();
         if (findNextAd(newAdList, -1) == -1) {
-            ModConfig.INSTANCE.getConfig().autoAdvert = false;
-            ModConfig.INSTANCE.save();
+            ModConfig.HANDLER.instance().autoAdvert = false;
+            ModConfig.HANDLER.save();
             reset();
             Messenger.printWithPlaceholders("message.sbutils.autoAdvert.noAds", getAdFile());
             return;
@@ -330,7 +235,7 @@ public class AutoAdvert {
     }
 
     public static void onJoinGame() {
-        if (!ModConfig.INSTANCE.getConfig().autoAdvert) {
+        if (!ModConfig.HANDLER.instance().autoAdvert) {
             return;
         }
 
@@ -382,18 +287,63 @@ public class AutoAdvert {
         return new ArrayList<>(Arrays.asList(adListString.split("[\\r\\n]+")));
     }
 
-    private static List<String> formatAdList(List<String> ads) {
-        List<String> commentsFormatted = ads.stream().map((ad) -> {
-            if (ad.startsWith("//")) {
-                ad = ad.substring(2);
-                ad = ad.replaceAll("&([0-9a-fk-or])", "");
-                return Formatting.FORMATTING_CODE_PREFIX + "7" + Formatting.FORMATTING_CODE_PREFIX + "m" + ad;
-            } else {
-                return ad;
-            }
-        }).toList();
+    private static List<MutableText> formatAds(List<String> ads) {
+        return ads.stream().map(AutoAdvert::formatAd).toList();
+    }
 
-        return commentsFormatted.stream().map((ad) -> ad.replaceAll("&([0-9a-fk-or])", Formatting.FORMATTING_CODE_PREFIX + "$1")).toList();
+    private static MutableText formatAd(String input) {
+        MutableText text = Text.literal("");
+        StringBuilder buffer = new StringBuilder();
+        Style currentStyle = Style.EMPTY;
+
+        for (int i = 0; i < input.length(); i++) {
+            char currentChar = input.charAt(i);
+
+            if (currentChar != '&') {
+                buffer.append(currentChar);
+                continue;
+            }
+
+            Style nextStyle = currentStyle;
+            if (i + 1 < input.length() && RegexFilters.colorCodeFilter.matcher(input.substring(i, i + 2)).matches()) {
+                if (!buffer.isEmpty()) {
+                    text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+                    buffer = new StringBuilder();
+                }
+                char nextChar = input.charAt(i + 1);
+                nextStyle = nextStyle.withColor(Formatting.byCode(nextChar));
+                i++;
+            } else if (i + 13 < input.length() && RegexFilters.rgbFilter.matcher(input.substring(i, i + 14)).matches()) {
+                if (!buffer.isEmpty()) {
+                    text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+                    buffer = new StringBuilder();
+                }
+                String rgb = input.substring(i + 3, i + 14).replaceAll("&", "");
+                int color = Integer.parseInt(rgb, 16);
+                nextStyle = nextStyle.withColor(color);
+                i += 13;
+            } else {
+                buffer.append(currentChar);
+                continue;
+            }
+
+            if (!buffer.isEmpty()) {
+                text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+                buffer = new StringBuilder();
+            }
+
+            currentStyle = nextStyle;
+        }
+
+        if (!buffer.isEmpty()) {
+            text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+        }
+
+        if (input.startsWith("//")) {
+            text = Text.literal(text.getString().substring(2)).formatted(Formatting.GRAY).formatted(Formatting.STRIKETHROUGH);
+        }
+
+        return text;
     }
 
     private static String getAdFile() {
@@ -403,13 +353,13 @@ public class AutoAdvert {
         } else {
             switch (ServerDetector.currentServer) {
                 case SKYBLOCK:
-                    adFile = ModConfig.INSTANCE.getConfig().skyblockAdFile;
+                    adFile = ModConfig.HANDLER.instance().skyblockAdFile;
                     break;
                 case ECONOMY:
-                    adFile = ModConfig.INSTANCE.getConfig().economyAdFile;
+                    adFile = ModConfig.HANDLER.instance().economyAdFile;
                     break;
                 case CLASSIC:
-                    adFile = ModConfig.INSTANCE.getConfig().classicAdFile;
+                    adFile = ModConfig.HANDLER.instance().classicAdFile;
                     break;
                 default:
                     return null;
@@ -432,7 +382,7 @@ public class AutoAdvert {
     }
 
     private static List<String> getWhitelist() {
-        return ModConfig.INSTANCE.getConfig().advertWhitelist;
+        return ModConfig.HANDLER.instance().advertWhitelist;
     }
 
     private static void sendAd() {
@@ -444,8 +394,8 @@ public class AutoAdvert {
     }
 
     private static int delayLeft() {
-        long delay = (long)(ModConfig.INSTANCE.getConfig().advertDelay * 1000.0);
-        long initialDelay = (long)(ModConfig.INSTANCE.getConfig().advertInitialDelay * 1000.0);
+        long delay = (long)(ModConfig.HANDLER.instance().advertDelay * 1000.0);
+        long initialDelay = (long)(ModConfig.HANDLER.instance().advertInitialDelay * 1000.0);
 
         int delayLeft = (int)Math.max(delay - (System.currentTimeMillis() - lastAdSentAt), 0L);
         int initialDelayLeft = (int)Math.max(initialDelay - (System.currentTimeMillis() - joinedAt), 0L);

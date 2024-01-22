@@ -20,12 +20,13 @@ public class ClientConnectionMixin {
         AutoSilk.onDisconnect();
         AutoFix.onDisconnect();
         AutoMine.onDisconnect();
+        AutoKit.onDisconnect();
 
-        if (ModConfig.INSTANCE.getConfig().autoSilk || ModConfig.INSTANCE.getConfig().autoCrate || ModConfig.INSTANCE.getConfig().autoMine) {
-            ModConfig.INSTANCE.getConfig().autoSilk = false;
-            ModConfig.INSTANCE.getConfig().autoCrate = false;
-            ModConfig.INSTANCE.getConfig().autoMine = false;
-            ModConfig.INSTANCE.save();
+        if (ModConfig.HANDLER.instance().autoSilk || ModConfig.HANDLER.instance().autoCrate || ModConfig.HANDLER.instance().autoMine) {
+            ModConfig.HANDLER.instance().autoSilk = false;
+            ModConfig.HANDLER.instance().autoCrate = false;
+            ModConfig.HANDLER.instance().autoMine = false;
+            ModConfig.HANDLER.save();
         }
     }
 }

@@ -1,8 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -10,6 +8,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -26,79 +25,14 @@ public class EventNotifier {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> eventNotifierNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .then(ClientCommandManager.literal("vpLlama")
-                        .then(ClientCommandManager.literal("title")
-                                .executes(context -> {
-                                    Messenger.printSetting("text.sbutils.config.option.showLlamaTitle", ModConfig.INSTANCE.getConfig().showLlamaTitle);
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                                .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                        .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().showLlamaTitle = BoolArgumentType.getBool(context, "enabled");
-                                            ModConfig.INSTANCE.save();
-                                            Messenger.printChangedSetting("text.sbutils.config.option.showLlamaTitle", ModConfig.INSTANCE.getConfig().showLlamaTitle);
-                                            return Command.SINGLE_SUCCESS;
-                                        })))
-                        .then(ClientCommandManager.literal("playSound")
-                                .executes(context -> {
-                                    Messenger.printSetting("text.sbutils.config.option.playLlamaSound", ModConfig.INSTANCE.getConfig().playLlamaSound);
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                                .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                        .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().playLlamaSound = BoolArgumentType.getBool(context, "enabled");
-                                            ModConfig.INSTANCE.save();
-                                            Messenger.printChangedSetting("text.sbutils.config.option.playLlamaSound", ModConfig.INSTANCE.getConfig().playLlamaSound);
-                                            return Command.SINGLE_SUCCESS;
-                                        })))
-                        .then(ClientCommandManager.literal("sound")
-                                .executes(context -> {
-                                    Messenger.printSetting("text.sbutils.config.option.llamaSound", ModConfig.INSTANCE.getConfig().llamaSound);
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                                .then(ClientCommandManager.argument("sound", ModConfig.NotifSound.NotifSoundArgumentType.notifSound())
-                                        .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().llamaSound = ModConfig.NotifSound.NotifSoundArgumentType.getNotifSound(context, "sound");
-                                            ModConfig.INSTANCE.save();
-                                            Messenger.printChangedSetting("text.sbutils.config.option.llamaSound", ModConfig.INSTANCE.getConfig().llamaSound);
-                                            return Command.SINGLE_SUCCESS;
-                                        }))))
+                        .then(CommandUtils.bool("title", "showLlamaTitle", () -> ModConfig.HANDLER.instance().showLlamaTitle, (value) -> ModConfig.HANDLER.instance().showLlamaTitle = value))
+                        .then(CommandUtils.bool("playSound", "playLlamaSound", () -> ModConfig.HANDLER.instance().playLlamaSound, (value) -> ModConfig.HANDLER.instance().playLlamaSound = value))
+                        .then(CommandUtils.getterSetter("sound", "sound", "llamaSound", () -> ModConfig.HANDLER.instance().llamaSound, (value) -> ModConfig.HANDLER.instance().llamaSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
                 .then(ClientCommandManager.literal("trader")
-                        .then(ClientCommandManager.literal("title")
-                                .executes(context -> {
-                                    Messenger.printSetting("text.sbutils.config.option.showTraderTitle", ModConfig.INSTANCE.getConfig().showTraderTitle);
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                                .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                        .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().showTraderTitle = BoolArgumentType.getBool(context, "enabled");
-                                            ModConfig.INSTANCE.save();
-                                            Messenger.printChangedSetting("text.sbutils.config.option.showTraderTitle", ModConfig.INSTANCE.getConfig().showTraderTitle);
-                                            return Command.SINGLE_SUCCESS;
-                                        })))
-                        .then(ClientCommandManager.literal("playSound")
-                                .executes(context -> {
-                                    Messenger.printSetting("text.sbutils.config.option.playTraderSound", ModConfig.INSTANCE.getConfig().playTraderSound);
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                                .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                        .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().playTraderSound = BoolArgumentType.getBool(context, "enabled");
-                                            ModConfig.INSTANCE.save();
-                                            Messenger.printChangedSetting("text.sbutils.config.option.playTraderSound", ModConfig.INSTANCE.getConfig().playTraderSound);
-                                            return Command.SINGLE_SUCCESS;
-                                        })))
-                        .then(ClientCommandManager.literal("sound")
-                                .executes(context -> {
-                                    Messenger.printSetting("text.sbutils.config.option.traderSound", ModConfig.INSTANCE.getConfig().traderSound);
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                                .then(ClientCommandManager.argument("sound", ModConfig.NotifSound.NotifSoundArgumentType.notifSound())
-                                        .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().traderSound = ModConfig.NotifSound.NotifSoundArgumentType.getNotifSound(context, "sound");
-                                            ModConfig.INSTANCE.save();
-                                            Messenger.printChangedSetting("text.sbutils.config.option.traderSound", ModConfig.INSTANCE.getConfig().traderSound);
-                                            return Command.SINGLE_SUCCESS;
-                                        })))));
+                        .then(CommandUtils.bool("title", "showTraderTitle", () -> ModConfig.HANDLER.instance().showTraderTitle, (value) -> ModConfig.HANDLER.instance().showTraderTitle = value))
+                        .then(CommandUtils.bool("playSound", "playTraderSound", () -> ModConfig.HANDLER.instance().playTraderSound, (value) -> ModConfig.HANDLER.instance().playTraderSound = value))
+                        .then(CommandUtils.getterSetter("sound", "sound", "traderSound", () -> ModConfig.HANDLER.instance().traderSound, (value) -> ModConfig.HANDLER.instance().traderSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -122,29 +56,29 @@ public class EventNotifier {
     }
 
     private static void doLlamaNotification() {
-        if (ModConfig.INSTANCE.getConfig().playLlamaSound) {
-            MC.player.playSound(ModConfig.INSTANCE.getConfig().llamaSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().playLlamaSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().llamaSound.getSound(), 1, 1);
         }
 
-        if (ModConfig.INSTANCE.getConfig().showLlamaTitle) {
+        if (ModConfig.HANDLER.instance().showLlamaTitle) {
             Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Formatting.GRAY,"message.sbutils.eventNotifier.vpLlama");
         }
     }
 
     private static void doTraderNotification() {
-        if (ModConfig.INSTANCE.getConfig().playTraderSound) {
-            MC.player.playSound(ModConfig.INSTANCE.getConfig().traderSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().playTraderSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().traderSound.getSound(), 1, 1);
         }
 
-        if (ModConfig.INSTANCE.getConfig().showTraderTitle) {
+        if (ModConfig.HANDLER.instance().showTraderTitle) {
             Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Formatting.BLUE,"message.sbutils.eventNotifier.wanderingTrader");
         }
     }
 
     private static boolean enabled() {
-        return ModConfig.INSTANCE.getConfig().showLlamaTitle ||
-                ModConfig.INSTANCE.getConfig().playLlamaSound ||
-                ModConfig.INSTANCE.getConfig().showTraderTitle ||
-                ModConfig.INSTANCE.getConfig().playTraderSound;
+        return ModConfig.HANDLER.instance().showLlamaTitle ||
+                ModConfig.HANDLER.instance().playLlamaSound ||
+                ModConfig.HANDLER.instance().showTraderTitle ||
+                ModConfig.HANDLER.instance().playTraderSound;
     }
 }

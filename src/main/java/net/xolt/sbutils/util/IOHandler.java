@@ -1,5 +1,7 @@
 package net.xolt.sbutils.util;
 
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.Text;
@@ -7,11 +9,14 @@ import net.minecraft.util.Util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.TypeDescriptor;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static net.xolt.sbutils.SbUtils.LOGGER;
 
@@ -28,6 +33,8 @@ public class IOHandler {
     public static final File transactionLogFile = new File(loggerDir + File.separator + "transactions.txt");
     public static final File visitLogFile = new File(loggerDir + File.separator + "visits.txt");
     public static final File dpLogFile = new File(loggerDir + File.separator + "dp.txt");
+    public static final File autoKitDir = new File(modDirectory + File.separator + "autokit");
+    public static final File autoKitFile = new File(autoKitDir + File.separator + "autokit.json");
 
     public static boolean createAll() {
         return createDirectories() && createFiles();
@@ -39,6 +46,7 @@ public class IOHandler {
             autoAdvertDir.mkdir();
             joinCommandsDir.mkdir();
             loggerDir.mkdir();
+            autoKitDir.mkdir();
         } catch (SecurityException e) {
             LOGGER.error("Unable to create directory: " + e.getMessage());
             return false;
@@ -49,10 +57,11 @@ public class IOHandler {
     private static boolean createFiles() {
         try {
             globalJoinCmdsFile.createNewFile();
-            //transactionLogFile.createNewFile();
+            transactionLogFile.createNewFile();
             messageLogFile.createNewFile();
             visitLogFile.createNewFile();
             dpLogFile.createNewFile();
+            autoKitFile.createNewFile();
         } catch (IOException e) {
             LOGGER.error("Unable to create file: " + e.getMessage());
             return false;
@@ -61,27 +70,11 @@ public class IOHandler {
     }
 
     public static String readAdFile(String filename) {
-        ensureFileExists(new File(autoAdvertDir + File.separator + filename));
-        String ads;
-        try {
-            ads = Files.readString(new File(autoAdvertDir + File.separator + filename).toPath());
-        } catch (IOException e) {
-            LOGGER.error("Unable to read from sbutils/autoadvert/" + filename + ": " + e.getMessage());
-            return null;
-        }
-        return ads;
+        return readFile(new File(autoAdvertDir + File.separator + filename));
     }
 
     public static String readGlobalJoinCmds() {
-        ensureFileExists(globalJoinCmdsFile);
-        String globalJoinCmds;
-        try {
-            globalJoinCmds = Files.readString(globalJoinCmdsFile.toPath());
-        } catch (IOException e) {
-            LOGGER.error("Unable to read from sbutils/joincommands/global.txt: " + e.getMessage());
-            return null;
-        }
-        return globalJoinCmds;
+        return readFile(globalJoinCmdsFile);
     }
 
     public static String readJoinCmdsForAccount(GameProfile account) {
@@ -109,6 +102,18 @@ public class IOHandler {
         }
 
         return cmdsForAccount;
+    }
+
+    public static String readFile(File file) {
+        ensureFileExists(file);
+        String contents;
+        try {
+            contents = Files.readString(file.toPath());
+        } catch (IOException e) {
+            LOGGER.error("Unable to read from " + file + ": " + e.getMessage());
+            return null;
+        }
+        return contents;
     }
 
     public static void openModDirectory() {
@@ -188,5 +193,19 @@ public class IOHandler {
         try {
             Files.createFile(file.toPath());
         } catch (IOException e) {}
+    }
+
+    public static void writeAutoKitData(Map<String, Map<String, Long>> autoKitData) {
+        Gson gson = new GsonBuilder().setFieldNamingStrategy(FieldNamingPolicy.IDENTITY).setPrettyPrinting().create();
+        overwriteFile(autoKitFile, List.of(gson.toJson(autoKitData)));
+    }
+
+    public static Map<String, Map<String, Long>> readAutoKitData() {
+        String stringData = readFile(autoKitFile);
+        if (stringData == null || stringData.isEmpty()) {
+            return new HashMap<>();
+        }
+        Gson gson = new GsonBuilder().setFieldNamingStrategy(FieldNamingPolicy.IDENTITY).create();
+        return gson.fromJson(stringData, new TypeToken<Map<String, Map<String, Long>>>(){}.getType());
     }
 }

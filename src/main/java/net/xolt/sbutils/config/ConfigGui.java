@@ -5,12 +5,16 @@ import dev.isxander.yacl3.api.controller.*;
 import dev.isxander.yacl3.gui.controllers.slider.IntegerSliderController;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
-import net.xolt.sbutils.util.LimitedList;
+import net.xolt.sbutils.features.AutoFix;
+import net.xolt.sbutils.features.AutoKit;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 public class ConfigGui {
 
     public static Screen getModConfigScreen(Screen parent) {
-        return YetAnotherConfigLib.create(ModConfig.INSTANCE, (defaults, config, builder) -> builder
+        return YetAnotherConfigLib.create(ModConfig.HANDLER, (defaults, config, builder) -> builder
                 .title(Text.translatable("text.sbutils.config.title"))
                 .category(buildSbutilsCategory(defaults, config))
                 .category(buildAutoAdvertCategory(defaults, config))
@@ -32,8 +36,9 @@ public class ConfigGui {
                 .category(buildAutoPrivateCategory(defaults, config))
                 .category(buildAutoSilkCategory(defaults, config))
                 .category(buildAutoCrateCategory(defaults, config))
+                .category(buildAutoKitCategory(defaults, config))
                 .category(buildStaffDetectorCategory(defaults, config))
-                .save(ModConfig.INSTANCE::save))
+                .save(ModConfig.HANDLER::save))
                 .generateScreen(parent);
     }
 
@@ -812,6 +817,7 @@ public class ConfigGui {
                                         (value) -> config.maxFixPercent = value
                                 )
                                 .controller(DoubleFieldControllerBuilder::create)
+                                .listener(((doubleOption, aDouble) -> AutoFix.onChangeMaxFixPercent()))
                                 .build())
                         .option(Option.<Double>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.autoFixDelay"))
@@ -920,26 +926,70 @@ public class ConfigGui {
                                 )
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
-                        .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCommand"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCommand.tooltip")))
-                                .binding(
-                                        defaults.autoCommand,
-                                        () -> config.autoCommand,
-                                        (value) -> config.autoCommand = value
-                                )
-                                .controller(StringControllerBuilder::create)
-                                .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCommandDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCommandDelay.tooltip")))
+                                .name(Text.translatable("text.sbutils.config.option.minAutoCommandDelay"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.minAutoCommandDelay.tooltip")))
                                 .binding(
-                                        defaults.autoCommandDelay,
-                                        () -> config.autoCommandDelay,
-                                        (value) -> config.autoCommandDelay = value
+                                        defaults.minAutoCommandDelay,
+                                        () -> config.minAutoCommandDelay,
+                                        (value) -> config.minAutoCommandDelay = value
                                 )
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
+                        .build())
+                .group(ListOption.<KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>>>createBuilder()
+                        .name(Text.translatable("text.sbutils.config.option.autoCommands"))
+                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCommands.tooltip")))
+                        .insertEntriesAtEnd(true)
+                        .binding(
+                                defaults.autoCommands,
+                                () -> config.autoCommands,
+                                (value) -> config.autoCommands = value
+                        )
+                        .customController((option) ->
+                            new KeyValueController<>(option, 0.5,
+                                    Option.<String>createBuilder()
+                                            .name(Text.literal("Command"))
+                                            .binding(
+                                                    "",
+                                                    () -> option.pendingValue().getKey(),
+                                                    (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(newValue, option.pendingValue().getValue()))
+                                            )
+                                            .instant(true)
+                                            .controller(StringControllerBuilder::create)
+                                            .build().controller(),
+                                    Option.<KeyValueController.KeyValuePair<Double, Boolean>>createBuilder()
+                                            .binding(
+                                                    new KeyValueController.KeyValuePair<>(1.0, false),
+                                                    () -> option.pendingValue().getValue(),
+                                                    (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(option.pendingValue().getKey(), newValue))
+                                            )
+                                            .instant(true)
+                                            .customController((subOption) ->
+                                                    new KeyValueController<>(subOption, 0.5,
+                                                            Option.<Double>createBuilder()
+                                                                .name(Text.literal("Delay"))
+                                                                .binding(
+                                                                        1.0,
+                                                                        () -> option.pendingValue().getValue().getKey(),
+                                                                        (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(option.pendingValue().getKey(), new KeyValueController.KeyValuePair<>(newValue, option.pendingValue().getValue().getValue())))
+                                                                )
+                                                                .instant(true)
+                                                                .controller((delay) -> DoubleFieldControllerBuilder.create(delay).min(1.0))
+                                                                .build().controller(),
+                                                            Option.<Boolean>createBuilder()
+                                                                .name(Text.literal("Enabled"))
+                                                                .binding(
+                                                                        false,
+                                                                        () -> option.pendingValue().getValue().getValue(),
+                                                                        (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(option.pendingValue().getKey(), new KeyValueController.KeyValuePair<>(option.pendingValue().getValue().getKey(), newValue)))
+                                                                )
+                                                                .instant(true)
+                                                                .controller(TickBoxControllerBuilder::create)
+                                                                .build().controller()
+                                                    ))
+                                            .build().controller()))
+                        .initial(new KeyValueController.KeyValuePair<>("", new KeyValueController.KeyValuePair<>(1.0, false)))
                         .build())
                 .build();
     }
@@ -1056,7 +1106,7 @@ public class ConfigGui {
                         .binding(
                                 defaults.autoPrivateNames,
                                 () -> config.autoPrivateNames,
-                                (value) -> config.autoPrivateNames = new LimitedList<>(2, value)
+                                (value) -> config.autoPrivateNames = new ArrayList<>(new LinkedHashSet<>(value))
                         )
                         .controller(StringControllerBuilder::create)
                         .initial("")
@@ -1098,6 +1148,26 @@ public class ConfigGui {
                                         (value) -> config.autoSilkDelay = value
                                 )
                                 .controller(DoubleFieldControllerBuilder::create)
+                                .build())
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.showSilkButton"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.showSilkButton.tooltip")))
+                                .binding(
+                                        defaults.showSilkButton,
+                                        () -> config.showSilkButton,
+                                        (value) -> config.showSilkButton = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
+                                .build())
+                        .option(Option.<ModConfig.CornerButtonPos>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.silkButtonPos"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.silkButtonPos.tooltip")))
+                                .binding(
+                                        defaults.silkButtonPos,
+                                        () -> config.silkButtonPos,
+                                        (value) -> config.silkButtonPos = value
+                                )
+                                .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.CornerButtonPos.class))
                                 .build())
                         .build())
                 .build();
@@ -1148,6 +1218,68 @@ public class ConfigGui {
                                 )
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
+                        .build())
+                .build();
+    }
+
+    private static ConfigCategory buildAutoKitCategory(ModConfig defaults, ModConfig config) {
+        return ConfigCategory.createBuilder()
+                .name(Text.translatable("text.sbutils.config.category.autokit"))
+                .group(OptionGroup.createBuilder()
+                        .name(Text.translatable("text.sbutils.config.group.autoKit"))
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.autoKit"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKit.tooltip")))
+                                .binding(
+                                        defaults.autoKit,
+                                        () -> config.autoKit,
+                                        (value) -> config.autoKit = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
+                                .build())
+                        .option(Option.<Double>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.autoKitCommandDelay"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKitCommandDelay.tooltip")))
+                                .binding(
+                                        defaults.autoKitCommandDelay,
+                                        () -> config.autoKitCommandDelay,
+                                        (value) -> config.autoKitCommandDelay = value
+                                )
+                                .controller(DoubleFieldControllerBuilder::create)
+                                .build())
+                        .option(Option.<Double>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.autoKitClaimDelay"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKitClaimDelay.tooltip")))
+                                .binding(
+                                        defaults.autoKitClaimDelay,
+                                        () -> config.autoKitClaimDelay,
+                                        (value) -> config.autoKitClaimDelay = value
+                                )
+                                .controller(DoubleFieldControllerBuilder::create)
+                                .build())
+                        .option(Option.<Double>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.autoKitSystemDelay"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKitSystemDelay.tooltip")))
+                                .binding(
+                                        defaults.autoKitSystemDelay,
+                                        () -> config.autoKitSystemDelay,
+                                        (value) -> config.autoKitSystemDelay = value
+                                )
+                                .controller(DoubleFieldControllerBuilder::create)
+                                .build())
+                        .build())
+                .group(ListOption.<ModConfig.Kit>createBuilder()
+                        .name(Text.translatable("text.sbutils.config.option.autoKits"))
+                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKits.tooltip")))
+                        .insertEntriesAtEnd(true)
+                        .binding(
+                                defaults.autoKits,
+                                () -> config.autoKits,
+                                (value) -> config.autoKits = new ArrayList<>(new LinkedHashSet<>(value))
+                        )
+                        .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Kit.class))
+                        .initial(ModConfig.Kit.SKYTITAN)
+                        .listener(((listOption, kits) -> AutoKit.onKitListChanged()))
                         .build())
                 .build();
     }

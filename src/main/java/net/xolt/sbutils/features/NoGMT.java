@@ -1,9 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -19,7 +16,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.Messenger;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.time.LocalDateTime;
@@ -37,41 +34,15 @@ public class NoGMT {
     private static final DateTimeFormatter EMAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
     private static final DateTimeFormatter MAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
     private static final String COMMAND = "nogmt";
-    private static final String ALIAS = "gmt";
+    private static final String ALIAS = "ng";
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> noGMTNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().noGMT = !ModConfig.INSTANCE.getConfig().noGMT;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.nogmt", ModConfig.INSTANCE.getConfig().noGMT);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("timeZone")
-                        .executes(context ->{
-                            Messenger.printSetting("text.sbutils.config.option.timeZone", ModConfig.INSTANCE.getConfig().timeZone);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("zone", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().timeZone = StringArgumentType.getString(context, "zone");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.timeZone", ModConfig.INSTANCE.getConfig().timeZone);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("showTimeZone")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.showTimeZone", ModConfig.INSTANCE.getConfig().showTimeZone);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().showTimeZone = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.showTimeZone", ModConfig.INSTANCE.getConfig().showTimeZone);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> noGMTNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "nogmt", () -> ModConfig.HANDLER.instance().noGMT, (value) -> ModConfig.HANDLER.instance().noGMT = value)
+                        .then(CommandUtils.string("timeZone", "zone", "timeZone", () -> ModConfig.HANDLER.instance().timeZone, (value) -> ModConfig.HANDLER.instance().timeZone = value))
+                        .then(CommandUtils.bool("showTimeZone", "showTimeZone", () -> ModConfig.HANDLER.instance().showTimeZone, (value) -> ModConfig.HANDLER.instance().showTimeZone = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -87,7 +58,7 @@ public class NoGMT {
     }
 
     public static boolean shouldModify(Text message) {
-        return ModConfig.INSTANCE.getConfig().noGMT && RegexFilters.emailFilter.matcher(message.getString()).matches();
+        return ModConfig.HANDLER.instance().noGMT && RegexFilters.emailFilter.matcher(message.getString()).matches();
     }
 
     public static List<ItemStack> replaceTimeInLores(List<ItemStack> stacks) {
@@ -108,13 +79,13 @@ public class NoGMT {
 
         NbtList nbtList = displayNbt.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
         for (int j = 0; j < nbtList.size(); ++j) {
-            MutableText loreLine = Text.Serializer.fromJson(nbtList.getString(j));
+            MutableText loreLine = Text.Serialization.fromJson(nbtList.getString(j));
             if (loreLine == null)
                 continue;
             Matcher matcher = RegexFilters.mailLoreFilter.matcher(loreLine.getString());
             if (matcher.matches()) {
                 Text newLoreLine = replaceGmtTime(loreLine, matcher.group(1), MAIL_DATE_FORMAT);
-                nbtList.set(j, NbtString.of(Text.Serializer.toJson(newLoreLine)));
+                nbtList.set(j, NbtString.of(Text.Serialization.toJsonString(newLoreLine)));
             }
         }
 
@@ -124,7 +95,7 @@ public class NoGMT {
     }
 
     private static Text replaceGmtTime(Text text, String target, DateTimeFormatter format) {
-        String zoneStr = ModConfig.INSTANCE.getConfig().timeZone;
+        String zoneStr = ModConfig.HANDLER.instance().timeZone;
         ZoneId localZone;
         try {
             localZone = ZoneId.of(zoneStr.replaceAll(" ", ""), ZoneId.SHORT_IDS);
@@ -134,7 +105,7 @@ public class NoGMT {
 
         ZonedDateTime gmtTime = LocalDateTime.parse(target, format).atZone(ZoneId.of("GMT"));
         String newTimeStr = format.format(gmtTime.withZoneSameInstant(localZone));
-        if (ModConfig.INSTANCE.getConfig().showTimeZone) {
+        if (ModConfig.HANDLER.instance().showTimeZone) {
             newTimeStr += " (" + localZone.getDisplayName(TextStyle.SHORT, Locale.getDefault()) + ")";
         }
         return replaceText(text, target, newTimeStr);

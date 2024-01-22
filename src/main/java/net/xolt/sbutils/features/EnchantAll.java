@@ -1,10 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -23,6 +19,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
@@ -59,119 +56,23 @@ public class EnchantAll {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(ENCHANT_COMMAND, ENCHANT_ALIAS, UNENCHANT_COMMAND, UNENCHANT_ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(ClientCommandManager.literal(ENCHANT_COMMAND)
-                .executes(context ->
-                        onEnchantAllCommand(false, false)
-                )
-                .then(ClientCommandManager.literal("inv")
-                        .executes(context ->
-                                onEnchantAllCommand(false, true)
-                        ))
-                .then(ClientCommandManager.literal("mode")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.enchantMode", ModConfig.INSTANCE.getConfig().enchantMode);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("mode", ModConfig.EnchantMode.EnchantModeArgumentType.enchantMode())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().enchantMode = ModConfig.EnchantMode.EnchantModeArgumentType.getEnchantMode(context, "mode");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printSetting("text.sbutils.config.option.enchantMode", ModConfig.INSTANCE.getConfig().enchantMode);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("delay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.enchantDelay", ModConfig.INSTANCE.getConfig().enchantDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("seconds", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().enchantDelay = DoubleArgumentType.getDouble(context, "seconds");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.enchantDelay", ModConfig.INSTANCE.getConfig().enchantDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("cooldownFrequency")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.cooldownFrequency", ModConfig.INSTANCE.getConfig().cooldownFrequency);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("frequency", IntegerArgumentType.integer())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().cooldownFrequency = IntegerArgumentType.getInteger(context, "frequency");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.cooldownFrequency", ModConfig.INSTANCE.getConfig().cooldownFrequency);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("cooldownTime")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.cooldownTime", ModConfig.INSTANCE.getConfig().cooldownTime);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("time", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().cooldownTime = DoubleArgumentType.getDouble(context, "time");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.cooldownTime", ModConfig.INSTANCE.getConfig().cooldownTime);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("excludeFrost")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeFrost = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeFrost", ModConfig.INSTANCE.getConfig().excludeFrost);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(
+                CommandUtils.runnable(ENCHANT_COMMAND, () -> onEnchantAllCommand(false, false))
+                    .then(CommandUtils.runnable("inv", () -> onEnchantAllCommand(false, true)))
+                    .then(CommandUtils.getterSetter("mode", "mode", "enchantMode", () -> ModConfig.HANDLER.instance().enchantMode, (value) -> ModConfig.HANDLER.instance().enchantMode = value, ModConfig.EnchantMode.EnchantModeArgumentType.enchantMode(), ModConfig.EnchantMode.EnchantModeArgumentType::getEnchantMode))
+                    .then(CommandUtils.doubl("delay", "seconds", "enchantDelay", () -> ModConfig.HANDLER.instance().enchantDelay, (value) -> ModConfig.HANDLER.instance().enchantDelay = value))
+                    .then(CommandUtils.integer("cooldownFrequency", "frequency", "cooldownFrequency", () -> ModConfig.HANDLER.instance().cooldownFrequency, (value) -> ModConfig.HANDLER.instance().cooldownFrequency = value))
+                    .then(CommandUtils.doubl("cooldownTime", "seconds", "cooldownTime", () -> ModConfig.HANDLER.instance().cooldownTime, (value) -> ModConfig.HANDLER.instance().cooldownTime = value))
+                    .then(CommandUtils.bool("excludeFrost", "excludeFrost", () -> ModConfig.HANDLER.instance().excludeFrost, (value) -> ModConfig.HANDLER.instance().excludeFrost = value))
+        );
 
-        final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(ClientCommandManager.literal(UNENCHANT_COMMAND)
-                .executes(context ->
-                        onEnchantAllCommand(true, false)
-                )
-                .then(ClientCommandManager.literal("inv")
-                        .executes(context ->
-                                onEnchantAllCommand(true, true)
-                        ))
-                .then(ClientCommandManager.literal("delay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.enchantDelay", ModConfig.INSTANCE.getConfig().enchantDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("seconds", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().enchantDelay = DoubleArgumentType.getDouble(context, "seconds");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.enchantDelay", ModConfig.INSTANCE.getConfig().enchantDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("cooldownFrequency")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.cooldownFrequency", ModConfig.INSTANCE.getConfig().cooldownFrequency);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("frequency", IntegerArgumentType.integer())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().cooldownFrequency = IntegerArgumentType.getInteger(context, "frequency");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.cooldownFrequency", ModConfig.INSTANCE.getConfig().cooldownFrequency);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("cooldownTime")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.cooldownTime", ModConfig.INSTANCE.getConfig().cooldownTime);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("time", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().cooldownTime = DoubleArgumentType.getDouble(context, "time");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.cooldownTime", ModConfig.INSTANCE.getConfig().cooldownTime);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(
+                CommandUtils.runnable(UNENCHANT_COMMAND, () -> onEnchantAllCommand(true, false))
+                        .then(CommandUtils.runnable("inv", () -> onEnchantAllCommand(true, true)))
+                        .then(CommandUtils.doubl("delay", "seconds", "enchantDelay", () -> ModConfig.HANDLER.instance().enchantDelay, (value) -> ModConfig.HANDLER.instance().enchantDelay = value))
+                        .then(CommandUtils.integer("cooldownFrequency", "frequency", "cooldownFrequency", () -> ModConfig.HANDLER.instance().cooldownFrequency, (value) -> ModConfig.HANDLER.instance().cooldownFrequency = value))
+                        .then(CommandUtils.doubl("cooldownTime", "seconds", "cooldownTime", () -> ModConfig.HANDLER.instance().cooldownTime, (value) -> ModConfig.HANDLER.instance().cooldownTime = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ENCHANT_ALIAS)
                 .executes(context ->
@@ -186,14 +87,14 @@ public class EnchantAll {
                 .redirect(unenchantAllNode));
     }
 
-    private static int onEnchantAllCommand(boolean unenchant, boolean inv) {
+    private static void onEnchantAllCommand(boolean unenchant, boolean inv) {
         if (MC.player == null) {
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         if (enchanting || unenchanting) {
             Messenger.printMessage("message.sbutils.enchantAll.pleaseWait", Formatting.RED);
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         enchanting = !unenchant;
@@ -208,16 +109,19 @@ public class EnchantAll {
                 Messenger.printMessage("message.sbutils.enchantAll.itemNotEnchantable", Formatting.RED);
             }
             reset();
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         if (inv && !(MC.player.getMainHandStack().getItem() instanceof AirBlockItem) && getEnchantsForItem(MC.player.getMainHandStack(), unenchant).size() < 1) {
+            int enchantableSlot = findEnchantableSlot(unenchant);
+            if (enchantableSlot < 8) {
+                MC.player.getInventory().selectedSlot = prevSelectedSlot = enchantableSlot;
+                return;
+            }
             int emptySlot = InvUtils.findEmptyHotbarSlot();
             if (emptySlot != -1)
                 MC.player.getInventory().selectedSlot = prevSelectedSlot = emptySlot;
         }
-
-        return Command.SINGLE_SUCCESS;
     }
 
     public static void tick() {
@@ -226,7 +130,7 @@ public class EnchantAll {
         }
 
         if (noPermission) {
-            if (ModConfig.INSTANCE.getConfig().enchantMode == ModConfig.EnchantMode.ALL && enchanting) {
+            if (ModConfig.HANDLER.instance().enchantMode == ModConfig.EnchantMode.ALL && enchanting) {
                 Messenger.printMessage("message.sbutils.enchantAll.noEnchantAllPermission", Formatting.RED);
             } else {
                 Messenger.printMessage("message.sbutils.enchantAll.noEnchantPermission", Formatting.RED);
@@ -252,9 +156,9 @@ public class EnchantAll {
             return;
         }
 
-        if (commandCount >= ModConfig.INSTANCE.getConfig().cooldownFrequency) {
+        if (commandCount >= ModConfig.HANDLER.instance().cooldownFrequency) {
             cooldown = true;
-            Messenger.printEnchantCooldown(ModConfig.INSTANCE.getConfig().cooldownTime);
+            Messenger.printEnchantCooldown(ModConfig.HANDLER.instance().cooldownTime);
             commandCount = 0;
         }
 
@@ -354,7 +258,7 @@ public class EnchantAll {
     }
 
     private static void sendNextEnchant(List<Enchantment> enchants, boolean unenchant) {
-        if (!unenchant && ModConfig.INSTANCE.getConfig().enchantMode == ModConfig.EnchantMode.ALL) {
+        if (!unenchant && ModConfig.HANDLER.instance().enchantMode == ModConfig.EnchantMode.ALL) {
             sendEnchantAllCommand();
             return;
         }
@@ -437,7 +341,7 @@ public class EnchantAll {
         enchantments.remove(Enchantments.BINDING_CURSE);
         enchantments.remove(Enchantments.VANISHING_CURSE);
 
-        if (ModConfig.INSTANCE.getConfig().excludeFrost && !unenchant) {
+        if (ModConfig.HANDLER.instance().excludeFrost && !unenchant) {
             enchantments.remove(Enchantments.FROST_WALKER);
         }
 
@@ -445,9 +349,9 @@ public class EnchantAll {
     }
 
     private static int delayLeft() {
-        long delay = (long)(ModConfig.INSTANCE.getConfig().enchantDelay * 1000.0);
+        long delay = (long)(ModConfig.HANDLER.instance().enchantDelay * 1000.0);
         if (cooldown) {
-            delay = (long)(ModConfig.INSTANCE.getConfig().cooldownTime * 1000.0);
+            delay = (long)(ModConfig.HANDLER.instance().cooldownTime * 1000.0);
         } else if (pause) {
             delay = 250L;
         }
@@ -472,7 +376,7 @@ public class EnchantAll {
             return false;
         }
 
-        return ModConfig.INSTANCE.getConfig().excludeFrost &&
+        return ModConfig.HANDLER.instance().excludeFrost &&
                 EnchantmentHelper.fromNbt(MC.player.getMainHandStack().getEnchantments()).containsKey(Enchantments.FROST_WALKER);
     }
 

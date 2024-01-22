@@ -1,12 +1,11 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
+import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.enchantment.Enchantment;
@@ -23,6 +22,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.List;
@@ -34,10 +34,13 @@ public class AutoSilk {
 
     private static final String COMMAND = "autosilk";
     private static final String ALIAS = "silk";
+    public static final int BUTTON_WIDTH = 100;
+    public static final int BUTTON_HEIGHT = 20;
 
     private static State state;
     private static long lastActionPerformedAt;
     private static EnchantmentScreenHandler screenHandler;
+    public static CyclingButtonWidget<Boolean> autoSilkButton;
 
     public static void init() {
         reset();
@@ -45,37 +48,13 @@ public class AutoSilk {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().autoSilk = !ModConfig.INSTANCE.getConfig().autoSilk;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.autosilk", ModConfig.INSTANCE.getConfig().autoSilk);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("target")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.targetTool", ModConfig.INSTANCE.getConfig().targetTool);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("tool", ModConfig.SilkTarget.SilkTargetArgumentType.silkTarget())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().targetTool = ModConfig.SilkTarget.SilkTargetArgumentType.getSilkTarget(context, "tool");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.targetTool", ModConfig.INSTANCE.getConfig().targetTool);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("delay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.autoSilkDelay", ModConfig.INSTANCE.getConfig().autoSilkDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("seconds", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().autoSilkDelay = DoubleArgumentType.getDouble(context, "seconds");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.autoSilkDelay", ModConfig.INSTANCE.getConfig().autoSilkDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "autosilk", () -> ModConfig.HANDLER.instance().autoSilk, (value) -> ModConfig.HANDLER.instance().autoSilk = value)
+                    .then(CommandUtils.getterSetter("target", "tool", "targetTool", () -> ModConfig.HANDLER.instance().targetTool, (value) -> ModConfig.HANDLER.instance().targetTool = value, ModConfig.SilkTarget.SilkTargetArgumentType.silkTarget(), ModConfig.SilkTarget.SilkTargetArgumentType::getSilkTarget))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoSilkDelay", () -> ModConfig.HANDLER.instance().autoSilkDelay, (value) -> ModConfig.HANDLER.instance().autoSilkDelay = value))
+                    .then(CommandUtils.bool("showButton", "showSilkButton", () -> ModConfig.HANDLER.instance().showSilkButton, (value) -> ModConfig.HANDLER.instance().showSilkButton = value))
+                    .then(CommandUtils.getterSetter("buttonPos", "position", "silkButtonPos", () -> ModConfig.HANDLER.instance().silkButtonPos, (value) -> ModConfig.HANDLER.instance().silkButtonPos = value, ModConfig.CornerButtonPos.CornerButtonPosArgumentType.cornerButtonPos(), ModConfig.CornerButtonPos.CornerButtonPosArgumentType::getCornerButtonPos))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -89,7 +68,7 @@ public class AutoSilk {
     }
 
     public static void onPlayerCloseScreen() {
-        if (!ModConfig.INSTANCE.getConfig().autoSilk || !(MC.currentScreen instanceof EnchantmentScreen)) {
+        if (!ModConfig.HANDLER.instance().autoSilk || !(MC.currentScreen instanceof EnchantmentScreen)) {
             return;
         }
 
@@ -97,7 +76,7 @@ public class AutoSilk {
     }
 
     public static void onEnchantUpdate() {
-        if (!ModConfig.INSTANCE.getConfig().autoSilk) {
+        if (!ModConfig.HANDLER.instance().autoSilk) {
             return;
         }
 
@@ -111,22 +90,22 @@ public class AutoSilk {
         }
     }
 
-    public static void onInventoryUpdate(ScreenHandlerSlotUpdateS2CPacket packet) {
-        if (!ModConfig.INSTANCE.getConfig().autoSilk) {
+    public static void onUpdateInvSlot(ScreenHandlerSlotUpdateS2CPacket packet) {
+        if (!ModConfig.HANDLER.instance().autoSilk) {
             return;
         }
 
-        if (state.equals(State.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && EnchantmentHelper.get(packet.getItemStack()).size() > 0) {
+        if (state.equals(State.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && !EnchantmentHelper.get(packet.getStack()).isEmpty()) {
             state = State.RETURN_ITEM_AND_RESET;
         }
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().autoSilk || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoSilk || MC.player == null) {
             return;
         }
 
-        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.INSTANCE.getConfig().autoSilkDelay * 1000.0) {
+        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.instance().autoSilkDelay * 1000.0) {
             return;
         }
 
@@ -140,37 +119,30 @@ public class AutoSilk {
         if (state == State.INSERT_LAPIS) {
             if (countFreeSlots() < 1) {
                 Messenger.printMessage("message.sbutils.autoSilk.invFull");
-                ModConfig.INSTANCE.getConfig().autoSilk = false;
-                ModConfig.INSTANCE.save();
-                reset();
-                return;
-            }
-            if (getTotalLapis() == 0) {
-                Messenger.printMessage("message.sbutils.autoSilk.noLapis");
-                ModConfig.INSTANCE.getConfig().autoSilk = false;
-                ModConfig.INSTANCE.save();
+                disable();
                 reset();
                 return;
             }
             if (getTotalLapis() < 3) {
-                Messenger.printMessage("message.sbutils.autoSilk.notEnoughLapis");
-                ModConfig.INSTANCE.getConfig().autoSilk = false;
-                ModConfig.INSTANCE.save();
+                if (getTotalLapis() == 0) {
+                    Messenger.printMessage("message.sbutils.autoSilk.noLapis");
+                } else {
+                    Messenger.printMessage("message.sbutils.autoSilk.notEnoughLapis");
+                }
+                disable();
                 reset();
                 return;
             }
-            Item targetTool = ModConfig.INSTANCE.getConfig().targetTool.getTool();
+            Item targetTool = ModConfig.HANDLER.instance().targetTool.getTool();
             if (findInEnchantScreen(targetTool, true) == null) {
                 Messenger.printWithPlaceholders("message.sbutils.autoSilk.noTools", targetTool.getTranslationKey());
-                ModConfig.INSTANCE.getConfig().autoSilk = false;
-                ModConfig.INSTANCE.save();
+                disable();
                 reset();
                 return;
             }
             if (findInEnchantScreen(Items.BOOK, true) == null) {
                 Messenger.printMessage("message.sbutils.autoSilk.noBooks");
-                ModConfig.INSTANCE.getConfig().autoSilk = false;
-                ModConfig.INSTANCE.save();
+                disable();
                 reset();
                 return;
             }
@@ -211,7 +183,7 @@ public class AutoSilk {
     }
 
     private static void insertTool() {
-        insertItem(ModConfig.INSTANCE.getConfig().targetTool.getTool());
+        insertItem(ModConfig.HANDLER.instance().targetTool.getTool());
     }
 
     private static void enchantPickaxe() {
@@ -332,8 +304,8 @@ public class AutoSilk {
         if (MC.player.experienceLevel < screenHandler.enchantmentPower[buttonIndex]) {
             Messenger.printMessage("message.sbutils.autoSilk.notEnoughExperience");
             reset();
-            ModConfig.INSTANCE.getConfig().autoSilk = false;
-            ModConfig.INSTANCE.save();
+            ModConfig.HANDLER.instance().autoSilk = false;
+            ModConfig.HANDLER.save();
             return;
         }
 
@@ -346,16 +318,25 @@ public class AutoSilk {
             return null;
         }
 
+        Slot result = null;
         for (Slot slot : screenHandler.slots) {
             if (ignoreEnchantingSlots && slot.id < 2) {
                 continue;
             }
             ItemStack itemStack = slot.getStack();
             if (itemStack.getItem().equals(item) && itemStack.getEnchantments().isEmpty()) {
-                return slot;
+                if (item.getMaxCount() == 1)
+                    return slot;
+                if (result == null) {
+                    result = slot;
+                    continue;
+                }
+                if (result.getStack().getCount() > slot.getStack().getCount()) {
+                    result = slot;
+                }
             }
         }
-        return null;
+        return result;
     }
 
     private static int getTotalLapis() {
@@ -393,11 +374,38 @@ public class AutoSilk {
             total--;
         }
 
-        if (!screenHandler.getSlot(1).getStack().isEmpty()) {
+        ItemStack lapis = screenHandler.getSlot(1).getStack();
+        if (!lapis.isEmpty() && countFreeLapisSlots() < lapis.getCount()) {
             total--;
         }
 
         return total;
+    }
+
+    private static int countFreeLapisSlots() {
+        if (screenHandler == null) {
+            return -1;
+        }
+
+        int total = 0;
+        for (Slot slot : screenHandler.slots) {
+            if (slot.id < 2) {
+                continue;
+            }
+            ItemStack itemStack = slot.getStack();
+            if (itemStack.getItem() == Items.LAPIS_LAZULI) {
+                total += itemStack.getMaxCount() - itemStack.getCount();
+            }
+        }
+        return total;
+    }
+
+    private static void disable() {
+        ModConfig.HANDLER.instance().autoSilk = false;
+        ModConfig.HANDLER.save();
+        if (autoSilkButton != null) {
+            autoSilkButton.setValue(false);
+        }
     }
 
     private enum State {

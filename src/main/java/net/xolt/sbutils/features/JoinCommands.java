@@ -1,16 +1,13 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
 
@@ -34,79 +31,21 @@ public class JoinCommands {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().joinCmdsEnabled = !ModConfig.INSTANCE.getConfig().joinCmdsEnabled;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.joincommands", ModConfig.INSTANCE.getConfig().joinCmdsEnabled);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("global")
-                        .executes(context -> {
-                            Messenger.printListSetting("message.sbutils.joinCommands.globalCommandList", getJoinCommands(true));
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.literal("add")
-                                .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
-                                        .executes(context ->
-                                                onAddCommand(StringArgumentType.getString(context, "command"), true)
-                                        )))
-                        .then(ClientCommandManager.literal("del")
-                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                        .executes(context ->
-                                                onDelCommand(IntegerArgumentType.getInteger(context, "index"), true)
-                                        )))
-                        .then(ClientCommandManager.literal("insert")
-                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                        .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
-                                                .executes(context ->
-                                                        onInsertCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "command"), true)
-                                                )))))
-                .then(ClientCommandManager.literal("account")
-                        .executes(context -> {
-                            Messenger.printListSetting("message.sbutils.joinCommands.accountCommandList", getJoinCommands(false));
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.literal("add")
-                                .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
-                                        .executes(context ->
-                                                onAddCommand(StringArgumentType.getString(context, "command"), false)
-                                        )))
-                        .then(ClientCommandManager.literal("del")
-                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                        .executes(context ->
-                                                onDelCommand(IntegerArgumentType.getInteger(context, "index"), false)
-                                        )))
-                        .then(ClientCommandManager.literal("insert")
-                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                        .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
-                                                .executes(context ->
-                                                        onInsertCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "command"), false)
-                                                )))))
-                .then(ClientCommandManager.literal("delay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.joinCmdDelay", ModConfig.INSTANCE.getConfig().joinCmdDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().joinCmdDelay = DoubleArgumentType.getDouble(context, "delay");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.joinCmdDelay", ModConfig.INSTANCE.getConfig().joinCmdDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("initialDelay")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.joinCmdInitialDelay", ModConfig.INSTANCE.getConfig().joinCmdInitialDelay);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().joinCmdInitialDelay = DoubleArgumentType.getDouble(context, "delay");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.joinCmdInitialDelay", ModConfig.INSTANCE.getConfig().joinCmdInitialDelay);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "joincommands", () -> ModConfig.HANDLER.instance().joinCmdsEnabled, (value) -> ModConfig.HANDLER.instance().joinCmdsEnabled = value)
+                    .then(CommandUtils.stringList("global", "command", "message.sbutils.joinCommands.globalCommandList",
+                            () -> getJoinCommands(true),
+                            (command) -> onAddCommand(command, true),
+                            (index) -> onDelCommand(index, true),
+                            (index, command) -> onInsertCommand(index, command, true)))
+                    .then(CommandUtils.stringList("account", "command", "message.sbutils.joinCommands.accountCommandList",
+                            () -> getJoinCommands(false),
+                            (command) -> onAddCommand(command, false),
+                            (index) -> onDelCommand(index, false),
+                            (index, command) -> onInsertCommand(index, command, false)))
+                    .then(CommandUtils.doubl("delay", "seconds", "joinCmdDelay", () -> ModConfig.HANDLER.instance().joinCmdDelay, (value) -> ModConfig.HANDLER.instance().joinCmdDelay = value))
+                    .then(CommandUtils.doubl("initialDelay", "seconds", "joinCmdInitialDelay", () -> ModConfig.HANDLER.instance().joinCmdInitialDelay, (value) -> ModConfig.HANDLER.instance().joinCmdInitialDelay = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -116,20 +55,20 @@ public class JoinCommands {
     }
 
     public static void tick() {
-        if (!ModConfig.INSTANCE.getConfig().joinCmdsEnabled || !ServerDetector.isOnSkyblock() || !waitingToSend) {
+        if (!ModConfig.HANDLER.instance().joinCmdsEnabled || !ServerDetector.isOnSkyblock() || !waitingToSend) {
             return;
         }
 
-        int delay = (int)((joinedAt > lastCommandSentAt ? ModConfig.INSTANCE.getConfig().joinCmdInitialDelay : ModConfig.INSTANCE.getConfig().joinCmdDelay) * 1000.0);
+        int delay = (int)((joinedAt > lastCommandSentAt ? ModConfig.HANDLER.instance().joinCmdInitialDelay : ModConfig.HANDLER.instance().joinCmdDelay) * 1000.0);
 
         if (System.currentTimeMillis() - Math.max(joinedAt, lastCommandSentAt) >= delay) {
             sendJoinCommand();
         }
     }
 
-    private static int onAddCommand(String command, boolean global) {
+    private static void onAddCommand(String command, boolean global) {
         if (MC.player == null) {
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         List<String> joinCommands = getJoinCommands(global);
@@ -137,48 +76,44 @@ public class JoinCommands {
         IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
 
         Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", joinCommands);
-
-        return Command.SINGLE_SUCCESS;
     }
 
-    private static int onDelCommand(int index, boolean global) {
+    private static void onDelCommand(int index, boolean global) {
         if (MC.player == null) {
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         List<String> joinCommands = getJoinCommands(global);
 
-        if ((index - 1) < 0 || (index - 1) >= joinCommands.size()) {
+        int adjustedIndex = index - 1;
+        if (adjustedIndex < 0 || adjustedIndex >= joinCommands.size()) {
             Messenger.printMessage("message.sbutils.joinCommands.invalidIndex");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
-        joinCommands.remove(index - 1);
+        joinCommands.remove(adjustedIndex);
         IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
 
         Messenger.printListSetting("message.sbutils.joinCommands.deleteSuccess", joinCommands);
-
-        return Command.SINGLE_SUCCESS;
     }
 
-    private static int onInsertCommand(int index, String command, boolean global) {
+    private static void onInsertCommand(int index, String command, boolean global) {
         if (MC.player == null) {
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         List<String> joinCommands = getJoinCommands(global);
 
-        if ((index - 1) < 0 || (index - 1) > joinCommands.size()) {
+        int adjustedIndex = index - 1;
+        if (adjustedIndex < 0 || adjustedIndex > joinCommands.size()) {
             Messenger.printMessage("message.sbutils.joinCommands.invalidIndex");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
-        joinCommands.add(index - 1, command);
+        joinCommands.add(adjustedIndex, command);
         IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
 
         Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", joinCommands);
-
-        return Command.SINGLE_SUCCESS;
     }
 
     public static void onDisconnect() {
@@ -186,7 +121,7 @@ public class JoinCommands {
     }
 
     public static void onJoinGame() {
-        if (!ModConfig.INSTANCE.getConfig().joinCmdsEnabled) {
+        if (!ModConfig.HANDLER.instance().joinCmdsEnabled) {
             return;
         }
 

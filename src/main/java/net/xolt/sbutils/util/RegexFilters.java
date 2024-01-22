@@ -4,6 +4,11 @@ import java.util.regex.Pattern;
 
 public class RegexFilters {
 
+    // Auto Advert
+
+    public static final Pattern rgbFilter = Pattern.compile("&x&[0-9a-fA-F]&[0-9a-fA-F]&[0-9a-fA-F]&[0-9a-fA-F]&[0-9a-fA-F]&[0-9a-fA-F]");
+    public static final Pattern colorCodeFilter = Pattern.compile("&[0-9a-fk-or]");
+
 
     // Mentions
 
@@ -53,7 +58,7 @@ public class RegexFilters {
     // Auto Fix
     
     public static final Pattern fixSuccessFilter = Pattern.compile("You have successfully repaired your: .*\\.");
-    public static final Pattern fixFailFilter = Pattern.compile("You cannot type that command for ((([0-9]+) (minutes|minute) )?(([0-9]+) (seconds|second))?|now)\\.|Error: This item cannot be repaired\\.");
+    public static final Pattern fixFailFilter = Pattern.compile("You cannot type that command for(( ([0-9]+) (minutes|minute))?( ([0-9]+) (seconds|second))?| now)\\.|Error: This item cannot be repaired\\.");
 
     
     // Auto Raffle
@@ -73,6 +78,13 @@ public class RegexFilters {
     public static final Pattern rareCrateFilter = Pattern.compile("Rare|Rare Crate");
     public static final Pattern epicCrateFilter = Pattern.compile("Epic|Epic Crate");
     public static final Pattern legendaryCrateFilter = Pattern.compile("Legendary|Legendary Crate");
+
+
+    // Auto Kit
+
+    public static final Pattern kitSuccessFilter = Pattern.compile("Received kit .*\\.");
+    public static final Pattern kitFailFilter = Pattern.compile("You can't use that kit again for another(( ([0-9]+) (days|day))?( ([0-9]+) (hours|hour))?( ([0-9]+) (minutes|minute))?( ([0-9]+) (seconds|second))?| now)\\.");
+    public static final Pattern kitNoPermsFilter = Pattern.compile("Error: You need the .* permission to use that kit\\.");
 
 
     // Staff Detector

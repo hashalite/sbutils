@@ -1,6 +1,5 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -8,6 +7,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.List;
@@ -22,10 +22,9 @@ public class DeathCoords {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> deathCoordsNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context ->
-                        onDeathCoordsCommand()
-                ));
+        final LiteralCommandNode<FabricClientCommandSource> deathCoordsNode = dispatcher.register(
+                CommandUtils.runnable(COMMAND, DeathCoords::onDeathCoordsCommand)
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -34,20 +33,19 @@ public class DeathCoords {
                 .redirect(deathCoordsNode));
     }
 
-    private static int onDeathCoordsCommand() {
+    private static void onDeathCoordsCommand() {
         if (MC.player == null) {
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         Optional<GlobalPos> lastDeathPosOptional = MC.player.getLastDeathPos();
         if (lastDeathPosOptional.isEmpty()) {
             Messenger.printMessage("message.sbutils.deathCoords.noDeaths");
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         GlobalPos lastDeathGlobalPos = lastDeathPosOptional.get();
         BlockPos lastDeathPos = lastDeathGlobalPos.getPos();
         Messenger.printWithPlaceholders("message.sbutils.deathCoords.deathCoords", lastDeathGlobalPos.getDimension().getValue().toShortTranslationKey(), lastDeathPos.getX(), lastDeathPos.getY(), lastDeathPos.getZ());
-        return Command.SINGLE_SUCCESS;
     }
 }

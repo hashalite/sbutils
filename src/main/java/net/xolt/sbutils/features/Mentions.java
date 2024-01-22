@@ -1,15 +1,13 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.*;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -28,124 +26,22 @@ public class Mentions {
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> mentionsNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    ModConfig.INSTANCE.getConfig().mentions = !ModConfig.INSTANCE.getConfig().mentions;
-                    ModConfig.INSTANCE.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category.mentions", ModConfig.INSTANCE.getConfig().mentions);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("playSound")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.playMentionSound", ModConfig.INSTANCE.getConfig().playMentionSound);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().playMentionSound = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.playMentionSound", ModConfig.INSTANCE.getConfig().playMentionSound);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("excludeServer")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.excludeServerMsgs", ModConfig.INSTANCE.getConfig().excludeServerMsgs);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeServerMsgs = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeServerMsgs", ModConfig.INSTANCE.getConfig().excludeServerMsgs);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("excludeSelf")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.excludeSelfMsgs", ModConfig.INSTANCE.getConfig().excludeSelfMsgs);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeSelfMsgs = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeSelfMsgs", ModConfig.INSTANCE.getConfig().excludeSelfMsgs);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("excludeSender")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.excludeSender", ModConfig.INSTANCE.getConfig().excludeSender);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().excludeSender = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.excludeSender", ModConfig.INSTANCE.getConfig().excludeSender);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("currentAccount")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.mentionsCurrentAccount", ModConfig.INSTANCE.getConfig().mentionsCurrentAccount);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionsCurrentAccount = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionsCurrentAccount", ModConfig.INSTANCE.getConfig().mentionsCurrentAccount);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("aliases")
-                        .executes(context -> {
-                            Messenger.printListSetting("message.sbutils.mentions.aliases", ModConfig.INSTANCE.getConfig().mentionsAliases);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.literal("add")
-                                .then(ClientCommandManager.argument("alias", StringArgumentType.greedyString())
-                                        .executes(context ->
-                                            onAddAliasCommand(StringArgumentType.getString(context, "alias"))
-                                        )))
-                        .then(ClientCommandManager.literal("del")
-                                .then(ClientCommandManager.argument("alias", StringArgumentType.greedyString())
-                                        .executes(context ->
-                                            onDelAliasCommand(StringArgumentType.getString(context, "alias"))
-                                        ))))
-                .then(ClientCommandManager.literal("sound")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.mentionSound", ModConfig.INSTANCE.getConfig().mentionSound);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("sound", ModConfig.NotifSound.NotifSoundArgumentType.notifSound())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionSound = ModConfig.NotifSound.NotifSoundArgumentType.getNotifSound(context, "sound");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionSound", ModConfig.INSTANCE.getConfig().mentionSound);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("highlight")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.mentionHighlight", ModConfig.INSTANCE.getConfig().mentionHighlight);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().mentionHighlight = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.mentionHighlight", ModConfig.INSTANCE.getConfig().mentionHighlight);
-                                    return Command.SINGLE_SUCCESS;
-                                }))
-                        .then(ClientCommandManager.literal("color")
-                                .executes(context -> {
-                                    Messenger.printSetting("text.sbutils.config.option.highlightColor", ModConfig.INSTANCE.getConfig().highlightColor);
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                                .then(ClientCommandManager.argument("color", ModConfig.Color.ColorArgumentType.color())
-                                        .executes(context -> {
-                                            ModConfig.INSTANCE.getConfig().highlightColor = ModConfig.Color.ColorArgumentType.getColor(context, "color");
-                                            ModConfig.INSTANCE.save();
-                                            Messenger.printChangedSetting("text.sbutils.config.option.highlightColor", ModConfig.INSTANCE.getConfig().highlightColor);
-                                            return Command.SINGLE_SUCCESS;
-                                        })))));
+        final LiteralCommandNode<FabricClientCommandSource> mentionsNode = dispatcher.register(
+                CommandUtils.toggle(COMMAND, "mentions", () -> ModConfig.HANDLER.instance().mentions, (value) -> ModConfig.HANDLER.instance().mentions = value)
+                    .then(CommandUtils.bool("playSound", "playMentionSound", () -> ModConfig.HANDLER.instance().playMentionSound, (value) -> ModConfig.HANDLER.instance().playMentionSound = value))
+                    .then(CommandUtils.bool("excludeServer", "excludeServerMsgs", () -> ModConfig.HANDLER.instance().excludeServerMsgs, (value) -> ModConfig.HANDLER.instance().excludeServerMsgs = value))
+                    .then(CommandUtils.bool("excludeSelf", "excludeSelfMsgs", () -> ModConfig.HANDLER.instance().excludeSelfMsgs, (value) -> ModConfig.HANDLER.instance().excludeSelfMsgs = value))
+                    .then(CommandUtils.bool("excludeSender", "excludeSender", () -> ModConfig.HANDLER.instance().excludeSender, (value) -> ModConfig.HANDLER.instance().excludeSender = value))
+                    .then(CommandUtils.bool("currentAccount", "mentionsCurrentAccount", () -> ModConfig.HANDLER.instance().mentionsCurrentAccount, (value) -> ModConfig.HANDLER.instance().mentionsCurrentAccount = value))
+                    .then(CommandUtils.stringList("aliases", "alias", "message.sbutils.mentions.aliases",
+                            () -> ModConfig.HANDLER.instance().mentionsAliases,
+                            Mentions::onAddAliasCommand,
+                            Mentions::onDelAliasCommand,
+                            Mentions::onInsertAliasCommand))
+                    .then(CommandUtils.getterSetter("sound", "sound", "mentionSound", () -> ModConfig.HANDLER.instance().mentionSound, (value) -> ModConfig.HANDLER.instance().mentionSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound))
+                    .then(CommandUtils.bool("highlight", "mentionHighlight", () -> ModConfig.HANDLER.instance().mentionHighlight, (value) -> ModConfig.HANDLER.instance().mentionHighlight = value)
+                            .then(CommandUtils.getterSetter("color", "color", "highlightColor", () -> ModConfig.HANDLER.instance().highlightColor, (value) -> ModConfig.HANDLER.instance().highlightColor = value, ModConfig.Color.ColorArgumentType.color(), ModConfig.Color.ColorArgumentType::getColor)))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -154,38 +50,57 @@ public class Mentions {
                 .redirect(mentionsNode));
     }
 
-    private static int onAddAliasCommand(String name) {
-        List<String> names = new ArrayList<>(ModConfig.INSTANCE.getConfig().mentionsAliases);
+    private static void onAddAliasCommand(String name) {
+        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().mentionsAliases);
 
         if (names.contains(name)) {
             Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddFail", name);
-            return Command.SINGLE_SUCCESS;
+            return;
         }
 
         names.add(name);
-        ModConfig.INSTANCE.getConfig().mentionsAliases = names;
-        ModConfig.INSTANCE.save();
+        ModConfig.HANDLER.instance().mentionsAliases = names;
+        ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddSuccess", name);
-        return Command.SINGLE_SUCCESS;
     }
 
-    private static int onDelAliasCommand(String name) {
-        List<String> names = new ArrayList<>(ModConfig.INSTANCE.getConfig().mentionsAliases);
+    private static void onDelAliasCommand(int index) {
+        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().mentionsAliases);
 
-        if (!names.contains(name)) {
-            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasDelFail", name);
-            return Command.SINGLE_SUCCESS;
+        int adjustedIndex = index - 1;
+        if (adjustedIndex < 0 || adjustedIndex >= names.size()) {
+            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasInvalidIndex", index);
+            return;
         }
 
-        names.remove(name);
-        ModConfig.INSTANCE.getConfig().mentionsAliases = names;
-        ModConfig.INSTANCE.save();
+        String name = names.remove(adjustedIndex);
+        ModConfig.HANDLER.instance().mentionsAliases = names;
+        ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.mentions.aliasDelSuccess", name);
-        return Command.SINGLE_SUCCESS;
+    }
+
+    private static void onInsertAliasCommand(int index, String name) {
+        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().mentionsAliases);
+
+        int adjustedIndex = index - 1;
+        if (adjustedIndex < 0 || adjustedIndex > names.size()) {
+            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasInvalidIndex", index);
+            return;
+        }
+
+        if (names.contains(name)) {
+            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddFail", name);
+            return;
+        }
+
+        names.add(adjustedIndex, name);
+        ModConfig.HANDLER.instance().mentionsAliases = names;
+        ModConfig.HANDLER.save();
+        Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddSuccess", name);
     }
 
     public static void processMessage(Text message) {
-        if (!ModConfig.INSTANCE.getConfig().mentions || !ModConfig.INSTANCE.getConfig().playMentionSound || !isValidMessage(message)) {
+        if (!ModConfig.HANDLER.instance().mentions || !ModConfig.HANDLER.instance().playMentionSound || !isValidMessage(message)) {
             return;
         }
 
@@ -202,13 +117,13 @@ public class Mentions {
         Text newMessage = message;
 
         Matcher playerMsgMatcher = RegexFilters.playerMsgFilter.matcher(message.getString());
-        int prefixLen = ModConfig.INSTANCE.getConfig().excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
+        int prefixLen = ModConfig.HANDLER.instance().excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
 
-        if (ModConfig.INSTANCE.getConfig().mentionsCurrentAccount) {
+        if (ModConfig.HANDLER.instance().mentionsCurrentAccount) {
             newMessage = highlight(newMessage, MC.player.getGameProfile().getName(), prefixLen);
         }
 
-        for (String alias : ModConfig.INSTANCE.getConfig().mentionsAliases) {
+        for (String alias : ModConfig.HANDLER.instance().mentionsAliases) {
             if (!alias.equals("")) {
                 newMessage = highlight(newMessage, alias, prefixLen);
             }
@@ -224,18 +139,18 @@ public class Mentions {
 
         String msgString = message.getString().toLowerCase(Locale.ROOT);
 
-        if (ModConfig.INSTANCE.getConfig().excludeSender) {
+        if (ModConfig.HANDLER.instance().excludeSender) {
             Matcher matcher = RegexFilters.playerMsgFilter.matcher(msgString);
             if (matcher.matches()) {
                 msgString = msgString.replace(matcher.group(1), "");
             }
         }
 
-        if (ModConfig.INSTANCE.getConfig().mentionsCurrentAccount && msgString.contains(MC.player.getGameProfile().getName().toLowerCase())) {
+        if (ModConfig.HANDLER.instance().mentionsCurrentAccount && msgString.contains(MC.player.getGameProfile().getName().toLowerCase())) {
             return true;
         }
 
-        for (String alias : ModConfig.INSTANCE.getConfig().mentionsAliases) {
+        for (String alias : ModConfig.HANDLER.instance().mentionsAliases) {
             if (!alias.equals("") && msgString.contains(alias.toLowerCase())) {
                 return true;
             }
@@ -245,20 +160,20 @@ public class Mentions {
     }
 
     public static boolean isValidMessage(Text message) {
-        if (ModConfig.INSTANCE.getConfig().excludeServerMsgs &&
+        if (ModConfig.HANDLER.instance().excludeServerMsgs &&
                 !RegexFilters.playerMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.incomingMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches()) {
             return false;
         }
 
-        if (ModConfig.INSTANCE.getConfig().excludeSelfMsgs) {
+        if (ModConfig.HANDLER.instance().excludeSelfMsgs) {
             if (RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches()) {
                 return false;
             }
 
             ClickEvent clickEvent = message.getStyle().getClickEvent();
-            if (MC.player == null || clickEvent == null || !clickEvent.getAction().getName().equals("suggest_command")) {
+            if (MC.player == null || clickEvent == null || clickEvent.getAction() != ClickEvent.Action.SUGGEST_COMMAND) {
                 return true;
             }
 
@@ -315,7 +230,7 @@ public class Mentions {
             int endIndex = beginningIndex + lowerTarget.length();
             String preText = format + stringText.substring(index, beginningIndex);
             result.append(Text.literal(preText).setStyle(oldStyle));
-            result.append(Text.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.INSTANCE.getConfig().highlightColor.getFormatting())));
+            result.append(Text.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.instance().highlightColor.getFormatting())));
             int formatSignIndex = preText.lastIndexOf("\u00a7");
             if (formatSignIndex != -1 && formatSignIndex + 2 <= preText.length()) {
                 format = preText.substring(formatSignIndex, formatSignIndex + 2);
@@ -335,6 +250,6 @@ public class Mentions {
             return;
         }
 
-        MC.player.playSound(ModConfig.INSTANCE.getConfig().mentionSound.getSound(), 1, 1);
+        MC.player.playSound(ModConfig.HANDLER.instance().mentionSound.getSound(), 1, 1);
     }
 }

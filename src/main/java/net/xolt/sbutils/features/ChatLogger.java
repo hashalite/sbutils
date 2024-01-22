@@ -1,18 +1,13 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.ChatFilter;
-import net.xolt.sbutils.util.IOHandler;
-import net.xolt.sbutils.util.Messenger;
-import net.xolt.sbutils.util.RegexFilters;
+import net.xolt.sbutils.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,101 +20,33 @@ public class ChatLogger {
     private static List<ChatFilter> shopFilters = List.of(
             new ChatFilter("text.sbutils.config.option.shopLoggerIncoming",
                     List.of(RegexFilters.incomingTransactionFilter),
-                    () -> ModConfig.INSTANCE.getConfig().shopLoggerIncoming),
+                    () -> ModConfig.HANDLER.instance().shopLoggerIncoming),
             new ChatFilter("text.sbutils.config.option.shopLoggerOutgoing",
                     List.of(RegexFilters.outgoingTransactionFilter),
-                    () -> ModConfig.INSTANCE.getConfig().shopLoggerOutgoing)
+                    () -> ModConfig.HANDLER.instance().shopLoggerOutgoing)
     );
     private static List<ChatFilter> messageFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.msgLoggerIncoming", List.of(RegexFilters.incomingMsgFilter), () -> ModConfig.INSTANCE.getConfig().msgLoggerIncoming),
-            new ChatFilter("text.sbutils.config.option.msgLoggerOutgoing", List.of(RegexFilters.outgoingMsgFilter), () -> ModConfig.INSTANCE.getConfig().msgLoggerOutgoing)
+            new ChatFilter("text.sbutils.config.option.msgLoggerIncoming", List.of(RegexFilters.incomingMsgFilter), () -> ModConfig.HANDLER.instance().msgLoggerIncoming),
+            new ChatFilter("text.sbutils.config.option.msgLoggerOutgoing", List.of(RegexFilters.outgoingMsgFilter), () -> ModConfig.HANDLER.instance().msgLoggerOutgoing)
     );
     private static List<ChatFilter> visitFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.visitLogger", List.of(RegexFilters.visitFilter), () -> ModConfig.INSTANCE.getConfig().visitLogger)
+            new ChatFilter("text.sbutils.config.option.visitLogger", List.of(RegexFilters.visitFilter), () -> ModConfig.HANDLER.instance().visitLogger)
     );
     private static List<ChatFilter> dpFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.dpLogger", List.of(RegexFilters.dpWinnerFilter), () -> ModConfig.INSTANCE.getConfig().dpLogger)
+            new ChatFilter("text.sbutils.config.option.dpLogger", List.of(RegexFilters.dpWinnerFilter), () -> ModConfig.HANDLER.instance().dpLogger)
     );
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
-        final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .executes(context -> {
-                    Messenger.printEnabledFilters("message.sbutils.chatLogger.status", getFilters());
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(ClientCommandManager.literal("incomingShop")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.shopLoggerIncoming", ModConfig.INSTANCE.getConfig().shopLoggerIncoming);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().shopLoggerIncoming = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerIncoming", ModConfig.INSTANCE.getConfig().shopLoggerIncoming);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("outgoingShop")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.shopLoggerOutgoing", ModConfig.INSTANCE.getConfig().shopLoggerOutgoing);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().shopLoggerOutgoing = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.shopLoggerOutgoing", ModConfig.INSTANCE.getConfig().shopLoggerOutgoing);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("incomingMsg")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.msgLoggerIncoming", ModConfig.INSTANCE.getConfig().msgLoggerIncoming);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().msgLoggerIncoming = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerIncoming", ModConfig.INSTANCE.getConfig().msgLoggerIncoming);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("outgoingMsg")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.msgLoggerOutgoing", ModConfig.INSTANCE.getConfig().msgLoggerOutgoing);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().msgLoggerOutgoing = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.msgLoggerOutgoing", ModConfig.INSTANCE.getConfig().msgLoggerOutgoing);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("visit")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.visitLogger", ModConfig.INSTANCE.getConfig().visitLogger);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().visitLogger = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.visitLogger", ModConfig.INSTANCE.getConfig().visitLogger);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("dp")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.dpLogger", ModConfig.INSTANCE.getConfig().dpLogger);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().dpLogger = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.dpLogger", ModConfig.INSTANCE.getConfig().dpLogger);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+        final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(
+                CommandUtils.runnable(COMMAND, () -> Messenger.printEnabledFilters("message.sbutils.chatLogger.status", getFilters()))
+                    .then(CommandUtils.bool("incomingShop", "shopLoggerIncoming", () -> ModConfig.HANDLER.instance().shopLoggerIncoming, (value) -> ModConfig.HANDLER.instance().shopLoggerIncoming = value))
+                    .then(CommandUtils.bool("outgoingShop", "shopLoggerOutgoing", () -> ModConfig.HANDLER.instance().shopLoggerOutgoing, (value) -> ModConfig.HANDLER.instance().shopLoggerOutgoing = value))
+                    .then(CommandUtils.bool("incomingMsg", "msgLoggerIncoming", () -> ModConfig.HANDLER.instance().msgLoggerIncoming, (value) -> ModConfig.HANDLER.instance().msgLoggerIncoming = value))
+                    .then(CommandUtils.bool("outgoingMsg", "msgLoggerOutgoing", () -> ModConfig.HANDLER.instance().msgLoggerOutgoing, (value) -> ModConfig.HANDLER.instance().msgLoggerOutgoing = value))
+                    .then(CommandUtils.bool("visit", "visitLogger", () -> ModConfig.HANDLER.instance().visitLogger, (value) -> ModConfig.HANDLER.instance().visitLogger = value))
+                    .then(CommandUtils.bool("dp", "dpLogger", () -> ModConfig.HANDLER.instance().dpLogger, (value) -> ModConfig.HANDLER.instance().dpLogger = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->

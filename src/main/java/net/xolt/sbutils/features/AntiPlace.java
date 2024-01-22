@@ -1,8 +1,6 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -15,6 +13,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.List;
@@ -31,30 +30,9 @@ public class AntiPlace {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(ClientCommandManager.literal("heads")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.antiPlaceHeads", ModConfig.INSTANCE.getConfig().antiPlaceHeads);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().antiPlaceHeads = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceHeads", ModConfig.INSTANCE.getConfig().antiPlaceHeads);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("grass")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.antiPlaceGrass", ModConfig.INSTANCE.getConfig().antiPlaceGrass);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().antiPlaceGrass = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.antiPlaceGrass", ModConfig.INSTANCE.getConfig().antiPlaceGrass);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+                .then(CommandUtils.bool("heads", "antiPlaceHeads", () -> ModConfig.HANDLER.instance().antiPlaceHeads, (value) -> ModConfig.HANDLER.instance().antiPlaceHeads = value))
+                .then(CommandUtils.bool("grass", "antiPlaceGrass", () -> ModConfig.HANDLER.instance().antiPlaceGrass, (value) -> ModConfig.HANDLER.instance().antiPlaceGrass = value))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -74,12 +52,12 @@ public class AntiPlace {
         }
 
         ItemStack held = player.getStackInHand(hand);
-        if (ModConfig.INSTANCE.getConfig().antiPlaceHeads && isNamedHead(held)) {
+        if (ModConfig.HANDLER.instance().antiPlaceHeads && isNamedHead(held)) {
             notifyBlocked("message.sbutils.antiPlace.headBlocked");
             return true;
         }
 
-        if (ModConfig.INSTANCE.getConfig().antiPlaceGrass && isGrass(held)) {
+        if (ModConfig.HANDLER.instance().antiPlaceGrass && isGrass(held)) {
             notifyBlocked("message.sbutils.antiPlace.grassBlocked");
             return true;
         }

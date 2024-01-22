@@ -1,9 +1,15 @@
 package net.xolt.sbutils.util;
 
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -79,5 +85,39 @@ public class InvUtils {
 
     public static boolean canSwapSlot(int slotIndex) {
         return !(slotIndex >= 36 && slotIndex <= 40 && !playerScreenOpen());
+    }
+
+    public static boolean doesKitFit(PlayerInventory inventory, List<ItemStack> kit) {
+        List<ItemStack> kitClone = kit.stream().map(ItemStack::copy).toList();
+
+        List<ItemStack> invClone = new ArrayList<>();
+        for (int i = 0; i < 36; i++) {
+            if (inventory.getStack(i).getItem() == Items.AIR)
+                continue;
+            invClone.add(inventory.getStack(i).copy());
+        }
+
+        for (ItemStack stack : kit) {
+            int count = stack.getCount();
+            for (ItemStack invStack : invClone) {
+                if (!invStack.getItem().equals(stack.getItem()) || invStack.getCount() == invStack.getMaxCount())
+                    continue;
+                if (invStack.getMaxCount() - invStack.getCount() >= stack.getCount()) {
+                    invStack.setCount(invStack.getCount() + stack.getCount());
+                    count = 0;
+                    break;
+                } else {
+                    int space = invStack.getMaxCount() - invStack.getCount();
+                    invStack.setCount(invStack.getMaxCount());
+                    count = count - space;
+                    break;
+                }
+            }
+            if (count > 0) {
+                invClone.add(new ItemStack(stack.getItem(), count));
+            }
+        }
+
+        return invClone.size() <= 36;
     }
 }

@@ -1,14 +1,13 @@
 package net.xolt.sbutils.features;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.PlayerListEntry;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -27,42 +26,10 @@ public class StaffDetector {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> staffDetectorNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(ClientCommandManager.literal("detectJoin")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.detectStaffJoin", ModConfig.INSTANCE.getConfig().detectStaffJoin);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().detectStaffJoin = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffJoin", ModConfig.INSTANCE.getConfig().detectStaffJoin);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("detectLeave")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.detectStaffLeave", ModConfig.INSTANCE.getConfig().detectStaffLeave);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("enabled", BoolArgumentType.bool())
-                                .executes(context -> {
-                                    ModConfig.INSTANCE.getConfig().detectStaffLeave = BoolArgumentType.getBool(context, "enabled");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.detectStaffLeave", ModConfig.INSTANCE.getConfig().detectStaffLeave);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(ClientCommandManager.literal("sound")
-                        .executes(context -> {
-                            Messenger.printSetting("text.sbutils.config.option.staffDetectSound", ModConfig.INSTANCE.getConfig().staffDetectSound);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(ClientCommandManager.argument("sound", ModConfig.NotifSound.NotifSoundArgumentType.notifSound())
-                                .executes(context ->{
-                                    ModConfig.INSTANCE.getConfig().staffDetectSound = ModConfig.NotifSound.NotifSoundArgumentType.getNotifSound(context, "sound");
-                                    ModConfig.INSTANCE.save();
-                                    Messenger.printChangedSetting("text.sbutils.config.option.staffDetectSound", ModConfig.INSTANCE.getConfig().staffDetectSound);
-                                    return Command.SINGLE_SUCCESS;
-                                }))));
+                .then(CommandUtils.bool("detectJoin", "detectStaffJoin", () -> ModConfig.HANDLER.instance().detectStaffJoin, (value) -> ModConfig.HANDLER.instance().detectStaffJoin = value))
+                .then(CommandUtils.bool("detectLeave", "detectStaffLeave", () -> ModConfig.HANDLER.instance().detectStaffLeave, (value) -> ModConfig.HANDLER.instance().detectStaffLeave = value))
+                .then(CommandUtils.getterSetter("sound", "sound", "staffDetectSound", () -> ModConfig.HANDLER.instance().staffDetectSound, (value) -> ModConfig.HANDLER.instance().staffDetectSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound))
+        );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -72,18 +39,18 @@ public class StaffDetector {
     }
 
     public static void onPlayerJoin(PlayerListEntry player) {
-        if (!ModConfig.INSTANCE.getConfig().detectStaffJoin || !isStaff(player)) {
+        if (!ModConfig.HANDLER.instance().detectStaffJoin || !isStaff(player)) {
             return;
         }
 
         Messenger.printStaffNotification(player, true);
-        if (ModConfig.INSTANCE.getConfig().playStaffSound) {
-            MC.player.playSound(ModConfig.INSTANCE.getConfig().staffDetectSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().playStaffSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().staffDetectSound.getSound(), 1, 1);
         }
     }
 
     public static void onPlayerLeave(PlayerListEntry player) {
-        if (!ModConfig.INSTANCE.getConfig().detectStaffLeave || !isStaff(player)) {
+        if (!ModConfig.HANDLER.instance().detectStaffLeave || !isStaff(player)) {
             return;
         }
 
@@ -95,8 +62,8 @@ public class StaffDetector {
 
         checkForNoStaff = true;
 
-        if (ModConfig.INSTANCE.getConfig().playStaffSound) {
-            MC.player.playSound(ModConfig.INSTANCE.getConfig().staffDetectSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().playStaffSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().staffDetectSound.getSound(), 1, 1);
         }
     }
 

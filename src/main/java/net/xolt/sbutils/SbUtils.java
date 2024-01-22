@@ -62,16 +62,18 @@ public class SbUtils implements ClientModInitializer {
             DeathCoords.registerCommand(dispatcher);
             EventNotifier.registerCommand(dispatcher);
             NoGMT.registerCommand(dispatcher);
+            AutoKit.registerCommand(dispatcher);
         });
 
         registerKeybindings();
 
-        ModConfig.INSTANCE.load();
+        ModConfig.HANDLER.load();
 
         EnchantAll.init();
         AutoSilk.init();
         AutoFix.init();
         AutoReply.init();
+        AutoKit.init();
     }
 
     private static void registerKeybindings() {
