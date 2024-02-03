@@ -1,7 +1,7 @@
 # sbutils
-This mod was originally created for personal use, but I have recently decided to release it to the public. It contains all the features of the [original Skyblock mod](https://github.com/Traumatophobia/SBMod), with some tweaks, plus some features of my own creation.
+This is my personal utility mod for Skyblock.net. It contains all the features of the [original Skyblock mod](https://github.com/Traumatophobia/SBMod), with some tweaks, plus some features of my own creation.
 
-While the feature set may be similar, this mod shares no code with the original Skyblock mod. Every feature is written from scratch. This means that some features may behave differently than you are used to.
+While the feature set may be similar, this mod shares no code with the original Skyblock mod. Everything is written from scratch. This means that some things may behave differently than you are used to.
 
 I am always looking for ways to improve the mod. If you have any feature requests or would like to report a bug, please make a GitHub issue.
 
