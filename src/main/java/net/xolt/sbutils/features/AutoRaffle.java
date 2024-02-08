@@ -49,7 +49,7 @@ public class AutoRaffle {
             reset();
         }
 
-        if (!ModConfig.HANDLER.instance().autoRaffle.enabled || MC.getNetworkHandler() == null) {
+        if (!enabled || MC.getNetworkHandler() == null) {
             return;
         }
 
@@ -77,19 +77,18 @@ public class AutoRaffle {
     }
 
     public static void buyTickets() {
-        if (!ServerDetector.isOnSkyblock()) {
+        if (!ServerDetector.isOnSkyblock())
             return;
-        } else {
-            switch (ServerDetector.currentServer) {
-                case SKYBLOCK:
-                    buySkyblockTickets();
-                    break;
-                case ECONOMY:
-                    buyEconomyTickets();
-                    break;
-                default:
-                    break;
-            }
+
+        switch (ServerDetector.currentServer) {
+            case SKYBLOCK:
+                buySkyblockTickets();
+                break;
+            case ECONOMY:
+                buyEconomyTickets();
+                break;
+            default:
+                break;
         }
     }
 
@@ -111,9 +110,9 @@ public class AutoRaffle {
         }
 
         int buyAmount = Math.min(numTickets, grassCount);
+        Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
         MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
-        Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
     }
 
     private static void buyEconomyTickets() {
@@ -122,9 +121,9 @@ public class AutoRaffle {
         }
 
         int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.ecoTickets, 1), 5);
+        Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
         MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
-        Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
     }
 
     private static int getGrassCount() {
@@ -147,6 +146,6 @@ public class AutoRaffle {
     private static void reset() {
         waitingToBuy = true;
         shouldSendErrorMessage = true;
-        checkForGrass = false;
+        checkForGrass = true;
     }
 }

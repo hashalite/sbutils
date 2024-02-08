@@ -21,6 +21,8 @@ public class ClientPlayerInteractionManagerMixin {
 
     @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
     private void onInteractBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+        AutoPrivate.onInteractBlock();
+
         if (ToolSaver.shouldCancelBlockInteract(player, hand, hitResult)) {
             cir.setReturnValue(ActionResult.PASS);
         }
@@ -28,6 +30,11 @@ public class ClientPlayerInteractionManagerMixin {
         if (AntiPlace.shouldCancelBlockInteract(player, hand, hitResult)) {
             cir.setReturnValue(ActionResult.PASS);
         }
+    }
+
+    @Inject(method = "interactBlock", at = @At("TAIL"), cancellable = true)
+    private void afterInteractBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+        AutoPrivate.afterInteractBlock();
     }
 
     @Inject(method = "interactEntity", at = @At("HEAD"), cancellable = true)
