@@ -946,50 +946,14 @@ public class ConfigGui {
                                 () -> config.autoCommands,
                                 (value) -> config.autoCommands = value
                         )
-                        .customController((option) ->
-                            new KeyValueController<>(option, 0.5,
-                                    Option.<String>createBuilder()
-                                            .name(Text.literal("Command"))
-                                            .binding(
-                                                    "",
-                                                    () -> option.pendingValue().getKey(),
-                                                    (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(newValue, option.pendingValue().getValue()))
-                                            )
-                                            .instant(true)
-                                            .controller(StringControllerBuilder::create)
-                                            .build().controller(),
-                                    Option.<KeyValueController.KeyValuePair<Double, Boolean>>createBuilder()
-                                            .binding(
-                                                    new KeyValueController.KeyValuePair<>(1.0, false),
-                                                    () -> option.pendingValue().getValue(),
-                                                    (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(option.pendingValue().getKey(), newValue))
-                                            )
-                                            .instant(true)
-                                            .customController((subOption) ->
-                                                    new KeyValueController<>(subOption, 0.5,
-                                                            Option.<Double>createBuilder()
-                                                                .name(Text.literal("Delay"))
-                                                                .binding(
-                                                                        1.0,
-                                                                        () -> option.pendingValue().getValue().getKey(),
-                                                                        (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(option.pendingValue().getKey(), new KeyValueController.KeyValuePair<>(newValue, option.pendingValue().getValue().getValue())))
-                                                                )
-                                                                .instant(true)
-                                                                .controller((delay) -> DoubleFieldControllerBuilder.create(delay).min(1.0))
-                                                                .build().controller(),
-                                                            Option.<Boolean>createBuilder()
-                                                                .name(Text.literal("Enabled"))
-                                                                .binding(
-                                                                        false,
-                                                                        () -> option.pendingValue().getValue().getValue(),
-                                                                        (newValue) -> option.requestSet(new KeyValueController.KeyValuePair<>(option.pendingValue().getKey(), new KeyValueController.KeyValuePair<>(option.pendingValue().getValue().getKey(), newValue)))
-                                                                )
-                                                                .instant(true)
-                                                                .controller(TickBoxControllerBuilder::create)
-                                                                .build().controller()
-                                                    ))
-                                            .build().controller()))
-                        .initial(new KeyValueController.KeyValuePair<>("", new KeyValueController.KeyValuePair<>(1.0, false)))
+                        .controller((option) -> KeyValueControllerBuilder.create(option)
+                                .ratio(0.5)
+                                .keyController("Command", StringControllerBuilder::create)
+                                .valueController(null,  (subOption) -> KeyValueControllerBuilder.create(subOption)
+                                        .ratio(0.5)
+                                        .keyController("Delay", (delay) -> DoubleFieldControllerBuilder.create(delay).min(1.0))
+                                        .valueController("Enabled", TickBoxControllerBuilder::create)))
+                        .initial(new KeyValueController.KeyValuePair<>("", new KeyValueController.KeyValuePair<>(5.0, false)))
                         .build())
                 .build();
     }

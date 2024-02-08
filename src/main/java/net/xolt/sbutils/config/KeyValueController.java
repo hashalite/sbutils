@@ -3,18 +3,20 @@ package net.xolt.sbutils.config;
 import com.google.gson.*;
 import dev.isxander.yacl3.api.Controller;
 import dev.isxander.yacl3.api.Option;
+import dev.isxander.yacl3.api.controller.ControllerBuilder;
 import dev.isxander.yacl3.api.utils.Dimension;
 import dev.isxander.yacl3.gui.AbstractWidget;
 import dev.isxander.yacl3.gui.YACLScreen;
 import dev.isxander.yacl3.gui.controllers.ControllerWidget;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class KeyValueController<K, V> implements Controller<KeyValueController.KeyValuePair<K, V>> {
     private final Option<KeyValuePair<K, V>> option;
@@ -22,11 +24,29 @@ public class KeyValueController<K, V> implements Controller<KeyValueController.K
     private final Controller<K> keyController;
     private final Controller<V> valueController;
 
-    public KeyValueController(Option<KeyValuePair<K, V>> option, double ratio, Controller<K> keyController, Controller<V> valueController) {
+    public KeyValueController(Option<KeyValuePair<K, V>> option, double ratio, @Nullable String keyName, Function<Option<K>, ControllerBuilder<K>> keyController, @Nullable String valueName, Function<Option<V>, ControllerBuilder<V>> valueController) {
         this.option = option;
         this.ratio = ratio;
-        this.keyController = keyController;
-        this.valueController = valueController;
+
+        this.keyController = dummyOption(keyName, keyController,
+                () -> option.pendingValue().getKey(),
+                (newKey) -> option.requestSet(new KeyValuePair<>(newKey, option.pendingValue().getValue()))).controller();
+
+        this.valueController = dummyOption(valueName, valueController,
+                () -> option.pendingValue().getValue(),
+                (newValue) -> option.requestSet(new KeyValuePair<>(option.pendingValue().getKey(), newValue))).controller();
+    }
+
+    private static <T> Option<T> dummyOption(@Nullable String name, Function<Option<T>, ControllerBuilder<T>> controller, Supplier<T> get, Consumer<T> set) {
+        return Option.<T>createBuilder()
+                .name(name != null ? Text.translatable(name) : Text.literal(""))
+                .binding(
+                        get.get(),
+                        get,
+                        set
+                )
+                .instant(true)
+                .controller(controller).build();
     }
 
     @Override
@@ -37,7 +57,7 @@ public class KeyValueController<K, V> implements Controller<KeyValueController.K
     @Override
     public Text formatValue() {
         KeyValuePair<K, V> pair = option.pendingValue();
-        return Text.literal("Key: " + pair.key + " -- Value: " + pair.value);
+        return keyController.formatValue().copy().append(" | ").append(valueController.formatValue());
     }
 
     @Override
@@ -161,79 +181,29 @@ public class KeyValueController<K, V> implements Controller<KeyValueController.K
             return value;
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof KeyValuePair<?, ?> other))
+                return false;
+            return this.key.equals(other.key) && this.value.equals(other.value);
+        }
+
         public static class KeyValueTypeAdapter implements JsonSerializer<KeyValuePair<?, ?>>, JsonDeserializer<KeyValuePair<?, ?>> {
             @Override
             public KeyValuePair<?, ?> deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) throws JsonParseException {
                 JsonObject object = jsonElement.getAsJsonObject();
                 JsonElement key = object.get("key");
                 JsonElement value = object.get("value");
-                List<String> typeParameters = getTypeParameters(type);
-                return new KeyValuePair<>(getObject(key, typeParameters.get(0), context), getObject(value, typeParameters.get(1), context));
+                Type[] typeArgs = ((ParameterizedType)type).getActualTypeArguments();
+                return new KeyValuePair<>(context.deserialize(key, typeArgs[0]), context.deserialize(value, typeArgs[1]));
             }
 
             @Override
             public JsonElement serialize(KeyValuePair<?, ?> pair, Type type, JsonSerializationContext context) {
                 JsonObject result = new JsonObject();
-                addProperty(result, "key", pair.getKey(), context);
-                addProperty(result, "value", pair.getValue(), context);
+                result.add("key", context.serialize(pair.key));
+                result.add("value", context.serialize(pair.value));
                 return result;
-            }
-
-            private List<String> getTypeParameters(Type type) {
-                String typeString = type.getTypeName();
-                return getTypeParameters(typeString);
-
-            }
-
-            private List<String> getTypeParameters(String typeString) {
-                typeString = typeString.replaceFirst("net\\.xolt\\.sbutils\\.config\\.KeyValueController\\$KeyValuePair<", "");
-                typeString = typeString.substring(0, typeString.length() - 1);
-                Pattern paramPattern = Pattern.compile("java\\.lang\\.[a-zA-Z]+|net\\.xolt\\.sbutils\\.config\\.KeyValueController\\$KeyValuePair<.*>");
-                Matcher matcher = paramPattern.matcher(typeString);
-                List<String> result = new ArrayList<>();
-                while (matcher.find()) {
-                    result.add(matcher.group(0));
-                }
-                return result;
-            }
-
-            private Object getObject(JsonElement element, String type, JsonDeserializationContext context) {
-                if (element.isJsonPrimitive()) {
-                    JsonPrimitive primitive = (JsonPrimitive) element;
-                    switch (type) {
-                        case "java.lang.String":
-                            return primitive.getAsString();
-                        case "java.lang.Double":
-                            return primitive.getAsDouble();
-                        case "java.lang.Float":
-                            return primitive.getAsFloat();
-                        case "java.lang.Long":
-                            return primitive.getAsLong();
-                        case "java.lang.Integer":
-                            return primitive.getAsInt();
-                        case "java.lang.Boolean":
-                            return primitive.getAsBoolean();
-                    }
-                } else if (element.isJsonObject()) {
-                    JsonObject object = element.getAsJsonObject();
-                    if (type.startsWith("net.xolt.sbutils.config.KeyValueController$KeyValuePair<")) {
-                        List<String> typeParams = getTypeParameters(type);
-                        return new KeyValuePair<>(getObject(object.get("key"), typeParams.get(0), context), getObject(object.get("value"), typeParams.get(1), context));
-                    }
-                }
-                return null;
-            }
-
-            private void addProperty(JsonObject object, String property, Object value, JsonSerializationContext jsonSerializationContext) {
-                if (value instanceof String) {
-                    object.addProperty(property, (String) value);
-                } else if (value instanceof Number) {
-                    object.addProperty(property, (Number) value);
-                } else if (value instanceof Boolean) {
-                    object.addProperty(property, (Boolean) value);
-                } else {
-                    object.add(property, jsonSerializationContext.serialize(value));
-                }
             }
         }
     }
