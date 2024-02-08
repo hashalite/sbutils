@@ -30,12 +30,12 @@ public class AutoKit {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoKitNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autokit", () -> ModConfig.HANDLER.instance().autoKit, (value) -> ModConfig.HANDLER.instance().autoKit = value)
-                        .then(CommandUtils.doubl("commandDelay", "seconds", "autoFixCommandDelay", () -> ModConfig.HANDLER.instance().autoKitCommandDelay, (value) -> ModConfig.HANDLER.instance().autoKitCommandDelay = value, 0))
-                        .then(CommandUtils.doubl("claimDelay", "seconds", "autoFixClaimDelay", () -> ModConfig.HANDLER.instance().autoKitClaimDelay, (value) -> ModConfig.HANDLER.instance().autoKitClaimDelay = value, 0))
-                        .then(CommandUtils.doubl("systemDelay", "seconds", "systemDelay", () -> ModConfig.HANDLER.instance().autoKitSystemDelay, (value) -> ModConfig.HANDLER.instance().autoKitSystemDelay = value, 0))
+                CommandUtils.toggle(COMMAND, "autoKit", () -> ModConfig.HANDLER.instance().autoKit.enabled, (value) -> ModConfig.HANDLER.instance().autoKit.enabled = value)
+                        .then(CommandUtils.doubl("commandDelay", "seconds", "autoKit.commandDelay", () -> ModConfig.HANDLER.instance().autoKit.commandDelay, (value) -> ModConfig.HANDLER.instance().autoKit.commandDelay = value, 0))
+                        .then(CommandUtils.doubl("claimDelay", "seconds", "autoKit.claimDelay", () -> ModConfig.HANDLER.instance().autoKit.claimDelay, (value) -> ModConfig.HANDLER.instance().autoKit.claimDelay = value, 0))
+                        .then(CommandUtils.doubl("systemDelay", "seconds", "autoKit.systemDelay", () -> ModConfig.HANDLER.instance().autoKit.systemDelay, (value) -> ModConfig.HANDLER.instance().autoKit.systemDelay = value, 0))
                         .then(CommandUtils.list("kits", "kit", "message.sbutils.autoKit.kits", ModConfig.Kit.KitArgumentType.kit(), ModConfig.Kit.KitArgumentType::getKit,
-                                () -> ModConfig.HANDLER.instance().autoKits,
+                                () -> ModConfig.HANDLER.instance().autoKit.kits,
                                 AutoKit::onAddCommand,
                                 AutoKit::onDelCommand,
                                 AutoKit::onInsertCommand))
@@ -50,51 +50,51 @@ public class AutoKit {
     }
 
     private static void onAddCommand(ModConfig.Kit kit) {
-        if (ModConfig.HANDLER.instance().autoKits.contains(kit)) {
+        if (ModConfig.HANDLER.instance().autoKit.kits.contains(kit)) {
             Messenger.printMessage("message.sbutils.autoKit.duplicateKit");
             return;
         }
 
-        ModConfig.HANDLER.instance().autoKits.add(kit);
+        ModConfig.HANDLER.instance().autoKit.kits.add(kit);
         ModConfig.HANDLER.save();
-        Messenger.printListSetting("message.sbutils.autoKit.kitAddSuccess", ModConfig.HANDLER.instance().autoKits);
+        Messenger.printListSetting("message.sbutils.autoKit.kitAddSuccess", ModConfig.HANDLER.instance().autoKit.kits);
         onKitListChanged();
     }
 
     private static void onDelCommand(int index) {
         int adjustedIndex = index - 1;
-        if (adjustedIndex >= ModConfig.HANDLER.instance().autoKits.size()) {
+        if (adjustedIndex >= ModConfig.HANDLER.instance().autoKit.kits.size()) {
             Messenger.printMessage("message.sbutils.autoKit.indexOutOfBounds");
             return;
         }
 
-        ModConfig.HANDLER.instance().autoKits.remove(adjustedIndex);
+        ModConfig.HANDLER.instance().autoKit.kits.remove(adjustedIndex);
         ModConfig.HANDLER.save();
-        Messenger.printListSetting("message.sbutils.autoKit.kitDelSuccess", ModConfig.HANDLER.instance().autoKits);
+        Messenger.printListSetting("message.sbutils.autoKit.kitDelSuccess", ModConfig.HANDLER.instance().autoKit.kits);
         onKitListChanged();
     }
 
     private static void onInsertCommand(int index, ModConfig.Kit kit) {
-        if (ModConfig.HANDLER.instance().autoKits.contains(kit)) {
+        if (ModConfig.HANDLER.instance().autoKit.kits.contains(kit)) {
             Messenger.printMessage("message.sbutils.autoKit.duplicateKit");
             return;
         }
 
         int adjustedIndex = index - 1;
-        if (adjustedIndex > ModConfig.HANDLER.instance().autoKits.size()) {
+        if (adjustedIndex > ModConfig.HANDLER.instance().autoKit.kits.size()) {
             Messenger.printMessage("message.sbutils.autoKit.indexOutOfBounds");
             return;
         }
 
-        ModConfig.HANDLER.instance().autoKits.add(adjustedIndex, kit);
+        ModConfig.HANDLER.instance().autoKit.kits.add(adjustedIndex, kit);
         ModConfig.HANDLER.save();
-        Messenger.printListSetting("message.sbutils.autoKit.kitAddSuccess", ModConfig.HANDLER.instance().autoKits);
+        Messenger.printListSetting("message.sbutils.autoKit.kitAddSuccess", ModConfig.HANDLER.instance().autoKit.kits);
         onKitListChanged();
     }
 
     public static void tick() {
-        if (enabled != ModConfig.HANDLER.instance().autoKit) {
-            enabled = ModConfig.HANDLER.instance().autoKit;
+        if (enabled != ModConfig.HANDLER.instance().autoKit.enabled) {
+            enabled = ModConfig.HANDLER.instance().autoKit.enabled;
             reset();
             if (enabled && ServerDetector.currentServer == ServerDetector.SbServer.SKYBLOCK) {
                 queueKits();
@@ -112,7 +112,7 @@ public class AutoKit {
             return;
 
         // Enforce delay between commands
-        if (currentTime - lastCommandSentAt < ModConfig.HANDLER.instance().autoKitCommandDelay * 1000) {
+        if (currentTime - lastCommandSentAt < ModConfig.HANDLER.instance().autoKit.commandDelay * 1000) {
             return;
         }
 
@@ -237,8 +237,8 @@ public class AutoKit {
 
     private static void queueKits() {
         kitQueue.clear();
-        for (int i = 0; i < ModConfig.HANDLER.instance().autoKits.size(); i++) {
-            queueKit(ModConfig.HANDLER.instance().autoKits.get(i));
+        for (int i = 0; i < ModConfig.HANDLER.instance().autoKit.kits.size(); i++) {
+            queueKit(ModConfig.HANDLER.instance().autoKit.kits.get(i));
         }
     }
 
@@ -262,13 +262,13 @@ public class AutoKit {
         if (kit.getCooldown() == 24) {
             long lastReset = currentTime - (currentTime % 86400000);
             // If lastClaim plus buffer is before last reset and more than claimDelay seconds have elapsed since the last reset, return 0
-            if (lastClaim + (ModConfig.HANDLER.instance().autoKitSystemDelay * 1000) < lastReset && currentTime > lastReset + (ModConfig.HANDLER.instance().autoKitSystemDelay * 1000)) {
+            if (lastClaim + (ModConfig.HANDLER.instance().autoKit.systemDelay * 1000) < lastReset && currentTime > lastReset + (ModConfig.HANDLER.instance().autoKit.systemDelay * 1000)) {
                 return 0;
             }
-            long nextReset = lastReset + 86400000 + (long)(ModConfig.HANDLER.instance().autoKitSystemDelay * 1000);
+            long nextReset = lastReset + 86400000 + (long)(ModConfig.HANDLER.instance().autoKit.systemDelay * 1000);
             return nextReset - currentTime;
         }
-        long nextReset = lastClaim + ((long)kit.getCooldown() * 3600000) + (long)(ModConfig.HANDLER.instance().autoKitClaimDelay * 1000);
+        long nextReset = lastClaim + ((long)kit.getCooldown() * 3600000) + (long)(ModConfig.HANDLER.instance().autoKit.claimDelay * 1000);
         return Math.max(0, nextReset - currentTime);
     }
 

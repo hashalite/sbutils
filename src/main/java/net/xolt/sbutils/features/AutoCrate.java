@@ -42,10 +42,10 @@ public class AutoCrate {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoCrateNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autocrate", () -> ModConfig.HANDLER.instance().autoCrate, (value) -> {ModConfig.HANDLER.instance().autoCrate = value; if (!value) reset();})
-                    .then(CommandUtils.getterSetter("mode", "mode", "crateMode", () -> ModConfig.HANDLER.instance().crateMode, (value) -> ModConfig.HANDLER.instance().crateMode = value, ModConfig.CrateMode.CrateModeArgumentType.crateMode(), ModConfig.CrateMode.CrateModeArgumentType::getCrateMode))
-                    .then(CommandUtils.doubl("delay", "seconds", "crateDelay", () -> ModConfig.HANDLER.instance().crateDelay, (value) -> ModConfig.HANDLER.instance().crateDelay = value, 0.0))
-                    .then(CommandUtils.doubl("range", "range", "crateDistance", () -> ModConfig.HANDLER.instance().crateDistance, (value) -> ModConfig.HANDLER.instance().crateDistance = value))
+                CommandUtils.toggle(COMMAND, "autoCrate", () -> ModConfig.HANDLER.instance().autoCrate.enabled, (value) -> {ModConfig.HANDLER.instance().autoCrate.enabled = value; if (!value) reset();})
+                    .then(CommandUtils.getterSetter("mode", "mode", "autoCrate.mode", () -> ModConfig.HANDLER.instance().autoCrate.mode, (value) -> ModConfig.HANDLER.instance().autoCrate.mode = value, ModConfig.Crate.CrateModeArgumentType.crateMode(), ModConfig.Crate.CrateModeArgumentType::getCrateMode))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoCrate.delay", () -> ModConfig.HANDLER.instance().autoCrate.delay, (value) -> ModConfig.HANDLER.instance().autoCrate.delay = value, 0.0))
+                    .then(CommandUtils.doubl("range", "range", "autoCrate.distance", () -> ModConfig.HANDLER.instance().autoCrate.distance, (value) -> ModConfig.HANDLER.instance().autoCrate.distance = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -56,15 +56,15 @@ public class AutoCrate {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoCrate || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.HANDLER.instance().crateDelay * 1000 || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoCrate.enabled || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.HANDLER.instance().autoCrate.delay * 1000 || MC.player == null) {
             return;
         }
 
         BlockPos cratePos = findCrate();
 
-        if (cratePos == null || !cratePos.isWithinDistance(MC.player.getPos(), ModConfig.HANDLER.instance().crateDistance)) {
+        if (cratePos == null || !cratePos.isWithinDistance(MC.player.getPos(), ModConfig.HANDLER.instance().autoCrate.distance)) {
             Messenger.printMessage("message.sbutils.autoCrate.crateTooFar");
-            ModConfig.HANDLER.instance().autoCrate = false;
+            ModConfig.HANDLER.instance().autoCrate.enabled = false;
             ModConfig.HANDLER.save();
             reset();
             return;
@@ -72,7 +72,7 @@ public class AutoCrate {
 
         if (MC.player.getInventory().getEmptySlot() == -1) {
             Messenger.printMessage("message.sbutils.autoCrate.inventoryFull");
-            ModConfig.HANDLER.instance().autoCrate = false;
+            ModConfig.HANDLER.instance().autoCrate.enabled = false;
             ModConfig.HANDLER.save();
             reset();
             return;
@@ -80,7 +80,7 @@ public class AutoCrate {
 
         if (!isItemKey(MC.player.getInventory().getMainHandStack()) && !moveKeysToHand()) {
             Messenger.printMessage("message.sbutils.autoCrate.finished");
-            ModConfig.HANDLER.instance().autoCrate = false;
+            ModConfig.HANDLER.instance().autoCrate.enabled = false;
             ModConfig.HANDLER.save();
             reset();
             return;
@@ -92,7 +92,7 @@ public class AutoCrate {
     }
 
     public static void onServerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate || !waitingForCrate) {
+        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !waitingForCrate) {
             return;
         }
         waitingForCrate = false;
@@ -100,13 +100,13 @@ public class AutoCrate {
     }
 
     public static void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate || !(MC.currentScreen instanceof GenericContainerScreen)) {
+        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !(MC.currentScreen instanceof GenericContainerScreen)) {
             return;
         }
 
         Messenger.printMessage("message.sbutils.autoCrate.closeGui");
 
-        ModConfig.HANDLER.instance().autoCrate = false;
+        ModConfig.HANDLER.instance().autoCrate.enabled = false;
         ModConfig.HANDLER.save();
         reset();
     }
@@ -198,7 +198,7 @@ public class AutoCrate {
     }
 
     private static Pattern getKeyFilter() {
-        switch(ModConfig.HANDLER.instance().crateMode) {
+        switch(ModConfig.HANDLER.instance().autoCrate.mode) {
             case COMMON:
                 return RegexFilters.commonKeyFilter;
             case RARE:
@@ -213,7 +213,7 @@ public class AutoCrate {
     }
 
     private static Pattern getCrateFilter() {
-        switch(ModConfig.HANDLER.instance().crateMode) {
+        switch(ModConfig.HANDLER.instance().autoCrate.mode) {
             case COMMON:
                 return RegexFilters.commonCrateFilter;
             case RARE:

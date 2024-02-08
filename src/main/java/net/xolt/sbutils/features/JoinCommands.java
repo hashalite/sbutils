@@ -32,7 +32,7 @@ public class JoinCommands {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "joincommands", () -> ModConfig.HANDLER.instance().joinCmdsEnabled, (value) -> ModConfig.HANDLER.instance().joinCmdsEnabled = value)
+                CommandUtils.toggle(COMMAND, "joinCommands", () -> ModConfig.HANDLER.instance().joinCommands.enabled, (value) -> ModConfig.HANDLER.instance().joinCommands.enabled = value)
                     .then(CommandUtils.stringList("global", "command", "message.sbutils.joinCommands.globalCommandList",
                             () -> getJoinCommands(true),
                             (command) -> onAddCommand(command, true),
@@ -43,8 +43,8 @@ public class JoinCommands {
                             (command) -> onAddCommand(command, false),
                             (index) -> onDelCommand(index, false),
                             (index, command) -> onInsertCommand(index, command, false)))
-                    .then(CommandUtils.doubl("delay", "seconds", "joinCmdDelay", () -> ModConfig.HANDLER.instance().joinCmdDelay, (value) -> ModConfig.HANDLER.instance().joinCmdDelay = value))
-                    .then(CommandUtils.doubl("initialDelay", "seconds", "joinCmdInitialDelay", () -> ModConfig.HANDLER.instance().joinCmdInitialDelay, (value) -> ModConfig.HANDLER.instance().joinCmdInitialDelay = value))
+                    .then(CommandUtils.doubl("delay", "seconds", "joinCommands.delay", () -> ModConfig.HANDLER.instance().joinCommands.delay, (value) -> ModConfig.HANDLER.instance().joinCommands.delay = value))
+                    .then(CommandUtils.doubl("initialDelay", "seconds", "joinCommands.initialDelay", () -> ModConfig.HANDLER.instance().joinCommands.initialDelay, (value) -> ModConfig.HANDLER.instance().joinCommands.initialDelay = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -55,11 +55,11 @@ public class JoinCommands {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().joinCmdsEnabled || !ServerDetector.isOnSkyblock() || !waitingToSend) {
+        if (!ModConfig.HANDLER.instance().joinCommands.enabled || !ServerDetector.isOnSkyblock() || !waitingToSend) {
             return;
         }
 
-        int delay = (int)((joinedAt > lastCommandSentAt ? ModConfig.HANDLER.instance().joinCmdInitialDelay : ModConfig.HANDLER.instance().joinCmdDelay) * 1000.0);
+        int delay = (int)((joinedAt > lastCommandSentAt ? ModConfig.HANDLER.instance().joinCommands.initialDelay : ModConfig.HANDLER.instance().joinCommands.delay) * 1000.0);
 
         if (System.currentTimeMillis() - Math.max(joinedAt, lastCommandSentAt) >= delay) {
             sendJoinCommand();
@@ -121,7 +121,7 @@ public class JoinCommands {
     }
 
     public static void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().joinCmdsEnabled) {
+        if (!ModConfig.HANDLER.instance().joinCommands.enabled) {
             return;
         }
 

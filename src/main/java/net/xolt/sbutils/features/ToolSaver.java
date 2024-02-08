@@ -38,8 +38,8 @@ public class ToolSaver {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "toolsaver", () -> ModConfig.HANDLER.instance().toolSaver, (value) -> ModConfig.HANDLER.instance().toolSaver = value)
-                    .then(CommandUtils.integer("durability", "durability", "toolSaverDurability", () -> ModConfig.HANDLER.instance().toolSaverDurability, (value) -> ModConfig.HANDLER.instance().toolSaverDurability = value))
+                CommandUtils.toggle(COMMAND, "toolSaver", () -> ModConfig.HANDLER.instance().toolSaver.enabled, (value) -> ModConfig.HANDLER.instance().toolSaver.enabled = value)
+                    .then(CommandUtils.integer("durability", "durability", "toolSaver.durability", () -> ModConfig.HANDLER.instance().toolSaver.durability, (value) -> ModConfig.HANDLER.instance().toolSaver.durability = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -50,7 +50,7 @@ public class ToolSaver {
     }
 
     public static boolean shouldCancelBlockInteract(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult) {
-        if (!ModConfig.HANDLER.instance().toolSaver) {
+        if (!ModConfig.HANDLER.instance().toolSaver.enabled) {
             return false;
         }
 
@@ -69,7 +69,7 @@ public class ToolSaver {
     }
 
     public static boolean shouldCancelEntityInteract(PlayerEntity player, Entity entity, Hand hand) {
-        if (!ModConfig.HANDLER.instance().toolSaver) {
+        if (!ModConfig.HANDLER.instance().toolSaver.enabled) {
             return false;
         }
 
@@ -94,7 +94,7 @@ public class ToolSaver {
     }
 
     public static boolean shouldCancelAttack() {
-        if (!ModConfig.HANDLER.instance().toolSaver || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().toolSaver.enabled || MC.player == null) {
             return false;
         }
 
@@ -113,7 +113,7 @@ public class ToolSaver {
             return false;
         }
 
-        return item.getMaxDamage() - item.getDamage() <= ModConfig.HANDLER.instance().toolSaverDurability;
+        return item.getMaxDamage() - item.getDamage() <= ModConfig.HANDLER.instance().toolSaver.durability;
     }
 
     private static void notifyBlocked() {

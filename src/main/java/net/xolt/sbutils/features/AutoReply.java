@@ -31,9 +31,9 @@ public class AutoReply {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoreply", () -> ModConfig.HANDLER.instance().autoReply, (value) -> ModConfig.HANDLER.instance().autoReply = value)
-                    .then(CommandUtils.string("response", "response", "autoResponse", () -> ModConfig.HANDLER.instance().autoResponse, (value) -> ModConfig.HANDLER.instance().autoResponse = value))
-                    .then(CommandUtils.doubl("delay", "seconds", "autoReplyDelay", () -> ModConfig.HANDLER.instance().autoReplyDelay, (value) -> ModConfig.HANDLER.instance().autoReplyDelay = value))
+                CommandUtils.toggle(COMMAND, "autoReply", () -> ModConfig.HANDLER.instance().autoReply.enabled, (value) -> ModConfig.HANDLER.instance().autoReply.enabled = value)
+                    .then(CommandUtils.string("response", "response", "autoReply.response", () -> ModConfig.HANDLER.instance().autoReply.response, (value) -> ModConfig.HANDLER.instance().autoReply.response = value))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoReply.delay", () -> ModConfig.HANDLER.instance().autoReply.delay, (value) -> ModConfig.HANDLER.instance().autoReply.delay = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -44,17 +44,17 @@ public class AutoReply {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoReply || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoReply.enabled || MC.getNetworkHandler() == null) {
             return;
         }
 
-        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.instance().autoReplyDelay * 1000.0) {
+        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.instance().autoReply.delay * 1000.0) {
             sendMessage();
         }
     }
 
     public static void processMessage(Text message) {
-        if (!ModConfig.HANDLER.instance().autoReply) {
+        if (!ModConfig.HANDLER.instance().autoReply.enabled) {
             return;
         }
 
@@ -65,7 +65,7 @@ public class AutoReply {
     }
 
     private static void queueResponse(String sender) {
-        msgQueue.offer("msg " + sender + " " + ModConfig.HANDLER.instance().autoResponse);
+        msgQueue.offer("msg " + sender + " " + ModConfig.HANDLER.instance().autoReply.response);
     }
 
     private static void sendMessage() {

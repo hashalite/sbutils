@@ -59,19 +59,19 @@ public class EnchantAll {
         final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(
                 CommandUtils.runnable(ENCHANT_COMMAND, () -> onEnchantAllCommand(false, false))
                     .then(CommandUtils.runnable("inv", () -> onEnchantAllCommand(false, true)))
-                    .then(CommandUtils.getterSetter("mode", "mode", "enchantMode", () -> ModConfig.HANDLER.instance().enchantMode, (value) -> ModConfig.HANDLER.instance().enchantMode = value, ModConfig.EnchantMode.EnchantModeArgumentType.enchantMode(), ModConfig.EnchantMode.EnchantModeArgumentType::getEnchantMode))
-                    .then(CommandUtils.doubl("delay", "seconds", "enchantDelay", () -> ModConfig.HANDLER.instance().enchantDelay, (value) -> ModConfig.HANDLER.instance().enchantDelay = value))
-                    .then(CommandUtils.integer("cooldownFrequency", "frequency", "cooldownFrequency", () -> ModConfig.HANDLER.instance().cooldownFrequency, (value) -> ModConfig.HANDLER.instance().cooldownFrequency = value))
-                    .then(CommandUtils.doubl("cooldownTime", "seconds", "cooldownTime", () -> ModConfig.HANDLER.instance().cooldownTime, (value) -> ModConfig.HANDLER.instance().cooldownTime = value))
-                    .then(CommandUtils.bool("excludeFrost", "excludeFrost", () -> ModConfig.HANDLER.instance().excludeFrost, (value) -> ModConfig.HANDLER.instance().excludeFrost = value))
+                    .then(CommandUtils.getterSetter("mode", "mode", "enchantAll.mode", () -> ModConfig.HANDLER.instance().enchantAll.mode, (value) -> ModConfig.HANDLER.instance().enchantAll.mode = value, ModConfig.EnchantMode.EnchantModeArgumentType.enchantMode(), ModConfig.EnchantMode.EnchantModeArgumentType::getEnchantMode))
+                    .then(CommandUtils.doubl("delay", "seconds", "enchantAll.delay", () -> ModConfig.HANDLER.instance().enchantAll.delay, (value) -> ModConfig.HANDLER.instance().enchantAll.delay = value))
+                    .then(CommandUtils.integer("cooldownFrequency", "frequency", "enchantAll.cooldownFrequency", () -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency = value))
+                    .then(CommandUtils.doubl("cooldownTime", "seconds", "enchantAll.cooldownTime", () -> ModConfig.HANDLER.instance().enchantAll.cooldownTime, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownTime = value))
+                    .then(CommandUtils.bool("excludeFrost", "enchantAll.excludeFrost", () -> ModConfig.HANDLER.instance().enchantAll.excludeFrost, (value) -> ModConfig.HANDLER.instance().enchantAll.excludeFrost = value))
         );
 
         final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(
                 CommandUtils.runnable(UNENCHANT_COMMAND, () -> onEnchantAllCommand(true, false))
                         .then(CommandUtils.runnable("inv", () -> onEnchantAllCommand(true, true)))
-                        .then(CommandUtils.doubl("delay", "seconds", "enchantDelay", () -> ModConfig.HANDLER.instance().enchantDelay, (value) -> ModConfig.HANDLER.instance().enchantDelay = value))
-                        .then(CommandUtils.integer("cooldownFrequency", "frequency", "cooldownFrequency", () -> ModConfig.HANDLER.instance().cooldownFrequency, (value) -> ModConfig.HANDLER.instance().cooldownFrequency = value))
-                        .then(CommandUtils.doubl("cooldownTime", "seconds", "cooldownTime", () -> ModConfig.HANDLER.instance().cooldownTime, (value) -> ModConfig.HANDLER.instance().cooldownTime = value))
+                        .then(CommandUtils.doubl("delay", "seconds", "enchantAll.delay", () -> ModConfig.HANDLER.instance().enchantAll.delay, (value) -> ModConfig.HANDLER.instance().enchantAll.delay = value))
+                        .then(CommandUtils.integer("cooldownFrequency", "frequency", "enchantAll.cooldownFrequency", () -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency = value))
+                        .then(CommandUtils.doubl("cooldownTime", "seconds", "enchantAll.cooldownTime", () -> ModConfig.HANDLER.instance().enchantAll.cooldownTime, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownTime = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ENCHANT_ALIAS)
@@ -130,7 +130,7 @@ public class EnchantAll {
         }
 
         if (noPermission) {
-            if (ModConfig.HANDLER.instance().enchantMode == ModConfig.EnchantMode.ALL && enchanting) {
+            if (ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL && enchanting) {
                 Messenger.printMessage("message.sbutils.enchantAll.noEnchantAllPermission", Formatting.RED);
             } else {
                 Messenger.printMessage("message.sbutils.enchantAll.noEnchantPermission", Formatting.RED);
@@ -156,9 +156,9 @@ public class EnchantAll {
             return;
         }
 
-        if (commandCount >= ModConfig.HANDLER.instance().cooldownFrequency) {
+        if (commandCount >= ModConfig.HANDLER.instance().enchantAll.cooldownFrequency) {
             cooldown = true;
-            Messenger.printEnchantCooldown(ModConfig.HANDLER.instance().cooldownTime);
+            Messenger.printEnchantCooldown(ModConfig.HANDLER.instance().enchantAll.cooldownTime);
             commandCount = 0;
         }
 
@@ -258,7 +258,7 @@ public class EnchantAll {
     }
 
     private static void sendNextEnchant(List<Enchantment> enchants, boolean unenchant) {
-        if (!unenchant && ModConfig.HANDLER.instance().enchantMode == ModConfig.EnchantMode.ALL) {
+        if (!unenchant && ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL) {
             sendEnchantAllCommand();
             return;
         }
@@ -341,7 +341,7 @@ public class EnchantAll {
         enchantments.remove(Enchantments.BINDING_CURSE);
         enchantments.remove(Enchantments.VANISHING_CURSE);
 
-        if (ModConfig.HANDLER.instance().excludeFrost && !unenchant) {
+        if (ModConfig.HANDLER.instance().enchantAll.excludeFrost && !unenchant) {
             enchantments.remove(Enchantments.FROST_WALKER);
         }
 
@@ -349,9 +349,9 @@ public class EnchantAll {
     }
 
     private static int delayLeft() {
-        long delay = (long)(ModConfig.HANDLER.instance().enchantDelay * 1000.0);
+        long delay = (long)(ModConfig.HANDLER.instance().enchantAll.delay * 1000.0);
         if (cooldown) {
-            delay = (long)(ModConfig.HANDLER.instance().cooldownTime * 1000.0);
+            delay = (long)(ModConfig.HANDLER.instance().enchantAll.cooldownTime * 1000.0);
         } else if (pause) {
             delay = 250L;
         }
@@ -376,7 +376,7 @@ public class EnchantAll {
             return false;
         }
 
-        return ModConfig.HANDLER.instance().excludeFrost &&
+        return ModConfig.HANDLER.instance().enchantAll.excludeFrost &&
                 EnchantmentHelper.fromNbt(MC.player.getMainHandStack().getEnchantments()).containsKey(Enchantments.FROST_WALKER);
     }
 

@@ -28,7 +28,7 @@ public abstract class ChatHudMixin {
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", at = @At("HEAD"), cancellable = true)
     public void onAddMessage(Text message, MessageSignatureData signature, MessageIndicator indicator, CallbackInfo ci) {
         Text modified = message;
-        if (ModConfig.HANDLER.instance().mentions && ModConfig.HANDLER.instance().mentionHighlight && Mentions.isValidMessage(modified) && Mentions.mentioned(modified)) {
+        if (ModConfig.HANDLER.instance().mentions.enabled && ModConfig.HANDLER.instance().mentions.highlight && Mentions.isValidMessage(modified) && Mentions.mentioned(modified)) {
             ci.cancel();
             modified = Mentions.modifyMessage(modified);
         }

@@ -49,11 +49,11 @@ public class AutoSilk {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autosilk", () -> ModConfig.HANDLER.instance().autoSilk, (value) -> ModConfig.HANDLER.instance().autoSilk = value)
-                    .then(CommandUtils.getterSetter("target", "tool", "targetTool", () -> ModConfig.HANDLER.instance().targetTool, (value) -> ModConfig.HANDLER.instance().targetTool = value, ModConfig.SilkTarget.SilkTargetArgumentType.silkTarget(), ModConfig.SilkTarget.SilkTargetArgumentType::getSilkTarget))
-                    .then(CommandUtils.doubl("delay", "seconds", "autoSilkDelay", () -> ModConfig.HANDLER.instance().autoSilkDelay, (value) -> ModConfig.HANDLER.instance().autoSilkDelay = value))
-                    .then(CommandUtils.bool("showButton", "showSilkButton", () -> ModConfig.HANDLER.instance().showSilkButton, (value) -> ModConfig.HANDLER.instance().showSilkButton = value))
-                    .then(CommandUtils.getterSetter("buttonPos", "position", "silkButtonPos", () -> ModConfig.HANDLER.instance().silkButtonPos, (value) -> ModConfig.HANDLER.instance().silkButtonPos = value, ModConfig.CornerButtonPos.CornerButtonPosArgumentType.cornerButtonPos(), ModConfig.CornerButtonPos.CornerButtonPosArgumentType::getCornerButtonPos))
+                CommandUtils.toggle(COMMAND, "autoSilk", () -> ModConfig.HANDLER.instance().autoSilk.enabled, (value) -> ModConfig.HANDLER.instance().autoSilk.enabled = value)
+                    .then(CommandUtils.getterSetter("target", "tool", "autoSilk.targetTool", () -> ModConfig.HANDLER.instance().autoSilk.targetTool, (value) -> ModConfig.HANDLER.instance().autoSilk.targetTool = value, ModConfig.SilkTarget.SilkTargetArgumentType.silkTarget(), ModConfig.SilkTarget.SilkTargetArgumentType::getSilkTarget))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoSilk.delay", () -> ModConfig.HANDLER.instance().autoSilk.delay, (value) -> ModConfig.HANDLER.instance().autoSilk.delay = value))
+                    .then(CommandUtils.bool("showButton", "autoSilk.showButton", () -> ModConfig.HANDLER.instance().autoSilk.showButton, (value) -> ModConfig.HANDLER.instance().autoSilk.showButton = value))
+                    .then(CommandUtils.getterSetter("buttonPos", "position", "autoSilk.buttonPos", () -> ModConfig.HANDLER.instance().autoSilk.buttonPos, (value) -> ModConfig.HANDLER.instance().autoSilk.buttonPos = value, ModConfig.CornerButtonPos.CornerButtonPosArgumentType.cornerButtonPos(), ModConfig.CornerButtonPos.CornerButtonPosArgumentType::getCornerButtonPos))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -68,7 +68,7 @@ public class AutoSilk {
     }
 
     public static void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoSilk || !(MC.currentScreen instanceof EnchantmentScreen)) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled || !(MC.currentScreen instanceof EnchantmentScreen)) {
             return;
         }
 
@@ -76,7 +76,7 @@ public class AutoSilk {
     }
 
     public static void onEnchantUpdate() {
-        if (!ModConfig.HANDLER.instance().autoSilk) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled) {
             return;
         }
 
@@ -91,7 +91,7 @@ public class AutoSilk {
     }
 
     public static void onUpdateInvSlot(ScreenHandlerSlotUpdateS2CPacket packet) {
-        if (!ModConfig.HANDLER.instance().autoSilk) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled) {
             return;
         }
 
@@ -101,11 +101,11 @@ public class AutoSilk {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoSilk || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled || MC.player == null) {
             return;
         }
 
-        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.instance().autoSilkDelay * 1000.0) {
+        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.instance().autoSilk.delay * 1000.0) {
             return;
         }
 
@@ -133,7 +133,7 @@ public class AutoSilk {
                 reset();
                 return;
             }
-            Item targetTool = ModConfig.HANDLER.instance().targetTool.getTool();
+            Item targetTool = ModConfig.HANDLER.instance().autoSilk.targetTool.getTool();
             if (findInEnchantScreen(targetTool, true) == null) {
                 Messenger.printWithPlaceholders("message.sbutils.autoSilk.noTools", targetTool.getTranslationKey());
                 disable();
@@ -183,7 +183,7 @@ public class AutoSilk {
     }
 
     private static void insertTool() {
-        insertItem(ModConfig.HANDLER.instance().targetTool.getTool());
+        insertItem(ModConfig.HANDLER.instance().autoSilk.targetTool.getTool());
     }
 
     private static void enchantPickaxe() {
@@ -304,7 +304,7 @@ public class AutoSilk {
         if (MC.player.experienceLevel < screenHandler.enchantmentPower[buttonIndex]) {
             Messenger.printMessage("message.sbutils.autoSilk.notEnoughExperience");
             reset();
-            ModConfig.HANDLER.instance().autoSilk = false;
+            ModConfig.HANDLER.instance().autoSilk.enabled = false;
             ModConfig.HANDLER.save();
             return;
         }
@@ -401,7 +401,7 @@ public class AutoSilk {
     }
 
     private static void disable() {
-        ModConfig.HANDLER.instance().autoSilk = false;
+        ModConfig.HANDLER.instance().autoSilk.enabled = false;
         ModConfig.HANDLER.save();
         if (autoSilkButton != null) {
             autoSilkButton.setValue(false);

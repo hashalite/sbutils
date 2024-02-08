@@ -91,6 +91,7 @@ public abstract class ClientPlayNetworkHandlerMixin {
     private void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
         AutoFix.onUpdateInventory();
         AutoKit.onUpdateInventory();
+        AutoRaffle.onUpdateInventory();
         AutoSilk.onUpdateInvSlot(packet);
     }
 

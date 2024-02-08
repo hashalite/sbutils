@@ -22,10 +22,10 @@ public class ClientConnectionMixin {
         AutoMine.onDisconnect();
         AutoKit.onDisconnect();
 
-        if (ModConfig.HANDLER.instance().autoSilk || ModConfig.HANDLER.instance().autoCrate || ModConfig.HANDLER.instance().autoMine) {
-            ModConfig.HANDLER.instance().autoSilk = false;
-            ModConfig.HANDLER.instance().autoCrate = false;
-            ModConfig.HANDLER.instance().autoMine = false;
+        if (ModConfig.HANDLER.instance().autoSilk.enabled || ModConfig.HANDLER.instance().autoCrate.enabled || ModConfig.HANDLER.instance().autoMine.enabled) {
+            ModConfig.HANDLER.instance().autoSilk.enabled = false;
+            ModConfig.HANDLER.instance().autoCrate.enabled = false;
+            ModConfig.HANDLER.instance().autoMine.enabled = false;
             ModConfig.HANDLER.save();
         }
     }

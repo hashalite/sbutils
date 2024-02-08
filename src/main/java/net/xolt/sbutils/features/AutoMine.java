@@ -26,17 +26,19 @@ public class AutoMine {
     private static final String COMMAND = "automine";
     private static final String ALIAS = "mine";
 
-    private static int timer;
+    //private static int timer;
+    private static long disableAt = -1;
+
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "automine", () -> ModConfig.HANDLER.instance().autoMine, (value) -> {ModConfig.HANDLER.instance().autoMine = value; if (!value) reset();})
-                    .then(CommandUtils.runnable("timer", () -> Messenger.printAutoMineTime(timer))
+                CommandUtils.toggle(COMMAND, "autoMine", () -> ModConfig.HANDLER.instance().autoMine.enabled, (value) -> {ModConfig.HANDLER.instance().autoMine.enabled = value; if (!value) reset();})
+                    .then(CommandUtils.runnable("timer", () -> Messenger.printAutoMineTime(disableAt))
                             .then(ClientCommandManager.argument("duration", getTimeArgumentType())
                                     .executes(context -> onTimerCommand(IntegerArgumentType.getInteger(context, "duration")))))
-                    .then(CommandUtils.bool("switch", "autoSwitch", () -> ModConfig.HANDLER.instance().autoSwitch, (value) -> ModConfig.HANDLER.instance().autoSwitch = value))
-                    .then(CommandUtils.integer("durability", "durability", "switchDurability", () -> ModConfig.HANDLER.instance().switchDurability, (value) -> ModConfig.HANDLER.instance().switchDurability = value))
+                    .then(CommandUtils.bool("switch", "autoMine.autoSwitch", () -> ModConfig.HANDLER.instance().autoMine.autoSwitch, (value) -> ModConfig.HANDLER.instance().autoMine.autoSwitch = value))
+                    .then(CommandUtils.integer("durability", "durability", "autoMine.switchDurability", () -> ModConfig.HANDLER.instance().autoMine.switchDurability, (value) -> ModConfig.HANDLER.instance().autoMine.switchDurability = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -46,9 +48,9 @@ public class AutoMine {
     }
 
     private static int onTimerCommand(int time) {
-        timer = time;
-        ModConfig.HANDLER.instance().autoMine = true;
-        Messenger.printAutoMineEnabledFor(timer);
+        disableAt = System.currentTimeMillis() + (time * 50L);
+        ModConfig.HANDLER.instance().autoMine.enabled = true;
+        Messenger.printAutoMineEnabledFor(disableAt);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -65,30 +67,28 @@ public class AutoMine {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoMine || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoMine.enabled || MC.player == null) {
             return;
         }
 
-        if (timer > 0) {
-            timer--;
-            if (timer == 0) {
-                ModConfig.HANDLER.instance().autoMine = false;
-                ModConfig.HANDLER.save();
-                MC.options.attackKey.setPressed(false);
-                Messenger.printChangedSetting("text.sbutils.config.category.automine", false);
-                return;
-            }
+        if (disableAt != -1 && System.currentTimeMillis() >= disableAt) {
+            ModConfig.HANDLER.instance().autoMine.enabled = false;
+            ModConfig.HANDLER.save();
+            MC.options.attackKey.setPressed(false);
+            Messenger.printChangedSetting("text.sbutils.config.category.autoMine", false);
+            disableAt = -1;
+            return;
         }
 
         ItemStack holding = MC.player.getInventory().getMainHandStack();
         int minDurability = getMinDurability();
 
-        if (ModConfig.HANDLER.instance().autoSwitch && !AutoFix.fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamage() <= minDurability) {
+        if (ModConfig.HANDLER.instance().autoMine.autoSwitch && !AutoFix.fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamage() <= minDurability) {
             int newPickaxeSlot = findNewPickaxe();
             if (newPickaxeSlot != -1) {
                 InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selectedSlot);
-            } else if (!ModConfig.HANDLER.instance().autoFix) {
-                ModConfig.HANDLER.instance().autoMine = false;
+            } else if (!ModConfig.HANDLER.instance().autoFix.enabled) {
+                ModConfig.HANDLER.instance().autoMine.enabled = false;
                 ModConfig.HANDLER.save();
                 Messenger.printMessage("message.sbutils.autoMine.noPickaxe");
                 return;
@@ -110,7 +110,7 @@ public class AutoMine {
             return -1;
         }
 
-        int minDurability = Math.max(ModConfig.HANDLER.instance().switchDurability, ModConfig.HANDLER.instance().toolSaver ? ModConfig.HANDLER.instance().toolSaverDurability : 0);
+        int minDurability = Math.max(ModConfig.HANDLER.instance().autoMine.switchDurability, ModConfig.HANDLER.instance().toolSaver.enabled ? ModConfig.HANDLER.instance().toolSaver.durability : 0);
 
         for (int i = 0; i < MC.player.getInventory().size(); i++) {
             ItemStack itemStack = MC.player.getInventory().getStack(i);
@@ -126,11 +126,11 @@ public class AutoMine {
     }
 
     private static int getMinDurability() {
-        return Math.max(ModConfig.HANDLER.instance().autoSwitch ? ModConfig.HANDLER.instance().switchDurability : -1, ModConfig.HANDLER.instance().toolSaver ? ModConfig.HANDLER.instance().toolSaverDurability : -1);
+        return Math.max(ModConfig.HANDLER.instance().autoMine.autoSwitch ? ModConfig.HANDLER.instance().autoMine.switchDurability : -1, ModConfig.HANDLER.instance().toolSaver.enabled ? ModConfig.HANDLER.instance().toolSaver.durability : -1);
     }
 
     private static void reset() {
-        timer = 0;
+        disableAt = -1;
     }
 
     public static void onDisconnect() {

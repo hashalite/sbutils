@@ -41,14 +41,14 @@ public class AutoFix {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autofix", () -> ModConfig.HANDLER.instance().autoFix, (value) -> ModConfig.HANDLER.instance().autoFix = value)
-                    .then(CommandUtils.runnable("info", () -> Messenger.printAutoFixInfo(ModConfig.HANDLER.instance().autoFix, fixing, findMostDamaged(), delayLeft())))
+                CommandUtils.toggle(COMMAND, "autoFix", () -> ModConfig.HANDLER.instance().autoFix.enabled, (value) -> ModConfig.HANDLER.instance().autoFix.enabled = value)
+                    .then(CommandUtils.runnable("info", () -> Messenger.printAutoFixInfo(ModConfig.HANDLER.instance().autoFix.enabled, fixing, findMostDamaged(), delayLeft())))
                     .then(CommandUtils.runnable("reset", () -> {reset(); Messenger.printMessage("message.sbutils.autoFix.reset");}))
-                    .then(CommandUtils.getterSetter("mode", "mode", "autoFixMode", () -> ModConfig.HANDLER.instance().autoFixMode, (value) -> ModConfig.HANDLER.instance().autoFixMode = value, ModConfig.FixMode.FixModeArgumentType.fixMode(), ModConfig.FixMode.FixModeArgumentType::getFixMode))
-                    .then(CommandUtils.doubl("percent", "percent", "maxFixPercent", () -> ModConfig.HANDLER.instance().maxFixPercent, (value) -> {ModConfig.HANDLER.instance().maxFixPercent = value; onChangeMaxFixPercent();}))
-                    .then(CommandUtils.doubl("delay", "seconds", "autoFixDelay", () -> ModConfig.HANDLER.instance().autoFixDelay, (value) -> ModConfig.HANDLER.instance().autoFixDelay = value))
-                    .then(CommandUtils.doubl("retryDelay", "seconds", "fixRetryDelay", () -> ModConfig.HANDLER.instance().fixRetryDelay, (value) -> ModConfig.HANDLER.instance().fixRetryDelay = value))
-                    .then(CommandUtils.integer("maxRetries", "retries", "maxFixRetries", () -> ModConfig.HANDLER.instance().maxFixRetries, (value) -> ModConfig.HANDLER.instance().maxFixRetries = value))
+                    .then(CommandUtils.getterSetter("mode", "mode", "autoFix.mode", () -> ModConfig.HANDLER.instance().autoFix.mode, (value) -> ModConfig.HANDLER.instance().autoFix.mode = value, ModConfig.FixMode.FixModeArgumentType.fixMode(), ModConfig.FixMode.FixModeArgumentType::getFixMode))
+                    .then(CommandUtils.doubl("percent", "percent", "autoFix.percent", () -> ModConfig.HANDLER.instance().autoFix.percent, (value) -> {ModConfig.HANDLER.instance().autoFix.percent = value; onChangeMaxFixPercent();}))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoFix.delay", () -> ModConfig.HANDLER.instance().autoFix.delay, (value) -> ModConfig.HANDLER.instance().autoFix.delay = value))
+                    .then(CommandUtils.doubl("retryDelay", "seconds", "autoFix.retryDelay", () -> ModConfig.HANDLER.instance().autoFix.retryDelay, (value) -> ModConfig.HANDLER.instance().autoFix.retryDelay = value))
+                    .then(CommandUtils.integer("maxRetries", "retries", "autoFix.maxRetries", () -> ModConfig.HANDLER.instance().autoFix.maxRetries, (value) -> ModConfig.HANDLER.instance().autoFix.maxRetries = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -59,12 +59,12 @@ public class AutoFix {
     }
 
     public static void tick() {
-        if (enabled != ModConfig.HANDLER.instance().autoFix) {
-            enabled = ModConfig.HANDLER.instance().autoFix;
+        if (enabled != ModConfig.HANDLER.instance().autoFix.enabled) {
+            enabled = ModConfig.HANDLER.instance().autoFix.enabled;
             reset();
         }
 
-        if (!ModConfig.HANDLER.instance().autoFix || EnchantAll.active() || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoFix.enabled || EnchantAll.active() || MC.player == null) {
             return;
         }
 
@@ -79,14 +79,14 @@ public class AutoFix {
             findMostDamaged = false;
         }
 
-        if (waitingForResponse && currentTime - lastActionPerformedAt > ModConfig.HANDLER.instance().fixRetryDelay * 1000) {
+        if (waitingForResponse && currentTime - lastActionPerformedAt > ModConfig.HANDLER.instance().autoFix.retryDelay * 1000) {
             waitingForResponse = false;
-            if (tries > ModConfig.HANDLER.instance().maxFixRetries) {
+            if (tries > ModConfig.HANDLER.instance().autoFix.maxRetries) {
                 Messenger.printWithPlaceholders("message.sbutils.autoFix.maxTriesReached", tries);
-                if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND) {
+                if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
                     returnAndSwapBack();
                 }
-                ModConfig.HANDLER.instance().autoFix = false;
+                ModConfig.HANDLER.instance().autoFix.enabled = false;
                 ModConfig.HANDLER.save();
                 reset();
             }
@@ -112,7 +112,7 @@ public class AutoFix {
     }
 
     public static void onUpdateInventory() {
-        if (!ModConfig.HANDLER.instance().autoFix || fixing) {
+        if (!ModConfig.HANDLER.instance().autoFix.enabled || fixing) {
             return;
         }
 
@@ -128,7 +128,7 @@ public class AutoFix {
             if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot)) {
                 fixing = true;
 
-                if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.ALL) {
+                if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL) {
                     return;
                 }
 
@@ -173,7 +173,7 @@ public class AutoFix {
             String secondsText = fixFailMatcher.group(6);
             int minutes = minutesText == null || minutesText.isEmpty() ? 0 : Integer.parseInt(minutesText);
             int seconds = secondsText == null || secondsText.isEmpty() ? 0 : Integer.parseInt(secondsText);
-            if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND) {
+            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
                 returnAndSwapBack();
             }
             reset();
@@ -183,7 +183,7 @@ public class AutoFix {
 
         Matcher fixSuccessMatcher = RegexFilters.fixSuccessFilter.matcher(message.getString());
         if (fixSuccessMatcher.matches()) {
-            if (ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND) {
+            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
                 returnAndSwapBack();
             }
             reset();
@@ -212,7 +212,7 @@ public class AutoFix {
 
             double maxDamage = itemStack.getMaxDamage();
 
-            if (ModConfig.HANDLER.instance().maxFixPercent > -1 && (maxDamage - (double)itemStack.getDamage()) / maxDamage > ModConfig.HANDLER.instance().maxFixPercent) {
+            if (ModConfig.HANDLER.instance().autoFix.percent > -1 && (maxDamage - (double)itemStack.getDamage()) / maxDamage > ModConfig.HANDLER.instance().autoFix.percent) {
                 continue;
             }
 
@@ -228,7 +228,7 @@ public class AutoFix {
         if (MC.getNetworkHandler() == null) {
             return;
         }
-        String command = ModConfig.HANDLER.instance().autoFixMode == ModConfig.FixMode.HAND ? "fix" : "fix all";
+        String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
         MC.getNetworkHandler().sendChatCommand(command);
     }
 
@@ -242,7 +242,7 @@ public class AutoFix {
     }
 
     private static int delay() {
-        return (int)(ModConfig.HANDLER.instance().autoFixDelay * 1000.0) + 2000;
+        return (int)(ModConfig.HANDLER.instance().autoFix.delay * 1000.0) + 2000;
     }
 
     private static int delayLeft() {

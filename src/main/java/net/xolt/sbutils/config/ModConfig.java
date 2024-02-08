@@ -37,196 +37,193 @@ public class ModConfig {
 
     // Mod Settings
 
-    @SerialEntry
-    public String messagePrefix = "[@]";
+    @SerialEntry public String prefixFormat = "[%s]";
     @SerialEntry public Color sbutilsColor = Color.YELLOW;
     @SerialEntry public Color prefixColor = Color.AQUA;
     @SerialEntry public Color messageColor = Color.AQUA;
     @SerialEntry public Color valueColor = Color.WHITE;
 
+    @SerialEntry public AntiPlaceConfig antiPlace = new AntiPlaceConfig();
+    public static class AntiPlaceConfig {
+        @SerialEntry public boolean heads = false;
+        @SerialEntry public boolean grass = false;
+    }
 
-    // Auto Advert Settings
+    @SerialEntry public AutoAdvertConfig autoAdvert = new AutoAdvertConfig();
+    public static class AutoAdvertConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public String sbFile = "skyblock";
+        @SerialEntry public String ecoFile = "economy";
+        @SerialEntry public String classicFile = "classic";
+        @SerialEntry public double delay = 300.0;
+        @SerialEntry public double initialDelay = 10.0;
+        @SerialEntry public boolean useWhitelist = false;
+        @SerialEntry public List<String> whitelist = List.of();
+    }
 
-    @SerialEntry public boolean autoAdvert = false;
-    @SerialEntry public String skyblockAdFile = "skyblock";
-    @SerialEntry public String economyAdFile = "economy";
-    @SerialEntry public String classicAdFile = "classic";
-    @SerialEntry public double advertDelay = 300.0;
-    @SerialEntry public double advertInitialDelay = 10.0;
-    @SerialEntry public boolean advertUseWhitelist = false;
-    @SerialEntry public List<String> advertWhitelist = List.of();
+    @SerialEntry public AutoCommandConfig autoCommand = new AutoCommandConfig();
+    public static class AutoCommandConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public double minDelay = 1.5;
+        @SerialEntry public List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> commands = List.of(new KeyValuePair<>("", new KeyValuePair<>(5.0, false)));
+    }
 
+    @SerialEntry public AutoCrateConfig autoCrate = new AutoCrateConfig();
+    public static class AutoCrateConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public Crate mode = Crate.COMMON;
+        @SerialEntry public double delay = 0.25;
+        @SerialEntry public double distance = 4.0;
+    }
 
-    // Join Commands Settings
+    @SerialEntry public AutoFixConfig autoFix = new AutoFixConfig();
+    public static class AutoFixConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public FixMode mode = FixMode.HAND;
+        @SerialEntry public double percent = 0.2;
+        @SerialEntry public double delay = 120.0;
+        @SerialEntry public double retryDelay = 3.0;
+        @SerialEntry public int maxRetries = 3;
+    }
 
-    @SerialEntry public boolean joinCmdsEnabled = false;
-    @SerialEntry public double joinCmdInitialDelay = 0.0;
-    @SerialEntry public double joinCmdDelay = 0.0;
+    @SerialEntry public AutoKitConfig autoKit = new AutoKitConfig();
+    public static class AutoKitConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public double commandDelay = 1.0;
+        @SerialEntry public double claimDelay = 10.0;
+        @SerialEntry public double systemDelay = 10.0;
+        @SerialEntry public List<Kit> kits = List.of();
+    }
 
+    @SerialEntry public AutoMineConfig autoMine = new AutoMineConfig();
+    public static class AutoMineConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public boolean autoSwitch = true;
+        @SerialEntry public int switchDurability = 20;
+    }
 
-    // Mentions Settings
+    @SerialEntry public AutoPrivateConfig autoPrivate = new AutoPrivateConfig();
+    public static class AutoPrivateConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public List<String> names = new ArrayList<>();
+    }
 
-    @SerialEntry public boolean mentions = false;
-    @SerialEntry public boolean playMentionSound = true;
-    @SerialEntry public NotifSound mentionSound = NotifSound.EXPERIENCE;
-    @SerialEntry public boolean mentionHighlight = true;
-    @SerialEntry public Color highlightColor = Color.GOLD;
-    @SerialEntry public boolean excludeServerMsgs = true;
-    @SerialEntry public boolean excludeSelfMsgs = true;
-    @SerialEntry public boolean excludeSender = false;
-    @SerialEntry public boolean mentionsCurrentAccount = true;
-    @SerialEntry public List<String> mentionsAliases = List.of();
+    @SerialEntry public AutoRaffleConfig autoRaffle = new AutoRaffleConfig();
+    public static class AutoRaffleConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public int sbTickets = 2;
+        @SerialEntry public int ecoTickets = 5;
+    }
 
+    @SerialEntry public AutoReplyConfig autoReply = new AutoReplyConfig();
+    public static class AutoReplyConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public String response = "I am currently AFK. Please /mail me and I'll get back to you later!";
+        @SerialEntry public double delay = 1.0;
+    }
 
-    // No GMT Settings
+    @SerialEntry public AutoSilkConfig autoSilk = new AutoSilkConfig();
+    public static class AutoSilkConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
+        @SerialEntry public double delay = 0.25;
+        @SerialEntry public boolean showButton = true;
+        @SerialEntry public CornerButtonPos buttonPos = CornerButtonPos.BOTTOM_LEFT;
+    }
 
-    @SerialEntry public boolean noGMT = false;
-    @SerialEntry public String timeZone = "";
-    @SerialEntry public boolean showTimeZone = true;
+    @SerialEntry public ChatAppendConfig chatAppend = new ChatAppendConfig();
+    public static class ChatAppendConfig {
+        @SerialEntry public boolean addPrefix = false;
+        @SerialEntry public String prefix = "";
+        @SerialEntry public boolean addSuffix = false;
+        @SerialEntry public String suffix = "";
+    }
 
+    @SerialEntry public ChatFiltersConfig chatFilters = new ChatFiltersConfig();
+    public static class ChatFiltersConfig {
+        @SerialEntry public boolean tipsFilter = false;
+        @SerialEntry public boolean advancementsFilter = false;
+        @SerialEntry public boolean welcomeFilter = false;
+        @SerialEntry public boolean friendJoinFilter = false;
+        @SerialEntry public boolean motdFilter = false;
+        @SerialEntry public boolean voteFilter = false;
+        @SerialEntry public boolean voteRewardFilter = false;
+        @SerialEntry public boolean raffleFilter = false;
+        @SerialEntry public boolean cratesFilter = false;
+        @SerialEntry public boolean perishedInVoidFilter = false;
+        @SerialEntry public boolean skyChatFilter = false;
+    }
 
-    // Enchant All Settings
+    @SerialEntry public ChatLoggerConfig chatLogger = new ChatLoggerConfig();
+    public static class ChatLoggerConfig {
+        @SerialEntry public boolean shopIncoming = false;
+        @SerialEntry public boolean shopOutgoing = false;
+        @SerialEntry public boolean msgIncoming = false;
+        @SerialEntry public boolean msgOutgoing = false;
+        @SerialEntry public boolean visits = false;
+        @SerialEntry public boolean dp = false;
+    }
 
-    @SerialEntry public EnchantMode enchantMode = EnchantMode.ALL;
-    @SerialEntry public double enchantDelay = 0.55;
-    @SerialEntry public int cooldownFrequency = 12;
-    @SerialEntry public double cooldownTime = 6.0;
-    @SerialEntry public boolean excludeFrost = true;
+    @SerialEntry public EnchantAllConfig enchantAll = new EnchantAllConfig();
+    public static class EnchantAllConfig {
+        @SerialEntry public EnchantMode mode = EnchantMode.ALL;
+        @SerialEntry public double delay = 0.55;
+        @SerialEntry public int cooldownFrequency = 12;
+        @SerialEntry public double cooldownTime = 6.0;
+        @SerialEntry public boolean excludeFrost = true;
+    }
 
+    @SerialEntry public EventNotifierConfig eventNotifier = new EventNotifierConfig();
+    public static class EventNotifierConfig {
+        @SerialEntry public boolean showLlamaTitle = false;
+        @SerialEntry public boolean playLlamaSound = false;
+        @SerialEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
+        @SerialEntry public boolean showTraderTitle = false;
+        @SerialEntry public boolean playTraderSound = false;
+        @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
+    }
 
-    // Chat Append Settings
+    @SerialEntry public JoinCommandsConfig joinCommands = new JoinCommandsConfig();
+    public static class JoinCommandsConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public double initialDelay = 0.0;
+        @SerialEntry public double delay = 0.0;
+    }
 
-    @SerialEntry public boolean addPrefix = false;
-    @SerialEntry public String chatPrefix = "";
-    @SerialEntry public boolean addSuffix = false;
-    @SerialEntry public String chatSuffix = "";
+    @SerialEntry public MentionsConfig mentions = new MentionsConfig();
+    public static class MentionsConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public boolean playSound = true;
+        @SerialEntry public NotifSound sound = NotifSound.EXPERIENCE;
+        @SerialEntry public boolean highlight = true;
+        @SerialEntry public Color highlightColor = Color.GOLD;
+        @SerialEntry public boolean excludeServerMsgs = true;
+        @SerialEntry public boolean excludeSelfMsgs = true;
+        @SerialEntry public boolean excludeSender = false;
+        @SerialEntry public boolean currentAccount = true;
+        @SerialEntry public List<String> aliases = List.of();
+    }
 
+    @SerialEntry public NoGmtConfig noGmt = new NoGmtConfig();
+    public static class NoGmtConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public String timeZone = "";
+        @SerialEntry public boolean showTimeZone = true;
+    }
 
-    // Chat Filters Settings
+    @SerialEntry public StaffDetectorConfig staffDetector = new StaffDetectorConfig();
+    public static class StaffDetectorConfig {
+        @SerialEntry public boolean detectJoin = false;
+        @SerialEntry public boolean detectLeave = false;
+        @SerialEntry public boolean playSound = false;
+        @SerialEntry public NotifSound sound = NotifSound.BIT;
+    }
 
-    @SerialEntry public boolean tipsFilterEnabled = false;
-    @SerialEntry public boolean advancementsFilterEnabled = false;
-    @SerialEntry public boolean welcomeFilterEnabled = false;
-    @SerialEntry public boolean friendJoinFilterEnabled = false;
-    @SerialEntry public boolean motdFilterEnabled = false;
-    @SerialEntry public boolean voteFilterEnabled = false;
-    @SerialEntry public boolean voteRewardFilterEnabled = false;
-    @SerialEntry public boolean raffleFilterEnabled = false;
-    @SerialEntry public boolean cratesFilterEnabled = false;
-    @SerialEntry public boolean perishedInVoidFilterEnabled = false;
-    @SerialEntry public boolean skyChatFilterEnabled = false;
-
-
-    // Chat Logger Settings
-
-    @SerialEntry public boolean shopLoggerIncoming = false;
-    @SerialEntry public boolean shopLoggerOutgoing = false;
-    @SerialEntry public boolean msgLoggerIncoming = false;
-    @SerialEntry public boolean msgLoggerOutgoing = false;
-    @SerialEntry public boolean visitLogger = false;
-    @SerialEntry public boolean dpLogger = false;
-
-
-    // Event Notifier Settings
-
-    @SerialEntry public boolean showLlamaTitle = false;
-    @SerialEntry public boolean playLlamaSound = false;
-    @SerialEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
-    @SerialEntry public boolean showTraderTitle = false;
-    @SerialEntry public boolean playTraderSound = false;
-    @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
-
-
-    // Auto Mine Settings
-
-    @SerialEntry public boolean autoMine = false;
-    @SerialEntry public boolean autoSwitch = true;
-    @SerialEntry public int switchDurability = 20;
-
-
-    // Auto Fix Settings
-
-    @SerialEntry public boolean autoFix = false;
-    @SerialEntry public FixMode autoFixMode = FixMode.HAND;
-    @SerialEntry public double maxFixPercent = 0.2;
-    @SerialEntry public double autoFixDelay = 120.0;
-    @SerialEntry public double fixRetryDelay = 3.0;
-    @SerialEntry public int maxFixRetries = 3;
-
-
-    // Tool Saver Settings
-
-    @SerialEntry public boolean toolSaver = false;
-    @SerialEntry public int toolSaverDurability = 20;
-
-
-    // Anti Place Settings
-
-    @SerialEntry public boolean antiPlaceHeads = false;
-    @SerialEntry public boolean antiPlaceGrass = false;
-
-
-    // Auto Command Settings
-
-    @SerialEntry public boolean autoCommandEnabled = false;
-    @SerialEntry public double minAutoCommandDelay = 1.5;
-    @SerialEntry public List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> autoCommands = List.of(new KeyValuePair<>("", new KeyValuePair<>(5.0, false)));
-
-
-    // Auto Reply Settings
-
-    @SerialEntry public boolean autoReply = false;
-    @SerialEntry public String autoResponse = "I am currently AFK. Please /mail me and I'll get back to you later!";
-    @SerialEntry public double autoReplyDelay = 1.0;
-
-
-    // Auto Raffle Settings
-
-    @SerialEntry public boolean autoRaffle = false;
-    @SerialEntry public int skyblockRaffleTickets = 2;
-    @SerialEntry public int economyRaffleTickets = 5;
-    @SerialEntry public double grassCheckDelay = 5.0;
-
-
-    // Auto Private Settings
-
-    @SerialEntry public boolean autoPrivate = false;
-    @SerialEntry public List<String> autoPrivateNames = new ArrayList<>();
-
-
-    // Auto Silk Settings
-
-    @SerialEntry public boolean autoSilk = false;
-    @SerialEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
-    @SerialEntry public double autoSilkDelay = 0.25;
-    @SerialEntry public boolean showSilkButton = true;
-    @SerialEntry public CornerButtonPos silkButtonPos = CornerButtonPos.BOTTOM_LEFT;
-
-
-    // Auto Crate Settings
-
-    @SerialEntry public boolean autoCrate = false;
-    @SerialEntry public CrateMode crateMode = CrateMode.COMMON;
-    @SerialEntry public double crateDelay = 0.25;
-    @SerialEntry public double crateDistance = 4.0;
-
-
-    // Auto Kit Settings
-
-    @SerialEntry public boolean autoKit = false;
-    @SerialEntry public double autoKitCommandDelay = 1.0;
-    @SerialEntry public double autoKitClaimDelay = 10.0;
-    @SerialEntry public double autoKitSystemDelay = 10.0;
-    @SerialEntry public List<Kit> autoKits = List.of();
-
-
-    // Staff Detector Settings
-
-    @SerialEntry public boolean detectStaffJoin = false;
-    @SerialEntry public boolean detectStaffLeave = false;
-    @SerialEntry public boolean playStaffSound = false;
-    @SerialEntry public NotifSound staffDetectSound = NotifSound.BIT;
-
+    @SerialEntry public ToolSaverConfig toolSaver = new ToolSaverConfig();
+    public static class ToolSaverConfig {
+        @SerialEntry public boolean enabled = false;
+        @SerialEntry public int durability = 20;
+    }
 
     public enum Color implements NameableEnum, StringIdentifiable {
         DARK_RED("text.sbutils.config.option.color.darkRed", Formatting.DARK_RED),
@@ -282,8 +279,8 @@ public class ModConfig {
     }
 
     public enum FixMode implements NameableEnum, StringIdentifiable {
-        HAND("text.sbutils.config.option.autoFixMode.hand"),
-        ALL("text.sbutils.config.option.autoFixMode.all");
+        HAND("text.sbutils.config.option.autoFix.mode.hand"),
+        ALL("text.sbutils.config.option.autoFix.mode.all");
 
         private final String name;
 
@@ -315,8 +312,8 @@ public class ModConfig {
     }
 
     public enum EnchantMode implements NameableEnum, StringIdentifiable {
-        INDIVIDUAL("text.sbutils.config.option.enchantMode.individual"),
-        ALL("text.sbutils.config.option.enchantMode.all");
+        INDIVIDUAL("text.sbutils.config.option.enchantAll.mode.individual"),
+        ALL("text.sbutils.config.option.enchantAll.mode.all");
 
         private final String name;
 
@@ -482,16 +479,16 @@ public class ModConfig {
         }
     }
 
-    public enum CrateMode implements NameableEnum, StringIdentifiable {
-        VOTER("text.sbutils.config.option.crateMode.voter"),
-        COMMON("text.sbutils.config.option.crateMode.common"),
-        RARE("text.sbutils.config.option.crateMode.rare"),
-        EPIC("text.sbutils.config.option.crateMode.epic"),
-        LEGENDARY("text.sbutils.config.option.crateMode.legendary");
+    public enum Crate implements NameableEnum, StringIdentifiable {
+        VOTER("text.sbutils.config.option.autoCrate.mode.voter"),
+        COMMON("text.sbutils.config.option.autoCrate.mode.common"),
+        RARE("text.sbutils.config.option.autoCrate.mode.rare"),
+        EPIC("text.sbutils.config.option.autoCrate.mode.epic"),
+        LEGENDARY("text.sbutils.config.option.autoCrate.mode.legendary");
 
         private final String name;
 
-        CrateMode(String name) {
+        Crate(String name) {
             this.name = name;
         }
 
@@ -503,17 +500,17 @@ public class ModConfig {
             return Text.translatable(name);
         }
 
-        public static class CrateModeArgumentType extends EnumArgumentType<CrateMode> {
+        public static class CrateModeArgumentType extends EnumArgumentType<Crate> {
             private CrateModeArgumentType() {
-                super(StringIdentifiable.createCodec(CrateMode::values), CrateMode::values);
+                super(StringIdentifiable.createCodec(Crate::values), Crate::values);
             }
 
             public static CrateModeArgumentType crateMode() {
                 return new CrateModeArgumentType();
             }
 
-            public static CrateMode getCrateMode(CommandContext<?> context, String id) {
-                return context.getArgument(id, CrateMode.class);
+            public static Crate getCrateMode(CommandContext<?> context, String id) {
+                return context.getArgument(id, Crate.class);
             }
         }
     }

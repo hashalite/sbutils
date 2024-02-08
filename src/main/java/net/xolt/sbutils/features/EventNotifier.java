@@ -25,13 +25,13 @@ public class EventNotifier {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> eventNotifierNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
                 .then(ClientCommandManager.literal("vpLlama")
-                        .then(CommandUtils.bool("title", "showLlamaTitle", () -> ModConfig.HANDLER.instance().showLlamaTitle, (value) -> ModConfig.HANDLER.instance().showLlamaTitle = value))
-                        .then(CommandUtils.bool("playSound", "playLlamaSound", () -> ModConfig.HANDLER.instance().playLlamaSound, (value) -> ModConfig.HANDLER.instance().playLlamaSound = value))
-                        .then(CommandUtils.getterSetter("sound", "sound", "llamaSound", () -> ModConfig.HANDLER.instance().llamaSound, (value) -> ModConfig.HANDLER.instance().llamaSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
+                        .then(CommandUtils.bool("title", "eventNotifier.showLlamaTitle", () -> ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle, (value) -> ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle = value))
+                        .then(CommandUtils.bool("playSound", "eventNotifier.playLlamaSound", () -> ModConfig.HANDLER.instance().eventNotifier.playLlamaSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.playLlamaSound = value))
+                        .then(CommandUtils.getterSetter("sound", "sound", "eventNotifier.llamaSound", () -> ModConfig.HANDLER.instance().eventNotifier.llamaSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.llamaSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
                 .then(ClientCommandManager.literal("trader")
-                        .then(CommandUtils.bool("title", "showTraderTitle", () -> ModConfig.HANDLER.instance().showTraderTitle, (value) -> ModConfig.HANDLER.instance().showTraderTitle = value))
-                        .then(CommandUtils.bool("playSound", "playTraderSound", () -> ModConfig.HANDLER.instance().playTraderSound, (value) -> ModConfig.HANDLER.instance().playTraderSound = value))
-                        .then(CommandUtils.getterSetter("sound", "sound", "traderSound", () -> ModConfig.HANDLER.instance().traderSound, (value) -> ModConfig.HANDLER.instance().traderSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
+                        .then(CommandUtils.bool("title", "eventNotifier.showTraderTitle", () -> ModConfig.HANDLER.instance().eventNotifier.showTraderTitle, (value) -> ModConfig.HANDLER.instance().eventNotifier.showTraderTitle = value))
+                        .then(CommandUtils.bool("playSound", "eventNotifier.playTraderSound", () -> ModConfig.HANDLER.instance().eventNotifier.playTraderSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.playTraderSound = value))
+                        .then(CommandUtils.getterSetter("sound", "sound", "eventNotifier.traderSound", () -> ModConfig.HANDLER.instance().eventNotifier.traderSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.traderSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -56,29 +56,29 @@ public class EventNotifier {
     }
 
     private static void doLlamaNotification() {
-        if (ModConfig.HANDLER.instance().playLlamaSound) {
-            MC.player.playSound(ModConfig.HANDLER.instance().llamaSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().eventNotifier.playLlamaSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().eventNotifier.llamaSound.getSound(), 1, 1);
         }
 
-        if (ModConfig.HANDLER.instance().showLlamaTitle) {
+        if (ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle) {
             Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Formatting.GRAY,"message.sbutils.eventNotifier.vpLlama");
         }
     }
 
     private static void doTraderNotification() {
-        if (ModConfig.HANDLER.instance().playTraderSound) {
-            MC.player.playSound(ModConfig.HANDLER.instance().traderSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().eventNotifier.playTraderSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().eventNotifier.traderSound.getSound(), 1, 1);
         }
 
-        if (ModConfig.HANDLER.instance().showTraderTitle) {
+        if (ModConfig.HANDLER.instance().eventNotifier.showTraderTitle) {
             Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Formatting.BLUE,"message.sbutils.eventNotifier.wanderingTrader");
         }
     }
 
     private static boolean enabled() {
-        return ModConfig.HANDLER.instance().showLlamaTitle ||
-                ModConfig.HANDLER.instance().playLlamaSound ||
-                ModConfig.HANDLER.instance().showTraderTitle ||
-                ModConfig.HANDLER.instance().playTraderSound;
+        return ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle ||
+                ModConfig.HANDLER.instance().eventNotifier.playLlamaSound ||
+                ModConfig.HANDLER.instance().eventNotifier.showTraderTitle ||
+                ModConfig.HANDLER.instance().eventNotifier.playTraderSound;
     }
 }

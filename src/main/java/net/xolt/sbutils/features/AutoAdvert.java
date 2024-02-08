@@ -36,11 +36,11 @@ public class AutoAdvert {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoadvert", () -> ModConfig.HANDLER.instance().autoAdvert, (value) -> ModConfig.HANDLER.instance().autoAdvert = value)
-                    .then(CommandUtils.runnable("info", () -> Messenger.printAutoAdvertInfo(ModConfig.HANDLER.instance().autoAdvert, ServerDetector.isOnSkyblock(), getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.HANDLER.instance().advertUseWhitelist)))
-                    .then(CommandUtils.string("sbFile", "filename", "skyblockAdFile", () -> ModConfig.HANDLER.instance().skyblockAdFile, (value) -> ModConfig.HANDLER.instance().skyblockAdFile = value))
-                    .then(CommandUtils.string("ecoFile", "filename", "economyAdFile", () -> ModConfig.HANDLER.instance().economyAdFile, (value) -> ModConfig.HANDLER.instance().economyAdFile = value))
-                    .then(CommandUtils.string("classicFile", "filename", "classicAdFile", () -> ModConfig.HANDLER.instance().classicAdFile, (value) -> ModConfig.HANDLER.instance().classicAdFile = value))
+                CommandUtils.toggle(COMMAND, "autoAdvert", () -> ModConfig.HANDLER.instance().autoAdvert.enabled, (value) -> ModConfig.HANDLER.instance().autoAdvert.enabled = value)
+                    .then(CommandUtils.runnable("info", () -> Messenger.printAutoAdvertInfo(ModConfig.HANDLER.instance().autoAdvert.enabled, ServerDetector.isOnSkyblock(), getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.HANDLER.instance().autoAdvert.useWhitelist)))
+                    .then(CommandUtils.string("sbFile", "filename", "autoAdvert.sbFile", () -> ModConfig.HANDLER.instance().autoAdvert.sbFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.sbFile = value))
+                    .then(CommandUtils.string("ecoFile", "filename", "autoAdvert.ecoFile", () -> ModConfig.HANDLER.instance().autoAdvert.ecoFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.ecoFile = value))
+                    .then(CommandUtils.string("classicFile", "filename", "autoAdvert.classicFile", () -> ModConfig.HANDLER.instance().autoAdvert.classicFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.classicFile = value))
                     .then(CommandUtils.stringList("ads", "advert", "message.sbutils.autoAdvert.advertList",
                             () -> formatAds(getAdList()),
                             AutoAdvert::onAddCommand,
@@ -51,10 +51,10 @@ public class AutoAdvert {
                                             .executes(context ->
                                                     onToggleCommand(IntegerArgumentType.getInteger(context, "index"))
                                             ))))
-                    .then(CommandUtils.doubl("delay", "seconds", "advertDelay", () -> ModConfig.HANDLER.instance().advertDelay, (value) -> ModConfig.HANDLER.instance().advertDelay = value))
-                    .then(CommandUtils.doubl("initialDelay", "seconds", "advertInitialDelay", () -> ModConfig.HANDLER.instance().advertInitialDelay, (value) -> ModConfig.HANDLER.instance().advertInitialDelay = value))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoAdvert.delay", () -> ModConfig.HANDLER.instance().autoAdvert.delay, (value) -> ModConfig.HANDLER.instance().autoAdvert.delay = value))
+                    .then(CommandUtils.doubl("initialDelay", "seconds", "autoAdvert.initialDelay", () -> ModConfig.HANDLER.instance().autoAdvert.initialDelay, (value) -> ModConfig.HANDLER.instance().autoAdvert.initialDelay = value))
                     .then(CommandUtils.stringList("whitelist", "user", "message.sbutils.autoAdvert.whitelist",
-                            () -> ModConfig.HANDLER.instance().advertWhitelist,
+                            () -> ModConfig.HANDLER.instance().autoAdvert.whitelist,
                             AutoAdvert::onAddUserCommand,
                             AutoAdvert::onDelUserCommand,
                             AutoAdvert::onInsertUserCommand))
@@ -155,7 +155,7 @@ public class AutoAdvert {
     }
 
     private static void onAddUserCommand(String user) {
-        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().advertWhitelist);
+        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().autoAdvert.whitelist);
 
         if (whitelist.contains(user)) {
             Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddFail", user);
@@ -163,13 +163,13 @@ public class AutoAdvert {
         }
 
         whitelist.add(user);
-        ModConfig.HANDLER.instance().advertWhitelist = whitelist;
+        ModConfig.HANDLER.instance().autoAdvert.whitelist = whitelist;
         ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddSuccess", user);
     }
 
     private static void onDelUserCommand(int index) {
-        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().advertWhitelist);
+        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().autoAdvert.whitelist);
 
         int adjustedIndex = index - 1;
         if (adjustedIndex >= whitelist.size() || adjustedIndex < 0) {
@@ -178,13 +178,13 @@ public class AutoAdvert {
         }
 
         String user = whitelist.remove(adjustedIndex);
-        ModConfig.HANDLER.instance().advertWhitelist = whitelist;
+        ModConfig.HANDLER.instance().autoAdvert.whitelist = whitelist;
         ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistDelSuccess", user);
     }
 
     private static void onInsertUserCommand(int index, String user) {
-        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().advertWhitelist);
+        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().autoAdvert.whitelist);
 
         int adjustedIndex = index - 1;
         if (adjustedIndex > whitelist.size() || adjustedIndex < 0) {
@@ -197,13 +197,13 @@ public class AutoAdvert {
         }
 
         whitelist.add(adjustedIndex, user);
-        ModConfig.HANDLER.instance().advertWhitelist = whitelist;
+        ModConfig.HANDLER.instance().autoAdvert.whitelist = whitelist;
         ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddSuccess", user);
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoAdvert || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoAdvert.enabled || MC.getNetworkHandler() == null) {
             return;
         }
 
@@ -211,7 +211,7 @@ public class AutoAdvert {
             joinedAt = System.currentTimeMillis();
         }
 
-        if (!ServerDetector.isOnSkyblock() || (ModConfig.HANDLER.instance().advertUseWhitelist && !userWhitelisted())) {
+        if (!ServerDetector.isOnSkyblock() || (ModConfig.HANDLER.instance().autoAdvert.useWhitelist && !userWhitelisted())) {
             return;
         }
 
@@ -221,7 +221,7 @@ public class AutoAdvert {
 
         List<String> newAdList = getAdList();
         if (findNextAd(newAdList, -1) == -1) {
-            ModConfig.HANDLER.instance().autoAdvert = false;
+            ModConfig.HANDLER.instance().autoAdvert.enabled = false;
             ModConfig.HANDLER.save();
             reset();
             Messenger.printWithPlaceholders("message.sbutils.autoAdvert.noAds", getAdFile());
@@ -235,7 +235,7 @@ public class AutoAdvert {
     }
 
     public static void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().autoAdvert) {
+        if (!ModConfig.HANDLER.instance().autoAdvert.enabled) {
             return;
         }
 
@@ -353,13 +353,13 @@ public class AutoAdvert {
         } else {
             switch (ServerDetector.currentServer) {
                 case SKYBLOCK:
-                    adFile = ModConfig.HANDLER.instance().skyblockAdFile;
+                    adFile = ModConfig.HANDLER.instance().autoAdvert.sbFile;
                     break;
                 case ECONOMY:
-                    adFile = ModConfig.HANDLER.instance().economyAdFile;
+                    adFile = ModConfig.HANDLER.instance().autoAdvert.ecoFile;
                     break;
                 case CLASSIC:
-                    adFile = ModConfig.HANDLER.instance().classicAdFile;
+                    adFile = ModConfig.HANDLER.instance().autoAdvert.classicFile;
                     break;
                 default:
                     return null;
@@ -382,7 +382,7 @@ public class AutoAdvert {
     }
 
     private static List<String> getWhitelist() {
-        return ModConfig.HANDLER.instance().advertWhitelist;
+        return ModConfig.HANDLER.instance().autoAdvert.whitelist;
     }
 
     private static void sendAd() {
@@ -394,8 +394,8 @@ public class AutoAdvert {
     }
 
     private static int delayLeft() {
-        long delay = (long)(ModConfig.HANDLER.instance().advertDelay * 1000.0);
-        long initialDelay = (long)(ModConfig.HANDLER.instance().advertInitialDelay * 1000.0);
+        long delay = (long)(ModConfig.HANDLER.instance().autoAdvert.delay * 1000.0);
+        long initialDelay = (long)(ModConfig.HANDLER.instance().autoAdvert.initialDelay * 1000.0);
 
         int delayLeft = (int)Math.max(delay - (System.currentTimeMillis() - lastAdSentAt), 0L);
         int initialDelayLeft = (int)Math.max(initialDelay - (System.currentTimeMillis() - joinedAt), 0L);

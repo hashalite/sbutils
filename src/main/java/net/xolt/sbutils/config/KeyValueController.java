@@ -49,6 +49,47 @@ public class KeyValueController<K, V> implements Controller<KeyValueController.K
                 .controller(controller).build();
     }
 
+    public static class Builder<K, V> implements ControllerBuilder<KeyValueController.KeyValuePair<K, V>> {
+        protected final Option<KeyValueController.KeyValuePair<K, V>> option;
+        private String keyName;
+        private Function<Option<K>, ControllerBuilder<K>> keyController;
+        private String valueName;
+        private Function<Option<V>, ControllerBuilder<V>> valueController;
+        private Double ratio = 0.5;
+
+        public Builder(Option<KeyValueController.KeyValuePair<K, V>> option) {
+            this.option = option;
+        }
+
+        static <C, D> Builder<C, D> create(Option<KeyValueController.KeyValuePair<C, D>> option) {
+            return new Builder<>(option);
+        }
+
+        public Builder<K, V> keyController(String keyName, Function<Option<K>, ControllerBuilder<K>> keyController) {
+            this.keyName = keyName;
+            this.keyController = keyController;
+            return this;
+        }
+
+        public Builder<K, V> valueController(String valueName, Function<Option<V>, ControllerBuilder<V>> valueController) {
+            this.valueName = valueName;
+            this.valueController = valueController;
+            return this;
+        }
+
+        public Builder<K, V> ratio(double ratio) {
+            this.ratio = ratio;
+            return this;
+        }
+
+        @Override public Controller<KeyValueController.KeyValuePair<K, V>> build() {
+            if (keyController == null || valueController == null) {
+                throw new IllegalStateException("Cannot build KeyValueController without setting keyController and valueController.");
+            }
+            return new KeyValueController<>(option, ratio, keyName, keyController, valueName, valueController);
+        }
+    }
+
     @Override
     public Option<KeyValuePair<K, V>> option() {
         return option;
@@ -165,8 +206,8 @@ public class KeyValueController<K, V> implements Controller<KeyValueController.K
     }
 
     public static class KeyValuePair<K, V> {
-        private final K key;
-        private final V value;
+        private K key;
+        private V value;
 
         public KeyValuePair(K key, V value) {
             this.key = key;
@@ -179,6 +220,14 @@ public class KeyValueController<K, V> implements Controller<KeyValueController.K
 
         public V getValue() {
             return value;
+        }
+
+        public void setKey(K key) {
+            this.key = key;
+        }
+
+        public void setValue(V value) {
+            this.value = value;
         }
 
         @Override

@@ -43,7 +43,7 @@ public abstract class MinecraftClientMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTickTail(CallbackInfo ci) {
         AutoMine.tick();
-        if (ModConfig.HANDLER.instance().autoMine && AutoMine.shouldMine() && (currentScreen != null || overlay != null)) {
+        if (ModConfig.HANDLER.instance().autoMine.enabled && AutoMine.shouldMine() && (currentScreen != null || overlay != null)) {
             attackCooldown = 0;
             handleBlockBreaking(true);
         }

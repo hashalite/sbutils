@@ -26,9 +26,9 @@ public class StaffDetector {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> staffDetectorNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(CommandUtils.bool("detectJoin", "detectStaffJoin", () -> ModConfig.HANDLER.instance().detectStaffJoin, (value) -> ModConfig.HANDLER.instance().detectStaffJoin = value))
-                .then(CommandUtils.bool("detectLeave", "detectStaffLeave", () -> ModConfig.HANDLER.instance().detectStaffLeave, (value) -> ModConfig.HANDLER.instance().detectStaffLeave = value))
-                .then(CommandUtils.getterSetter("sound", "sound", "staffDetectSound", () -> ModConfig.HANDLER.instance().staffDetectSound, (value) -> ModConfig.HANDLER.instance().staffDetectSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound))
+                .then(CommandUtils.bool("detectJoin", "staffDetector.detectJoin", () -> ModConfig.HANDLER.instance().staffDetector.detectJoin, (value) -> ModConfig.HANDLER.instance().staffDetector.detectJoin = value))
+                .then(CommandUtils.bool("detectLeave", "staffDetector.detectLeave", () -> ModConfig.HANDLER.instance().staffDetector.detectLeave, (value) -> ModConfig.HANDLER.instance().staffDetector.detectLeave = value))
+                .then(CommandUtils.getterSetter("sound", "sound", "staffDetector.sound", () -> ModConfig.HANDLER.instance().staffDetector.sound, (value) -> ModConfig.HANDLER.instance().staffDetector.sound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -39,18 +39,18 @@ public class StaffDetector {
     }
 
     public static void onPlayerJoin(PlayerListEntry player) {
-        if (!ModConfig.HANDLER.instance().detectStaffJoin || !isStaff(player)) {
+        if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player)) {
             return;
         }
 
         Messenger.printStaffNotification(player, true);
-        if (ModConfig.HANDLER.instance().playStaffSound) {
-            MC.player.playSound(ModConfig.HANDLER.instance().staffDetectSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().staffDetector.playSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
         }
     }
 
     public static void onPlayerLeave(PlayerListEntry player) {
-        if (!ModConfig.HANDLER.instance().detectStaffLeave || !isStaff(player)) {
+        if (!ModConfig.HANDLER.instance().staffDetector.detectLeave || !isStaff(player)) {
             return;
         }
 
@@ -62,8 +62,8 @@ public class StaffDetector {
 
         checkForNoStaff = true;
 
-        if (ModConfig.HANDLER.instance().playStaffSound) {
-            MC.player.playSound(ModConfig.HANDLER.instance().staffDetectSound.getSound(), 1, 1);
+        if (ModConfig.HANDLER.instance().staffDetector.playSound) {
+            MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
         }
     }
 

@@ -19,10 +19,10 @@ public class ChatAppend {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> chatAppendNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(CommandUtils.string("prefix", "prefix", "chatPrefix", () -> ModConfig.HANDLER.instance().chatPrefix, (value) -> ModConfig.HANDLER.instance().chatPrefix = value)
-                        .then(CommandUtils.bool("enabled", "addPrefix", () -> ModConfig.HANDLER.instance().addPrefix, (value) -> ModConfig.HANDLER.instance().addPrefix = value)))
-                .then(CommandUtils.string("suffix", "suffix", "chatSuffix", () -> ModConfig.HANDLER.instance().chatSuffix, (value) -> ModConfig.HANDLER.instance().chatSuffix = value)
-                        .then(CommandUtils.bool("enabled", "addSuffix", () -> ModConfig.HANDLER.instance().addSuffix, (value) -> ModConfig.HANDLER.instance().addSuffix = value)))
+                .then(CommandUtils.string("prefix", "prefix", "chatAppend.prefix", () -> ModConfig.HANDLER.instance().chatAppend.prefix, (value) -> ModConfig.HANDLER.instance().chatAppend.prefix = value)
+                        .then(CommandUtils.bool("enabled", "chatAppend.addPrefix", () -> ModConfig.HANDLER.instance().chatAppend.addPrefix, (value) -> ModConfig.HANDLER.instance().chatAppend.addPrefix = value)))
+                .then(CommandUtils.string("suffix", "suffix", "chatAppend.suffix", () -> ModConfig.HANDLER.instance().chatAppend.suffix, (value) -> ModConfig.HANDLER.instance().chatAppend.suffix = value)
+                        .then(CommandUtils.bool("enabled", "chatAppend.addSuffix", () -> ModConfig.HANDLER.instance().chatAppend.addSuffix, (value) -> ModConfig.HANDLER.instance().chatAppend.addSuffix = value)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -33,18 +33,18 @@ public class ChatAppend {
     }
 
     public static ChatMessageC2SPacket processSentMessage(ChatMessageC2SPacket packet) {
-        if (!ModConfig.HANDLER.instance().addPrefix && !ModConfig.HANDLER.instance().addSuffix) {
+        if (!ModConfig.HANDLER.instance().chatAppend.addPrefix && !ModConfig.HANDLER.instance().chatAppend.addSuffix) {
             return packet;
         }
 
         String message = packet.chatMessage();
 
-        if (ModConfig.HANDLER.instance().addPrefix) {
-            message = ModConfig.HANDLER.instance().chatPrefix + message;
+        if (ModConfig.HANDLER.instance().chatAppend.addPrefix) {
+            message = ModConfig.HANDLER.instance().chatAppend.prefix + message;
         }
 
-        if (ModConfig.HANDLER.instance().addSuffix) {
-            message = message + ModConfig.HANDLER.instance().chatSuffix;
+        if (ModConfig.HANDLER.instance().chatAppend.addSuffix) {
+            message = message + ModConfig.HANDLER.instance().chatAppend.suffix;
         }
 
         return new ChatMessageC2SPacket(message, packet.timestamp(), packet.salt(), packet.signature(), packet.acknowledgment());

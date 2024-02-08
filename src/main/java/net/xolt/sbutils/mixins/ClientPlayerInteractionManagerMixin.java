@@ -9,10 +9,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.xolt.sbutils.features.AntiPlace;
-import net.xolt.sbutils.features.AutoFix;
-import net.xolt.sbutils.features.AutoKit;
-import net.xolt.sbutils.features.ToolSaver;
+import net.xolt.sbutils.features.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -51,5 +48,6 @@ public class ClientPlayerInteractionManagerMixin {
     private void afterClickSlot(int syncId, int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci) {
         AutoFix.onUpdateInventory();
         AutoKit.onUpdateInventory();
+        AutoRaffle.onUpdateInventory();
     }
 }

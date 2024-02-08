@@ -25,16 +25,15 @@ public class AutoRaffle {
 
     private static boolean enabled;
     private static boolean waitingToBuy;
+    private static boolean checkForGrass;
     private static boolean shouldSendErrorMessage;
-    private static long checkedForGrassAt;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoraffle", () -> ModConfig.HANDLER.instance().autoRaffle, (value) -> ModConfig.HANDLER.instance().autoRaffle = value)
-                    .then(CommandUtils.integer("sbTickets", "amount", "skyblockRaffleTickets", () -> ModConfig.HANDLER.instance().skyblockRaffleTickets, (value) -> ModConfig.HANDLER.instance().skyblockRaffleTickets = value))
-                    .then(CommandUtils.integer("ecoTickets", "amount", "economyRaffleTickets", () -> ModConfig.HANDLER.instance().economyRaffleTickets, (value) -> ModConfig.HANDLER.instance().economyRaffleTickets = value))
-                    .then(CommandUtils.doubl("checkDelay", "seconds", "grassCheckDelay", () -> ModConfig.HANDLER.instance().grassCheckDelay, (value) -> ModConfig.HANDLER.instance().grassCheckDelay = value))
+                CommandUtils.toggle(COMMAND, "autoRaffle", () -> ModConfig.HANDLER.instance().autoRaffle.enabled, (value) -> ModConfig.HANDLER.instance().autoRaffle.enabled = value)
+                    .then(CommandUtils.integer("sbTickets", "amount", "autoRaffle.sbTickets", () -> ModConfig.HANDLER.instance().autoRaffle.sbTickets, (value) -> ModConfig.HANDLER.instance().autoRaffle.sbTickets = value))
+                    .then(CommandUtils.integer("ecoTickets", "amount", "autoRaffle.ecoTickets", () -> ModConfig.HANDLER.instance().autoRaffle.ecoTickets, (value) -> ModConfig.HANDLER.instance().autoRaffle.ecoTickets = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -45,28 +44,34 @@ public class AutoRaffle {
     }
 
     public static void tick() {
-        if (enabled != ModConfig.HANDLER.instance().autoRaffle) {
-            enabled = ModConfig.HANDLER.instance().autoRaffle;
+        if (enabled != ModConfig.HANDLER.instance().autoRaffle.enabled) {
+            enabled = ModConfig.HANDLER.instance().autoRaffle.enabled;
             reset();
         }
 
-        if (!ModConfig.HANDLER.instance().autoRaffle || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoRaffle.enabled || MC.getNetworkHandler() == null) {
             return;
         }
 
-        if (waitingToBuy && System.currentTimeMillis() - checkedForGrassAt > ModConfig.HANDLER.instance().grassCheckDelay * 1000.0) {
+        if (waitingToBuy && checkForGrass) {
             buyTickets();
         }
     }
 
+    public static void onUpdateInventory() {
+        if (enabled && waitingToBuy) {
+            checkForGrass = true;
+        }
+    }
+
     public static void processMessage(Text message) {
-        if (ModConfig.HANDLER.instance().autoRaffle && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
+        if (ModConfig.HANDLER.instance().autoRaffle.enabled && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
             reset();
         }
     }
 
     public static void onJoinGame() {
-        if (ModConfig.HANDLER.instance().autoRaffle) {
+        if (ModConfig.HANDLER.instance().autoRaffle.enabled) {
             reset();
         }
     }
@@ -93,11 +98,11 @@ public class AutoRaffle {
             return;
         }
 
-        int numTickets = Math.min(Math.max(ModConfig.HANDLER.instance().skyblockRaffleTickets, 1), 2);
+        int numTickets = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.sbTickets, 1), 2);
         int grassCount = getGrassCount();
         if (grassCount < 1) {
             waitingToBuy = true;
-            checkedForGrassAt = System.currentTimeMillis();
+            checkForGrass = false;
             if (shouldSendErrorMessage) {
                 Messenger.printMessage("message.sbutils.autoRaffle.notEnoughGrass");
                 shouldSendErrorMessage = false;
@@ -116,7 +121,7 @@ public class AutoRaffle {
             return;
         }
 
-        int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().economyRaffleTickets, 1), 5);
+        int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.ecoTickets, 1), 5);
         MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
         Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
@@ -142,5 +147,6 @@ public class AutoRaffle {
     private static void reset() {
         waitingToBuy = true;
         shouldSendErrorMessage = true;
+        checkForGrass = false;
     }
 }
