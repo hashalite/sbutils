@@ -2,11 +2,19 @@ package net.xolt.sbutils.config;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
+import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.Message;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandExceptionType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import dev.isxander.yacl3.api.NameableEnum;
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
+import dev.isxander.yacl3.impl.controller.ColorControllerBuilderImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.item.Item;
@@ -21,8 +29,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ModConfig {
 
@@ -37,11 +47,11 @@ public class ModConfig {
 
     // Mod Settings
 
-    @SerialEntry public String prefixFormat = "[%s]";
-    @SerialEntry public Color sbutilsColor = Color.YELLOW;
-    @SerialEntry public Color prefixColor = Color.AQUA;
-    @SerialEntry public Color messageColor = Color.AQUA;
-    @SerialEntry public Color valueColor = Color.WHITE;
+    @SerialEntry public String prefixFormat = "%s »";
+    @SerialEntry public Color sbutilsColor = new Color(Integer.valueOf("90e7fc", 16));
+    @SerialEntry public Color prefixColor = new Color(Integer.valueOf("002c47", 16));
+    @SerialEntry public Color messageColor = new Color(Integer.valueOf("b5b5b5", 16));
+    @SerialEntry public Color valueColor = new Color(Integer.valueOf("ccf5ff", 16));
 
     @SerialEntry public AntiPlaceConfig antiPlace = new AntiPlaceConfig();
     public static class AntiPlaceConfig {
@@ -196,7 +206,7 @@ public class ModConfig {
         @SerialEntry public boolean playSound = true;
         @SerialEntry public NotifSound sound = NotifSound.EXPERIENCE;
         @SerialEntry public boolean highlight = true;
-        @SerialEntry public Color highlightColor = Color.GOLD;
+        @SerialEntry public Color highlightColor = new Color(Integer.valueOf("fff700", 16));
         @SerialEntry public boolean excludeServerMsgs = true;
         @SerialEntry public boolean excludeSelfMsgs = true;
         @SerialEntry public boolean excludeSender = false;
@@ -225,56 +235,39 @@ public class ModConfig {
         @SerialEntry public int durability = 20;
     }
 
-    public enum Color implements NameableEnum, StringIdentifiable {
-        DARK_RED("text.sbutils.config.option.color.darkRed", Formatting.DARK_RED),
-        RED("text.sbutils.config.option.color.red", Formatting.RED),
-        GOLD("text.sbutils.config.option.color.gold", Formatting.GOLD),
-        YELLOW("text.sbutils.config.option.color.yellow", Formatting.YELLOW),
-        DARK_GREEN("text.sbutils.config.option.color.darkGreen", Formatting.DARK_GREEN),
-        GREEN("text.sbutils.config.option.color.green", Formatting.GREEN),
-        DARK_BLUE("text.sbutils.config.option.color.darkBlue", Formatting.DARK_BLUE),
-        BLUE("text.sbutils.config.option.color.blue", Formatting.BLUE),
-        CYAN("text.sbutils.config.option.color.cyan", Formatting.DARK_AQUA),
-        AQUA("text.sbutils.config.option.color.aqua", Formatting.AQUA),
-        PURPLE("text.sbutils.config.option.color.purple", Formatting.DARK_PURPLE),
-        PINK("text.sbutils.config.option.color.pink", Formatting.LIGHT_PURPLE),
-        WHITE("text.sbutils.config.option.color.white", Formatting.WHITE),
-        LIGHT_GRAY("text.sbutils.config.option.color.lightGray", Formatting.GRAY),
-        DARK_GRAY("text.sbutils.config.option.color.darkGray", Formatting.DARK_GRAY),
-        BLACK("text.sbutils.config.option.color.black", Formatting.BLACK);
+    public static class ColorArgumentType implements ArgumentType<Color> {
 
-        private final String name;
-        private final Formatting formatting;
+        private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(message -> new LiteralMessage("Could not parse color: " + message));
 
-        Color(String name, Formatting formatting) {
-            this.name = name;
-            this.formatting = formatting;
+        public static ColorArgumentType color() {
+            return new ColorArgumentType();
         }
 
-        public String asString() {
-            return getDisplayName().getString();
+        public static Color getColor(CommandContext<?> context, String id) {
+            return context.getArgument(id, Color.class);
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
-        }
-
-        public Formatting getFormatting() {
-            return formatting;
-        }
-
-        public static class ColorArgumentType extends EnumArgumentType<Color> {
-            private ColorArgumentType() {
-                super(StringIdentifiable.createCodec(Color::values), Color::values);
+        @Override public Color parse(StringReader reader) throws CommandSyntaxException {
+            StringBuilder builder = new StringBuilder();
+            while (reader.canRead() && reader.peek() != ' ')
+                builder.append(reader.read());
+            String text = builder.toString();
+            String colorCode = text.startsWith("#") || text.startsWith("&") ? text.substring(1) : text;
+            if (colorCode.length() == 1) {
+                Formatting color = Formatting.byCode(colorCode.charAt(0));
+                if (color == null || color.getColorValue() == null)
+                    throw new CommandSyntaxException(COLOR_PARSE_EXCEPTION, () -> "Invalid color code \"" + colorCode + "\"");
+                return new Color(color.getColorValue());
             }
-
-            public static ColorArgumentType color() {
-                return new ColorArgumentType();
+            if (colorCode.length() == 6) {
+                try {
+                    int color = Integer.valueOf(colorCode, 16);
+                    return new Color(color);
+                } catch (NumberFormatException nfe) {
+                    throw new CommandSyntaxException(COLOR_PARSE_EXCEPTION, () -> "Invalid hex color \"" + colorCode + "\"");
+                }
             }
-
-            public static Color getColor(CommandContext<?> context, String id) {
-                return context.getArgument(id, Color.class);
-            }
+            throw new CommandSyntaxException(COLOR_PARSE_EXCEPTION, () -> "Invalid color format");
         }
     }
 

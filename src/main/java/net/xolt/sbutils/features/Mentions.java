@@ -1,6 +1,7 @@
 package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -40,7 +41,8 @@ public class Mentions {
                             Mentions::onInsertAliasCommand))
                     .then(CommandUtils.getterSetter("sound", "sound", "mentions.sound", () -> ModConfig.HANDLER.instance().mentions.sound, (value) -> ModConfig.HANDLER.instance().mentions.sound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound))
                     .then(CommandUtils.bool("highlight", "mentions.highlight", () -> ModConfig.HANDLER.instance().mentions.highlight, (value) -> ModConfig.HANDLER.instance().mentions.highlight = value)
-                            .then(CommandUtils.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ModConfig.Color.ColorArgumentType.color(), ModConfig.Color.ColorArgumentType::getColor)))
+                            .then(CommandUtils.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ModConfig.ColorArgumentType.color(), ModConfig.ColorArgumentType::getColor))
+                            )
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -230,7 +232,7 @@ public class Mentions {
             int endIndex = beginningIndex + lowerTarget.length();
             String preText = format + stringText.substring(index, beginningIndex);
             result.append(Text.literal(preText).setStyle(oldStyle));
-            result.append(Text.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.instance().mentions.highlightColor.getFormatting())));
+            result.append(Text.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.instance().mentions.highlightColor.getRGB())));
             int formatSignIndex = preText.lastIndexOf("\u00a7");
             if (formatSignIndex != -1 && formatSignIndex + 2 <= preText.length()) {
                 format = preText.substring(formatSignIndex, formatSignIndex + 2);

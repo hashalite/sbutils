@@ -9,6 +9,7 @@ import net.xolt.sbutils.features.AutoFix;
 import net.xolt.sbutils.features.AutoKit;
 import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
@@ -58,7 +59,7 @@ public class ConfigGui {
                                 )
                                 .controller(StringControllerBuilder::create)
                                 .build())
-                        .option(Option.<ModConfig.Color>createBuilder()
+                        .option(Option.<Color>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.sbutilsColor"))
                                 .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.sbutilsColor.tooltip")))
                                 .binding(
@@ -66,9 +67,9 @@ public class ConfigGui {
                                         () -> config.sbutilsColor,
                                         (value) -> config.sbutilsColor = value
                                 )
-                                .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Color.class))
+                                .controller(ColorControllerBuilder::create)
                                 .build())
-                        .option(Option.<ModConfig.Color>createBuilder()
+                        .option(Option.<Color>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.prefixColor"))
                                 .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.prefixColor.tooltip")))
                                 .binding(
@@ -76,9 +77,9 @@ public class ConfigGui {
                                         () -> config.prefixColor,
                                         (value) -> config.prefixColor = value
                                 )
-                                .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Color.class))
+                                .controller(ColorControllerBuilder::create)
                                 .build())
-                        .option(Option.<ModConfig.Color>createBuilder()
+                        .option(Option.<Color>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.messageColor"))
                                 .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.messageColor.tooltip")))
                                 .binding(
@@ -86,9 +87,9 @@ public class ConfigGui {
                                         () -> config.messageColor,
                                         (value) -> config.messageColor = value
                                 )
-                                .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Color.class))
+                                .controller(ColorControllerBuilder::create)
                                 .build())
-                        .option(Option.<ModConfig.Color>createBuilder()
+                        .option(Option.<Color>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.valueColor"))
                                 .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.valueColor.tooltip")))
                                 .binding(
@@ -96,7 +97,7 @@ public class ConfigGui {
                                         () -> config.valueColor,
                                         (value) -> config.valueColor = value
                                 )
-                                .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Color.class))
+                                .controller(ColorControllerBuilder::create)
                                 .build())
                         .build())
                 .build();
@@ -1104,7 +1105,7 @@ public class ConfigGui {
                                 )
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
-                        .option(Option.<ModConfig.Color>createBuilder()
+                        .option(Option.<Color>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.mentions.highlightColor"))
                                 .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.highlightColor.tooltip")))
                                 .binding(
@@ -1112,7 +1113,7 @@ public class ConfigGui {
                                         () -> config.mentions.highlightColor,
                                         (value) -> config.mentions.highlightColor = value
                                 )
-                                .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Color.class))
+                                .controller(ColorControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.mentions.excludeServerMsgs"))
