@@ -1,13 +1,13 @@
 package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.*;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.command.argument.ColorArgumentType;
 import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
@@ -39,9 +39,9 @@ public class Mentions {
                             Mentions::onAddAliasCommand,
                             Mentions::onDelAliasCommand,
                             Mentions::onInsertAliasCommand))
-                    .then(CommandUtils.getterSetter("sound", "sound", "mentions.sound", () -> ModConfig.HANDLER.instance().mentions.sound, (value) -> ModConfig.HANDLER.instance().mentions.sound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound))
+                    .then(CommandUtils.genericEnum("sound", "sound", "mentions.sound", ModConfig.NotifSound.class, () -> ModConfig.HANDLER.instance().mentions.sound, (value) -> ModConfig.HANDLER.instance().mentions.sound = value))
                     .then(CommandUtils.bool("highlight", "mentions.highlight", () -> ModConfig.HANDLER.instance().mentions.highlight, (value) -> ModConfig.HANDLER.instance().mentions.highlight = value)
-                            .then(CommandUtils.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ModConfig.ColorArgumentType.color(), ModConfig.ColorArgumentType::getColor))
+                            .then(CommandUtils.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ColorArgumentType.color(), ColorArgumentType::getColor))
                             )
         );
 

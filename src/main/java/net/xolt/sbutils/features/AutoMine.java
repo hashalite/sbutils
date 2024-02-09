@@ -2,17 +2,15 @@ package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.argument.TimeArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PickaxeItem;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.mixins.TimeArgumentTypeAccessor;
+import net.xolt.sbutils.command.argument.TimeArgumentType;
 import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
@@ -35,8 +33,8 @@ public class AutoMine {
         final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(
                 CommandUtils.toggle(COMMAND, "autoMine", () -> ModConfig.HANDLER.instance().autoMine.enabled, (value) -> {ModConfig.HANDLER.instance().autoMine.enabled = value; if (!value) reset();})
                     .then(CommandUtils.runnable("timer", () -> Messenger.printAutoMineTime(disableAt))
-                            .then(ClientCommandManager.argument("duration", getTimeArgumentType())
-                                    .executes(context -> onTimerCommand(IntegerArgumentType.getInteger(context, "duration")))))
+                            .then(ClientCommandManager.argument("duration", TimeArgumentType.time())
+                                    .executes(context -> onTimerCommand(DoubleArgumentType.getDouble(context, "duration")))))
                     .then(CommandUtils.bool("switch", "autoMine.autoSwitch", () -> ModConfig.HANDLER.instance().autoMine.autoSwitch, (value) -> ModConfig.HANDLER.instance().autoMine.autoSwitch = value))
                     .then(CommandUtils.integer("durability", "durability", "autoMine.switchDurability", () -> ModConfig.HANDLER.instance().autoMine.switchDurability, (value) -> ModConfig.HANDLER.instance().autoMine.switchDurability = value))
         );
@@ -47,23 +45,11 @@ public class AutoMine {
                 .redirect(autoMineNode));
     }
 
-    private static int onTimerCommand(int time) {
-        disableAt = System.currentTimeMillis() + (time * 50L);
+    private static int onTimerCommand(double time) {
+        disableAt = System.currentTimeMillis() + (long)(time * 1000.0);
         ModConfig.HANDLER.instance().autoMine.enabled = true;
         Messenger.printAutoMineEnabledFor(disableAt);
         return Command.SINGLE_SUCCESS;
-    }
-
-    private static TimeArgumentType getTimeArgumentType() {
-        TimeArgumentType timeArgumentType = TimeArgumentType.time(1);
-        Object2IntMap<String> units = ((TimeArgumentTypeAccessor)timeArgumentType).getUNITS();
-        units.remove("t", 1);
-        units.remove("", 1);
-        units.remove("d", 24000);
-        units.put("", 20);
-        units.put("m", 1200);
-        units.put("h", 72000);
-        return timeArgumentType;
     }
 
     public static void tick() {

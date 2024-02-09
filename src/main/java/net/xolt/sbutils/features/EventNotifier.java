@@ -27,11 +27,11 @@ public class EventNotifier {
                 .then(ClientCommandManager.literal("vpLlama")
                         .then(CommandUtils.bool("title", "eventNotifier.showLlamaTitle", () -> ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle, (value) -> ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle = value))
                         .then(CommandUtils.bool("playSound", "eventNotifier.playLlamaSound", () -> ModConfig.HANDLER.instance().eventNotifier.playLlamaSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.playLlamaSound = value))
-                        .then(CommandUtils.getterSetter("sound", "sound", "eventNotifier.llamaSound", () -> ModConfig.HANDLER.instance().eventNotifier.llamaSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.llamaSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
+                        .then(CommandUtils.genericEnum("sound", "sound", "eventNotifier.llamaSound", ModConfig.NotifSound.class, () -> ModConfig.HANDLER.instance().eventNotifier.llamaSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.llamaSound = value)))
                 .then(ClientCommandManager.literal("trader")
                         .then(CommandUtils.bool("title", "eventNotifier.showTraderTitle", () -> ModConfig.HANDLER.instance().eventNotifier.showTraderTitle, (value) -> ModConfig.HANDLER.instance().eventNotifier.showTraderTitle = value))
                         .then(CommandUtils.bool("playSound", "eventNotifier.playTraderSound", () -> ModConfig.HANDLER.instance().eventNotifier.playTraderSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.playTraderSound = value))
-                        .then(CommandUtils.getterSetter("sound", "sound", "eventNotifier.traderSound", () -> ModConfig.HANDLER.instance().eventNotifier.traderSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.traderSound = value, ModConfig.NotifSound.NotifSoundArgumentType.notifSound(), ModConfig.NotifSound.NotifSoundArgumentType::getNotifSound)))
+                        .then(CommandUtils.genericEnum("sound", "sound", "eventNotifier.traderSound", ModConfig.NotifSound.class, () -> ModConfig.HANDLER.instance().eventNotifier.traderSound, (value) -> ModConfig.HANDLER.instance().eventNotifier.traderSound = value)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

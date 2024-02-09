@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.xolt.sbutils.mixins.GenericContainerScreenAccessor;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -97,7 +98,7 @@ public class InvCleaner {
         clean((stack) -> toClean.contains(stack.getItem()), cleanCallback);
     }
 
-    public static void clean(Predicate<ItemStack> toClean, Consumer<Boolean> cleanCallback) {
+    public static void clean(Predicate<ItemStack> toClean, @Nullable Consumer<Boolean> cleanCallback) {
         if (toClean == null || cleaning || !hasGarbage(toClean)) {
             if (cleanCallback != null)
                 cleanCallback.accept(false);

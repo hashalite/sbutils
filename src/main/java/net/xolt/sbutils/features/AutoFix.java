@@ -44,7 +44,7 @@ public class AutoFix {
                 CommandUtils.toggle(COMMAND, "autoFix", () -> ModConfig.HANDLER.instance().autoFix.enabled, (value) -> ModConfig.HANDLER.instance().autoFix.enabled = value)
                     .then(CommandUtils.runnable("info", () -> Messenger.printAutoFixInfo(ModConfig.HANDLER.instance().autoFix.enabled, fixing, findMostDamaged(), delayLeft())))
                     .then(CommandUtils.runnable("reset", () -> {reset(); Messenger.printMessage("message.sbutils.autoFix.reset");}))
-                    .then(CommandUtils.getterSetter("mode", "mode", "autoFix.mode", () -> ModConfig.HANDLER.instance().autoFix.mode, (value) -> ModConfig.HANDLER.instance().autoFix.mode = value, ModConfig.FixMode.FixModeArgumentType.fixMode(), ModConfig.FixMode.FixModeArgumentType::getFixMode))
+                    .then(CommandUtils.genericEnum("mode", "mode", "autoFix.mode", ModConfig.FixMode.class, () -> ModConfig.HANDLER.instance().autoFix.mode, (value) -> ModConfig.HANDLER.instance().autoFix.mode = value))
                     .then(CommandUtils.doubl("percent", "percent", "autoFix.percent", () -> ModConfig.HANDLER.instance().autoFix.percent, (value) -> {ModConfig.HANDLER.instance().autoFix.percent = value; onChangeMaxFixPercent();}))
                     .then(CommandUtils.doubl("delay", "seconds", "autoFix.delay", () -> ModConfig.HANDLER.instance().autoFix.delay, (value) -> ModConfig.HANDLER.instance().autoFix.delay = value))
                     .then(CommandUtils.doubl("retryDelay", "seconds", "autoFix.retryDelay", () -> ModConfig.HANDLER.instance().autoFix.retryDelay, (value) -> ModConfig.HANDLER.instance().autoFix.retryDelay = value))

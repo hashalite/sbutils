@@ -48,7 +48,7 @@ public class AutoCrate {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoCrateNode = dispatcher.register(
                 CommandUtils.toggle(COMMAND, "autoCrate", () -> ModConfig.HANDLER.instance().autoCrate.enabled, (value) -> {ModConfig.HANDLER.instance().autoCrate.enabled = value; if (!value) reset();})
-                    .then(CommandUtils.getterSetter("mode", "mode", "autoCrate.mode", () -> ModConfig.HANDLER.instance().autoCrate.mode, (value) -> ModConfig.HANDLER.instance().autoCrate.mode = value, ModConfig.Crate.CrateModeArgumentType.crateMode(), ModConfig.Crate.CrateModeArgumentType::getCrateMode))
+                    .then(CommandUtils.genericEnum("mode", "mode", "autoCrate.mode", ModConfig.Crate.class, () -> ModConfig.HANDLER.instance().autoCrate.mode, (value) -> ModConfig.HANDLER.instance().autoCrate.mode = value))
                     .then(CommandUtils.doubl("delay", "seconds", "autoCrate.delay", () -> ModConfig.HANDLER.instance().autoCrate.delay, (value) -> ModConfig.HANDLER.instance().autoCrate.delay = value, 0.0))
                     .then(CommandUtils.doubl("range", "range", "autoCrate.distance", () -> ModConfig.HANDLER.instance().autoCrate.distance, (value) -> ModConfig.HANDLER.instance().autoCrate.distance = value))
                     .then(CommandUtils.bool("cleaner", "autoCrate.cleaner", () -> ModConfig.HANDLER.instance().autoCrate.cleaner, (value) -> ModConfig.HANDLER.instance().autoCrate.cleaner = value)
@@ -113,8 +113,9 @@ public class AutoCrate {
 
         if (MC.player.getInventory().getEmptySlot() == -1) {
             if (ModConfig.HANDLER.instance().autoCrate.cleaner) {
-                InvCleaner.clean(getItemsToClean(), AutoCrate::onCleaningCallback);
+                // cleaning must be set before clean() is called, in case callback is called immediately
                 cleaning = true;
+                InvCleaner.clean(getItemsToClean(), AutoCrate::onCleaningCallback);
                 return;
             }
             Messenger.printMessage("message.sbutils.autoCrate.inventoryFull");
@@ -290,5 +291,6 @@ public class AutoCrate {
     public static void reset() {
         waitingForCrate = false;
         crateClosedAt = 0;
+        cleaning = false;
     }
 }

@@ -34,7 +34,7 @@ public class AutoKit {
                         .then(CommandUtils.doubl("commandDelay", "seconds", "autoKit.commandDelay", () -> ModConfig.HANDLER.instance().autoKit.commandDelay, (value) -> ModConfig.HANDLER.instance().autoKit.commandDelay = value, 0))
                         .then(CommandUtils.doubl("claimDelay", "seconds", "autoKit.claimDelay", () -> ModConfig.HANDLER.instance().autoKit.claimDelay, (value) -> ModConfig.HANDLER.instance().autoKit.claimDelay = value, 0))
                         .then(CommandUtils.doubl("systemDelay", "seconds", "autoKit.systemDelay", () -> ModConfig.HANDLER.instance().autoKit.systemDelay, (value) -> ModConfig.HANDLER.instance().autoKit.systemDelay = value, 0))
-                        .then(CommandUtils.list("kits", "kit", "message.sbutils.autoKit.kits", ModConfig.Kit.KitArgumentType.kit(), ModConfig.Kit.KitArgumentType::getKit,
+                        .then(CommandUtils.enumList("kits", "kit", "message.sbutils.autoKit.kits", ModConfig.Kit.class,
                                 () -> ModConfig.HANDLER.instance().autoKit.kits,
                                 AutoKit::onAddCommand,
                                 AutoKit::onDelCommand,

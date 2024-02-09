@@ -59,10 +59,10 @@ public class AutoSilk {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(
                 CommandUtils.toggle(COMMAND, "autoSilk", () -> ModConfig.HANDLER.instance().autoSilk.enabled, (value) -> ModConfig.HANDLER.instance().autoSilk.enabled = value)
-                    .then(CommandUtils.getterSetter("target", "tool", "autoSilk.targetTool", () -> ModConfig.HANDLER.instance().autoSilk.targetTool, (value) -> ModConfig.HANDLER.instance().autoSilk.targetTool = value, ModConfig.SilkTarget.SilkTargetArgumentType.silkTarget(), ModConfig.SilkTarget.SilkTargetArgumentType::getSilkTarget))
+                    .then(CommandUtils.genericEnum("target", "tool", "autoSilk.targetTool", ModConfig.SilkTarget.class, () -> ModConfig.HANDLER.instance().autoSilk.targetTool, (value) -> ModConfig.HANDLER.instance().autoSilk.targetTool = value))
                     .then(CommandUtils.doubl("delay", "seconds", "autoSilk.delay", () -> ModConfig.HANDLER.instance().autoSilk.delay, (value) -> ModConfig.HANDLER.instance().autoSilk.delay = value))
                     .then(CommandUtils.bool("showButton", "autoSilk.showButton", () -> ModConfig.HANDLER.instance().autoSilk.showButton, (value) -> ModConfig.HANDLER.instance().autoSilk.showButton = value))
-                    .then(CommandUtils.getterSetter("buttonPos", "position", "autoSilk.buttonPos", () -> ModConfig.HANDLER.instance().autoSilk.buttonPos, (value) -> ModConfig.HANDLER.instance().autoSilk.buttonPos = value, ModConfig.CornerButtonPos.CornerButtonPosArgumentType.cornerButtonPos(), ModConfig.CornerButtonPos.CornerButtonPosArgumentType::getCornerButtonPos))
+                    .then(CommandUtils.genericEnum("buttonPos", "position", "autoSilk.buttonPos", ModConfig.CornerButtonPos.class, () -> ModConfig.HANDLER.instance().autoSilk.buttonPos, (value) -> ModConfig.HANDLER.instance().autoSilk.buttonPos = value))
                     .then(CommandUtils.bool("cleaner", "autoSilk.cleaner", () -> ModConfig.HANDLER.instance().autoSilk.cleaner, (value) -> ModConfig.HANDLER.instance().autoSilk.cleaner = value))
         );
 
@@ -127,8 +127,9 @@ public class AutoSilk {
         if (state == State.INSERT_LAPIS) {
             if (countFreeSlots() < 1) {
                 if (ModConfig.HANDLER.instance().autoSilk.cleaner) {
-                    InvCleaner.clean(AutoSilk::shouldCleanStack, AutoSilk::onCleanCallback);
+                    // cleaning must be set before clean() is called, in case callback is called immediately
                     cleaning = true;
+                    InvCleaner.clean(AutoSilk::shouldCleanStack, AutoSilk::onCleanCallback);
                     return;
                 }
                 Messenger.printMessage("message.sbutils.autoSilk.invFull");

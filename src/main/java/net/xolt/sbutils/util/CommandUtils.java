@@ -7,6 +7,8 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.util.StringIdentifiable;
+import net.xolt.sbutils.command.argument.GenericEnumArgumentType;
 import net.xolt.sbutils.config.ModConfig;
 
 import java.util.List;
@@ -52,6 +54,10 @@ public class CommandUtils {
         return list(command, argument, listMessage, StringArgumentType.greedyString(), StringArgumentType::getString, getPrintable, add, del, insert);
     }
 
+    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String listMessage, Class<T> type, Supplier<List<T>> getPrintable, Consumer<T> add, Consumer<Integer> del, BiConsumer<Integer, T> insert) {
+        return list(command, argument, listMessage, GenericEnumArgumentType.genericEnum(type), (context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type), getPrintable, add, del, insert);
+    }
+
     public static <T, S> LiteralArgumentBuilder<FabricClientCommandSource> list(String command, String argument, String listMessage, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<S>> getPrintable, Consumer<T> add, Consumer<Integer> del, BiConsumer<Integer, T> insert) {
         return runnable(command, () -> Messenger.printListSetting(listMessage, getPrintable.get()))
                 .then(ClientCommandManager.literal("add")
@@ -89,6 +95,10 @@ public class CommandUtils {
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> integer(String command, String argument, String setting, Supplier<Integer> get, Consumer<Integer> set) {
         return getterSetter(command, argument, setting, get, set, IntegerArgumentType.integer(), IntegerArgumentType::getInteger);
+    }
+
+    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> genericEnum(String command, String argument, String setting, Class<T> type, Supplier<T> get, Consumer<T> set) {
+        return getterSetter(command, argument, setting, get, set, GenericEnumArgumentType.genericEnum(type), ((context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type)));
     }
 
     public static <T> LiteralArgumentBuilder<FabricClientCommandSource> getterSetter(String command, String argument, String setting, Supplier<T> get, Consumer<T> set, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {

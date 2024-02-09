@@ -59,7 +59,7 @@ public class EnchantAll {
         final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(
                 CommandUtils.runnable(ENCHANT_COMMAND, () -> onEnchantAllCommand(false, false))
                     .then(CommandUtils.runnable("inv", () -> onEnchantAllCommand(false, true)))
-                    .then(CommandUtils.getterSetter("mode", "mode", "enchantAll.mode", () -> ModConfig.HANDLER.instance().enchantAll.mode, (value) -> ModConfig.HANDLER.instance().enchantAll.mode = value, ModConfig.EnchantMode.EnchantModeArgumentType.enchantMode(), ModConfig.EnchantMode.EnchantModeArgumentType::getEnchantMode))
+                    .then(CommandUtils.genericEnum("mode", "mode", "enchantAll.mode", ModConfig.EnchantMode.class, () -> ModConfig.HANDLER.instance().enchantAll.mode, (value) -> ModConfig.HANDLER.instance().enchantAll.mode = value))
                     .then(CommandUtils.doubl("delay", "seconds", "enchantAll.delay", () -> ModConfig.HANDLER.instance().enchantAll.delay, (value) -> ModConfig.HANDLER.instance().enchantAll.delay = value))
                     .then(CommandUtils.integer("cooldownFrequency", "frequency", "enchantAll.cooldownFrequency", () -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency = value))
                     .then(CommandUtils.doubl("cooldownTime", "seconds", "enchantAll.cooldownTime", () -> ModConfig.HANDLER.instance().enchantAll.cooldownTime, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownTime = value))

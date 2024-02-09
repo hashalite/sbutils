@@ -16,8 +16,7 @@
     "GenericContainerScreenAccessor",
     "MessageHandlerMixin",
     "MinecraftClientMixin",
-    "ScreenHandlerMixin",
-    "TimeArgumentTypeAccessor"
+    "ScreenHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

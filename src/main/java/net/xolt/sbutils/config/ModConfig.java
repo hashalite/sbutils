@@ -2,18 +2,11 @@ package net.xolt.sbutils.config;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
-import com.mojang.brigadier.LiteralMessage;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import dev.isxander.yacl3.api.NameableEnum;
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -21,7 +14,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
@@ -234,42 +226,6 @@ public class ModConfig {
         @SerialEntry public int durability = 20;
     }
 
-    public static class ColorArgumentType implements ArgumentType<Color> {
-
-        private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(message -> new LiteralMessage("Could not parse color: " + message));
-
-        public static ColorArgumentType color() {
-            return new ColorArgumentType();
-        }
-
-        public static Color getColor(CommandContext<?> context, String id) {
-            return context.getArgument(id, Color.class);
-        }
-
-        @Override public Color parse(StringReader reader) throws CommandSyntaxException {
-            StringBuilder builder = new StringBuilder();
-            while (reader.canRead() && reader.peek() != ' ')
-                builder.append(reader.read());
-            String text = builder.toString();
-            String colorCode = text.startsWith("#") || text.startsWith("&") ? text.substring(1) : text;
-            if (colorCode.length() == 1) {
-                Formatting color = Formatting.byCode(colorCode.charAt(0));
-                if (color == null || color.getColorValue() == null)
-                    throw new CommandSyntaxException(COLOR_PARSE_EXCEPTION, () -> "Invalid color code \"" + colorCode + "\"");
-                return new Color(color.getColorValue());
-            }
-            if (colorCode.length() == 6) {
-                try {
-                    int color = Integer.valueOf(colorCode, 16);
-                    return new Color(color);
-                } catch (NumberFormatException nfe) {
-                    throw new CommandSyntaxException(COLOR_PARSE_EXCEPTION, () -> "Invalid hex color \"" + colorCode + "\"");
-                }
-            }
-            throw new CommandSyntaxException(COLOR_PARSE_EXCEPTION, () -> "Invalid color format");
-        }
-    }
-
     public enum FixMode implements NameableEnum, StringIdentifiable {
         HAND("text.sbutils.config.option.autoFix.mode.hand"),
         ALL("text.sbutils.config.option.autoFix.mode.all");
@@ -286,20 +242,6 @@ public class ModConfig {
 
         public String asString() {
             return getDisplayName().getString();
-        }
-
-        public static class FixModeArgumentType extends EnumArgumentType<FixMode> {
-            private FixModeArgumentType() {
-                super(StringIdentifiable.createCodec(FixMode::values), FixMode::values);
-            }
-
-            public static FixModeArgumentType fixMode() {
-                return new FixModeArgumentType();
-            }
-
-            public static FixMode getFixMode(CommandContext<?> context, String id) {
-                return context.getArgument(id, FixMode.class);
-            }
         }
     }
 
@@ -319,20 +261,6 @@ public class ModConfig {
 
         public String asString() {
             return getDisplayName().getString();
-        }
-
-        public static class EnchantModeArgumentType extends EnumArgumentType<EnchantMode> {
-            private EnchantModeArgumentType() {
-                super(StringIdentifiable.createCodec(EnchantMode::values), EnchantMode::values);
-            }
-
-            public static EnchantModeArgumentType enchantMode() {
-                return new EnchantModeArgumentType();
-            }
-
-            public static EnchantMode getEnchantMode(CommandContext<?> context, String id) {
-                return context.getArgument(id, EnchantMode.class);
-            }
         }
     }
 
@@ -361,20 +289,6 @@ public class ModConfig {
         public String asString() {
             return Registries.ITEM.getId(tool).getPath();
         }
-
-        public static class SilkTargetArgumentType extends EnumArgumentType<SilkTarget> {
-            private SilkTargetArgumentType() {
-                super(StringIdentifiable.createCodec(ModConfig.SilkTarget::values), ModConfig.SilkTarget::values);
-            }
-
-            public static SilkTargetArgumentType silkTarget() {
-                return new SilkTargetArgumentType();
-            }
-
-            public static SilkTarget getSilkTarget(CommandContext<?> context, String id) {
-                return context.getArgument(id, SilkTarget.class);
-            }
-        }
     }
 
     public enum CornerButtonPos implements NameableEnum, StringIdentifiable {
@@ -396,20 +310,6 @@ public class ModConfig {
         @Override
         public String asString() {
             return getDisplayName().getString();
-        }
-
-        public static class CornerButtonPosArgumentType extends EnumArgumentType<CornerButtonPos> {
-            private CornerButtonPosArgumentType() {
-                super(StringIdentifiable.createCodec(ModConfig.CornerButtonPos::values), ModConfig.CornerButtonPos::values);
-            }
-
-            public static CornerButtonPosArgumentType cornerButtonPos() {
-                return new CornerButtonPosArgumentType();
-            }
-
-            public static CornerButtonPos getCornerButtonPos(CommandContext<?> context, String id) {
-                return context.getArgument(id, CornerButtonPos.class);
-            }
         }
     }
 
@@ -455,20 +355,6 @@ public class ModConfig {
         public SoundEvent getSound() {
             return sound;
         }
-
-        public static class NotifSoundArgumentType extends EnumArgumentType<NotifSound> {
-            private NotifSoundArgumentType() {
-                super(StringIdentifiable.createCodec(NotifSound::values), NotifSound::values);
-            }
-
-            public static NotifSoundArgumentType notifSound() {
-                return new NotifSoundArgumentType();
-            }
-
-            public static NotifSound getNotifSound(CommandContext<?> context, String id) {
-                return context.getArgument(id, NotifSound.class);
-            }
-        }
     }
 
     public enum Crate implements NameableEnum, StringIdentifiable {
@@ -490,20 +376,6 @@ public class ModConfig {
 
         public Text getDisplayName() {
             return Text.translatable(name);
-        }
-
-        public static class CrateModeArgumentType extends EnumArgumentType<Crate> {
-            private CrateModeArgumentType() {
-                super(StringIdentifiable.createCodec(Crate::values), Crate::values);
-            }
-
-            public static CrateModeArgumentType crateMode() {
-                return new CrateModeArgumentType();
-            }
-
-            public static Crate getCrateMode(CommandContext<?> context, String id) {
-                return context.getArgument(id, Crate.class);
-            }
         }
     }
 
@@ -579,20 +451,6 @@ public class ModConfig {
         @Override
         public String asString() {
             return getDisplayName().getString();
-        }
-
-        public static class KitArgumentType extends EnumArgumentType<Kit> {
-            private KitArgumentType() {
-                super(StringIdentifiable.createCodec(ModConfig.Kit::values), ModConfig.Kit::values);
-            }
-
-            public static KitArgumentType kit() {
-                return new KitArgumentType();
-            }
-
-            public static Kit getKit(CommandContext<?> context, String id) {
-                return context.getArgument(id, Kit.class);
-            }
         }
     }
 }
