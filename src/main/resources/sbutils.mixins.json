@@ -13,6 +13,7 @@
     "CommandTreeS2CPacketMixin",
     "EnchantmentScreenMixin",
     "GameRendererMixin",
+    "GenericContainerScreenAccessor",
     "MessageHandlerMixin",
     "MinecraftClientMixin",
     "ScreenHandlerMixin",

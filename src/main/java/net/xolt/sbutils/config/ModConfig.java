@@ -3,18 +3,15 @@ package net.xolt.sbutils.config;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.LiteralMessage;
-import com.mojang.brigadier.Message;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import dev.isxander.yacl3.api.NameableEnum;
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
-import dev.isxander.yacl3.impl.controller.ColorControllerBuilderImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.item.Item;
@@ -32,7 +29,6 @@ import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class ModConfig {
 
@@ -84,6 +80,8 @@ public class ModConfig {
         @SerialEntry public Crate mode = Crate.COMMON;
         @SerialEntry public double delay = 0.25;
         @SerialEntry public double distance = 4.0;
+        @SerialEntry public boolean cleaner = true;
+        @SerialEntry public List<String> itemsToClean = List.of("cobblestone");
     }
 
     @SerialEntry public AutoFixConfig autoFix = new AutoFixConfig();
@@ -136,6 +134,7 @@ public class ModConfig {
     public static class AutoSilkConfig {
         @SerialEntry public boolean enabled = false;
         @SerialEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
+        @SerialEntry public boolean cleaner = true;
         @SerialEntry public double delay = 0.25;
         @SerialEntry public boolean showButton = true;
         @SerialEntry public CornerButtonPos buttonPos = CornerButtonPos.BOTTOM_LEFT;

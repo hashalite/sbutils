@@ -23,6 +23,14 @@ public class InvUtils {
         MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(sourceIndex), hotbarIndex, SlotActionType.SWAP, MC.player);
     }
 
+    public static void quickMove(int index) {
+        if (MC.interactionManager == null || MC.player == null) {
+            return;
+        }
+
+        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(index), 0, SlotActionType.QUICK_MOVE, MC.player);
+    }
+
     public static int findEmptyHotbarSlot() {
         if (MC.player == null) {
             return -1;

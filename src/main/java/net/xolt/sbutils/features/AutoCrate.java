@@ -8,19 +8,23 @@ import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.features.common.InvCleaner;
 import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
@@ -38,6 +42,7 @@ public class AutoCrate {
 
     private static boolean waitingForCrate;
     private static long crateClosedAt;
+    private static boolean cleaning;
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
@@ -46,6 +51,11 @@ public class AutoCrate {
                     .then(CommandUtils.getterSetter("mode", "mode", "autoCrate.mode", () -> ModConfig.HANDLER.instance().autoCrate.mode, (value) -> ModConfig.HANDLER.instance().autoCrate.mode = value, ModConfig.Crate.CrateModeArgumentType.crateMode(), ModConfig.Crate.CrateModeArgumentType::getCrateMode))
                     .then(CommandUtils.doubl("delay", "seconds", "autoCrate.delay", () -> ModConfig.HANDLER.instance().autoCrate.delay, (value) -> ModConfig.HANDLER.instance().autoCrate.delay = value, 0.0))
                     .then(CommandUtils.doubl("range", "range", "autoCrate.distance", () -> ModConfig.HANDLER.instance().autoCrate.distance, (value) -> ModConfig.HANDLER.instance().autoCrate.distance = value))
+                    .then(CommandUtils.bool("cleaner", "autoCrate.cleaner", () -> ModConfig.HANDLER.instance().autoCrate.cleaner, (value) -> ModConfig.HANDLER.instance().autoCrate.cleaner = value)
+                            .then(CommandUtils.stringList("items", "item", "message.sbutils.autoCrate.listItemsToClean", () -> ModConfig.HANDLER.instance().autoCrate.itemsToClean,
+                                    AutoCrate::onAddCleanerItem,
+                                    AutoCrate::onDelCleanerItem,
+                                    AutoCrate::onInsertCleanerItem)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -55,8 +65,41 @@ public class AutoCrate {
                 .redirect(autoCrateNode));
     }
 
+    private static void onAddCleanerItem(String item) {
+        ModConfig.HANDLER.instance().autoCrate.itemsToClean.add(item);
+        ModConfig.HANDLER.save();
+        Messenger.printMessage("message.sbutils.autoCrate.itemAddSuccess");
+        Messenger.printListSetting("message.sbutils.autoCrate.listItemsToClean", ModConfig.HANDLER.instance().autoCrate.itemsToClean);
+    }
+
+    private static void onDelCleanerItem(int index) {
+        int adjustedIndex = index - 1;
+        if (adjustedIndex >= ModConfig.HANDLER.instance().autoCrate.itemsToClean.size()) {
+            Messenger.printMessage("message.sbutils.autoCrate.indexOutOfBounds");
+            return;
+        }
+
+        ModConfig.HANDLER.instance().autoCrate.itemsToClean.remove(adjustedIndex);
+        ModConfig.HANDLER.save();
+        Messenger.printMessage("message.sbutils.autoCrate.itemDelSuccess");
+        Messenger.printListSetting("message.sbutils.autoCrate.listItemsToClean", ModConfig.HANDLER.instance().autoCrate.itemsToClean);
+    }
+
+    private static void onInsertCleanerItem(int index, String item) {
+        int adjustedIndex = index - 1;
+        if (adjustedIndex >= ModConfig.HANDLER.instance().autoCrate.itemsToClean.size()) {
+            Messenger.printMessage("message.sbutils.autoCrate.indexOutOfBounds");
+            return;
+        }
+
+        ModConfig.HANDLER.instance().autoCrate.itemsToClean.add(adjustedIndex, item);
+        ModConfig.HANDLER.save();
+        Messenger.printMessage("message.sbutils.autoCrate.itemAddSuccess");
+        Messenger.printListSetting("message.sbutils.autoCrate.listItemsToClean", ModConfig.HANDLER.instance().autoCrate.itemsToClean);
+    }
+
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.HANDLER.instance().autoCrate.delay * 1000 || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoCrate.enabled || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.HANDLER.instance().autoCrate.delay * 1000 || MC.player == null || cleaning) {
             return;
         }
 
@@ -64,31 +107,38 @@ public class AutoCrate {
 
         if (cratePos == null || !cratePos.isWithinDistance(MC.player.getPos(), ModConfig.HANDLER.instance().autoCrate.distance)) {
             Messenger.printMessage("message.sbutils.autoCrate.crateTooFar");
-            ModConfig.HANDLER.instance().autoCrate.enabled = false;
-            ModConfig.HANDLER.save();
-            reset();
+            disable();
             return;
         }
 
         if (MC.player.getInventory().getEmptySlot() == -1) {
+            if (ModConfig.HANDLER.instance().autoCrate.cleaner) {
+                InvCleaner.clean(getItemsToClean(), AutoCrate::onCleaningCallback);
+                cleaning = true;
+                return;
+            }
             Messenger.printMessage("message.sbutils.autoCrate.inventoryFull");
-            ModConfig.HANDLER.instance().autoCrate.enabled = false;
-            ModConfig.HANDLER.save();
-            reset();
+            disable();
             return;
         }
 
         if (!isItemKey(MC.player.getInventory().getMainHandStack()) && !moveKeysToHand()) {
             Messenger.printMessage("message.sbutils.autoCrate.finished");
-            ModConfig.HANDLER.instance().autoCrate.enabled = false;
-            ModConfig.HANDLER.save();
-            reset();
+            disable();
             return;
         }
 
         if (useKey(cratePos)) {
             waitingForCrate = true;
         }
+    }
+
+    public static void onCleaningCallback(boolean result) {
+        cleaning = false;
+        if (result)
+            return;
+        Messenger.printInvCleanFailed("text.sbutils.config.category.autoCrate");
+        disable();
     }
 
     public static void onServerCloseScreen() {
@@ -100,7 +150,7 @@ public class AutoCrate {
     }
 
     public static void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !(MC.currentScreen instanceof GenericContainerScreen)) {
+        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !(MC.currentScreen instanceof GenericContainerScreen) || cleaning) {
             return;
         }
 
@@ -109,6 +159,10 @@ public class AutoCrate {
         ModConfig.HANDLER.instance().autoCrate.enabled = false;
         ModConfig.HANDLER.save();
         reset();
+    }
+
+    private static List<Item> getItemsToClean() {
+        return ModConfig.HANDLER.instance().autoCrate.itemsToClean.stream().map((item) -> Registries.ITEM.get(new Identifier(item))).toList();
     }
 
     private static boolean moveKeysToHand() {
@@ -225,6 +279,12 @@ public class AutoCrate {
             default:
                 return RegexFilters.voterCrateFilter;
         }
+    }
+
+    private static void disable() {
+        ModConfig.HANDLER.instance().autoCrate.enabled = false;
+        ModConfig.HANDLER.save();
+        reset();
     }
 
     public static void reset() {

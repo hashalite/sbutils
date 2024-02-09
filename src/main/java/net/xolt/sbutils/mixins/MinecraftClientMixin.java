@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.screen.Screen;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
+import net.xolt.sbutils.features.common.InvCleaner;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,6 +39,7 @@ public abstract class MinecraftClientMixin {
         AutoReply.tick();
         AutoCommand.tick();
         AutoKit.tick();
+        InvCleaner.tick();
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

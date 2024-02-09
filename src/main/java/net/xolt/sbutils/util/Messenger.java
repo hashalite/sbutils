@@ -362,6 +362,10 @@ public class Messenger {
         return bool ? Formatting.GREEN : Formatting.RED;
     }
 
+    public static void printInvCleanFailed(String featureName) {
+        printWithPlaceholders("message.sbutils.invCleaner.cleanFailed", Text.translatable(featureName).withColor(getValueColor()));
+    }
+
     public static void printAutoMineEnabledFor(long disableAt) {
         long timeLeft = disableAt - System.currentTimeMillis();
         printWithPlaceholders("message.sbutils.autoMine.enabledFor", Text.translatable("text.sbutils.config.category.autoMine").withColor(getValueColor()), formatTime(timeLeft));

@@ -13,6 +13,7 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.xolt.sbutils.config.ConfigGui;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
+import net.xolt.sbutils.features.common.InvCleaner;
 import net.xolt.sbutils.util.IOHandler;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;

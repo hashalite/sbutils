@@ -4,6 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.EnchantingTableBlock;
 import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -11,6 +13,7 @@ import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -20,8 +23,13 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.EnchantmentScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.features.common.InvCleaner;
 import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 
@@ -40,6 +48,7 @@ public class AutoSilk {
     private static State state;
     private static long lastActionPerformedAt;
     private static EnchantmentScreenHandler screenHandler;
+    private static boolean cleaning;
     public static CyclingButtonWidget<Boolean> autoSilkButton;
 
     public static void init() {
@@ -54,6 +63,7 @@ public class AutoSilk {
                     .then(CommandUtils.doubl("delay", "seconds", "autoSilk.delay", () -> ModConfig.HANDLER.instance().autoSilk.delay, (value) -> ModConfig.HANDLER.instance().autoSilk.delay = value))
                     .then(CommandUtils.bool("showButton", "autoSilk.showButton", () -> ModConfig.HANDLER.instance().autoSilk.showButton, (value) -> ModConfig.HANDLER.instance().autoSilk.showButton = value))
                     .then(CommandUtils.getterSetter("buttonPos", "position", "autoSilk.buttonPos", () -> ModConfig.HANDLER.instance().autoSilk.buttonPos, (value) -> ModConfig.HANDLER.instance().autoSilk.buttonPos = value, ModConfig.CornerButtonPos.CornerButtonPosArgumentType.cornerButtonPos(), ModConfig.CornerButtonPos.CornerButtonPosArgumentType::getCornerButtonPos))
+                    .then(CommandUtils.bool("cleaner", "autoSilk.cleaner", () -> ModConfig.HANDLER.instance().autoSilk.cleaner, (value) -> ModConfig.HANDLER.instance().autoSilk.cleaner = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -101,13 +111,11 @@ public class AutoSilk {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled || MC.player == null || cleaning)
             return;
-        }
 
-        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.instance().autoSilk.delay * 1000.0) {
+        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.instance().autoSilk.delay * 1000.0)
             return;
-        }
 
         if (!(MC.currentScreen instanceof EnchantmentScreen)) {
             reset();
@@ -118,9 +126,13 @@ public class AutoSilk {
 
         if (state == State.INSERT_LAPIS) {
             if (countFreeSlots() < 1) {
+                if (ModConfig.HANDLER.instance().autoSilk.cleaner) {
+                    InvCleaner.clean(AutoSilk::shouldCleanStack, AutoSilk::onCleanCallback);
+                    cleaning = true;
+                    return;
+                }
                 Messenger.printMessage("message.sbutils.autoSilk.invFull");
                 disable();
-                reset();
                 return;
             }
             if (getTotalLapis() < 3) {
@@ -130,25 +142,66 @@ public class AutoSilk {
                     Messenger.printMessage("message.sbutils.autoSilk.notEnoughLapis");
                 }
                 disable();
-                reset();
                 return;
             }
             Item targetTool = ModConfig.HANDLER.instance().autoSilk.targetTool.getTool();
             if (findInEnchantScreen(targetTool, true) == null) {
                 Messenger.printWithPlaceholders("message.sbutils.autoSilk.noTools", targetTool.getTranslationKey());
                 disable();
-                reset();
                 return;
             }
             if (findInEnchantScreen(Items.BOOK, true) == null) {
                 Messenger.printMessage("message.sbutils.autoSilk.noBooks");
                 disable();
-                reset();
                 return;
             }
         }
 
         performNextAction();
+        lastActionPerformedAt = System.currentTimeMillis();
+    }
+
+    private static boolean shouldCleanStack(ItemStack stack) {
+        return stack.getItem() instanceof EnchantedBookItem && !EnchantmentHelper.fromNbt(EnchantedBookItem.getEnchantmentNbt(stack)).containsKey(Enchantments.SILK_TOUCH);
+    }
+
+    private static void onCleanCallback(boolean result) {
+        cleaning = false;
+        if (!result) {
+            Messenger.printInvCleanFailed("text.sbutils.config.category.autoSilk");
+            disable();
+            return;
+        }
+        clickNearestEnchantTable();
+    }
+
+    private static void clickNearestEnchantTable() {
+        if (MC.player == null || MC.world == null || MC.interactionManager == null) {
+            return;
+        }
+
+        BlockPos playerPos = MC.player.getBlockPos();
+        BlockPos tablePos = null;
+        int range = 4; // FIXME Hardcoded for now
+        for (int x = playerPos.getX() - range; x <= playerPos.getX() + range; x++) {
+            for (int y = playerPos.getY() - range; y <= playerPos.getY() + range; y++) {
+                for (int z = playerPos.getZ() - range; z <= playerPos.getZ() + range; z++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    BlockState state = MC.world.getBlockState(pos);
+                    if (state.getBlock() instanceof EnchantingTableBlock) {
+                        tablePos = pos;
+                    }
+                }
+            }
+        }
+
+        if (tablePos == null) {
+            Messenger.printMessage("message.sbutils.autoSilk.notCloseEnough");
+            disable();
+            return;
+        }
+
+        MC.interactionManager.interactBlock(MC.player, Hand.MAIN_HAND, new BlockHitResult(tablePos.toCenterPos(), Direction.UP, tablePos, false));
         lastActionPerformedAt = System.currentTimeMillis();
     }
 
@@ -406,6 +459,7 @@ public class AutoSilk {
         if (autoSilkButton != null) {
             autoSilkButton.setValue(false);
         }
+        reset();
     }
 
     private enum State {
@@ -425,5 +479,6 @@ public class AutoSilk {
         state = State.INSERT_LAPIS;
         lastActionPerformedAt = 0;
         screenHandler = null;
+        cleaning = false;
     }
 }

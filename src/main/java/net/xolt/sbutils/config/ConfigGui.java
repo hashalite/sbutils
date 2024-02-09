@@ -312,6 +312,27 @@ public class ConfigGui {
                                 )
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.autoCrate.cleaner"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.cleaner.tooltip")))
+                                .binding(
+                                        defaults.autoCrate.cleaner,
+                                        () -> config.autoCrate.cleaner,
+                                        (value) -> config.autoCrate.cleaner = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
+                                .build())
+                        .build())
+                .group(ListOption.<String>createBuilder()
+                        .name(Text.translatable("text.sbutils.config.option.autoCrate.itemsToClean"))
+                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.itemsToClean.tooltip")))
+                        .binding(
+                                defaults.autoCrate.itemsToClean,
+                                () -> config.autoCrate.itemsToClean,
+                                (value) -> config.autoCrate.itemsToClean = value
+                        )
+                        .controller(StringControllerBuilder::create)
+                        .initial("")
                         .build())
                 .build();
     }
@@ -621,6 +642,16 @@ public class ConfigGui {
                                         (value) -> config.autoSilk.targetTool = value
                                 )
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.SilkTarget.class))
+                                .build())
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.translatable("text.sbutils.config.option.autoSilk.cleaner"))
+                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoSilk.cleaner.tooltip")))
+                                .binding(
+                                        defaults.autoSilk.cleaner,
+                                        () -> config.autoSilk.cleaner,
+                                        (value) -> config.autoSilk.cleaner = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
                                 .name(Text.translatable("text.sbutils.config.option.autoSilk.delay"))
