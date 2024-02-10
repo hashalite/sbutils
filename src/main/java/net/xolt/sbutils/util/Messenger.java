@@ -13,7 +13,6 @@ import net.xolt.sbutils.features.AutoKit;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.function.IntFunction;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -84,13 +83,17 @@ public class Messenger {
     }
 
     public static void sendPlaceholderTitle(String message, Object ... args) {
-        MutableText messageText = Text.translatable(message).withColor(getMessageColor());
-        sendTitle(insertPlaceholders(messageText, format(args)));
+        sendTitle(insertPlaceholders(message, format(args)));
     }
 
     public static void printWithPlaceholders(String message, Object ... args) {
+        printMessage(insertPlaceholders(message, format(args)));
+    }
+
+
+    private static MutableText insertPlaceholders(String message, MutableText ... args) {
         MutableText messageText = Text.translatable(message).withColor(getMessageColor());
-        printMessage(insertPlaceholders(messageText, format(args)));
+        return insertPlaceholders(messageText, args);
     }
 
     private static MutableText insertPlaceholders(MutableText message, MutableText ... args) {

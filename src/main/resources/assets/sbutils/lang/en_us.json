@@ -31,6 +31,10 @@
   "message.sbutils.autoAdvert.noAds": "Disabling Auto Advert because %s is empty or doesn't exist.",
   "message.sbutils.autoAdvert.notWhitelisted": "Whitelist is enabled but your username is not in the whitelist.",
   "message.sbutils.autoAdvert.notOnSkyblock": "You are not currently on Skyblock.",
+  "message.sbutils.autoAdvert.advertList": "Current advertisements:",
+  "message.sbutils.autoAdvert.addSuccess": "Advertisement successfully added. Current advertisements:",
+  "message.sbutils.autoAdvert.deleteSuccess": "Advertisement successfully removed. Current advertisements:",
+  "message.sbutils.autoAdvert.toggleSuccess": "Advertisement successfully toggled. Current advertisements:",
 
   "message.sbutils.joinCommands.globalCommandList": "Current global join commands:",
   "message.sbutils.joinCommands.accountCommandList": "Join commands for the current account:",
