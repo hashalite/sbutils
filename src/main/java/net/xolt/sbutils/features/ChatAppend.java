@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 
 import java.util.List;
 
@@ -19,10 +19,10 @@ public class ChatAppend {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> chatAppendNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(CommandUtils.string("prefix", "prefix", "chatAppend.prefix", () -> ModConfig.HANDLER.instance().chatAppend.prefix, (value) -> ModConfig.HANDLER.instance().chatAppend.prefix = value)
-                        .then(CommandUtils.bool("enabled", "chatAppend.addPrefix", () -> ModConfig.HANDLER.instance().chatAppend.addPrefix, (value) -> ModConfig.HANDLER.instance().chatAppend.addPrefix = value)))
-                .then(CommandUtils.string("suffix", "suffix", "chatAppend.suffix", () -> ModConfig.HANDLER.instance().chatAppend.suffix, (value) -> ModConfig.HANDLER.instance().chatAppend.suffix = value)
-                        .then(CommandUtils.bool("enabled", "chatAppend.addSuffix", () -> ModConfig.HANDLER.instance().chatAppend.addSuffix, (value) -> ModConfig.HANDLER.instance().chatAppend.addSuffix = value)))
+                .then(CommandHelper.string("prefix", "prefix", "chatAppend.prefix", () -> ModConfig.HANDLER.instance().chatAppend.prefix, (value) -> ModConfig.HANDLER.instance().chatAppend.prefix = value)
+                        .then(CommandHelper.bool("enabled", "chatAppend.addPrefix", () -> ModConfig.HANDLER.instance().chatAppend.addPrefix, (value) -> ModConfig.HANDLER.instance().chatAppend.addPrefix = value)))
+                .then(CommandHelper.string("suffix", "suffix", "chatAppend.suffix", () -> ModConfig.HANDLER.instance().chatAppend.suffix, (value) -> ModConfig.HANDLER.instance().chatAppend.suffix = value)
+                        .then(CommandHelper.bool("enabled", "chatAppend.addSuffix", () -> ModConfig.HANDLER.instance().chatAppend.addSuffix, (value) -> ModConfig.HANDLER.instance().chatAppend.addSuffix = value)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

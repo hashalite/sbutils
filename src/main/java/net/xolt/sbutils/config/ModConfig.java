@@ -16,7 +16,8 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
-import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
+import net.xolt.sbutils.config.gui.KeyValueController;
+import net.xolt.sbutils.config.gui.KeyValueController.KeyValuePair;
 
 import java.awt.*;
 import java.util.ArrayList;

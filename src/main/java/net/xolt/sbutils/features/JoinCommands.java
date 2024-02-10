@@ -1,13 +1,14 @@
 package net.xolt.sbutils.features;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
 
@@ -32,19 +33,23 @@ public class JoinCommands {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "joinCommands", () -> ModConfig.HANDLER.instance().joinCommands.enabled, (value) -> ModConfig.HANDLER.instance().joinCommands.enabled = value)
-                    .then(CommandUtils.stringList("global", "command", "message.sbutils.joinCommands.globalCommandList",
+                CommandHelper.toggle(COMMAND, "joinCommands", () -> ModConfig.HANDLER.instance().joinCommands.enabled, (value) -> ModConfig.HANDLER.instance().joinCommands.enabled = value)
+                    .then(CommandHelper.customIndexedList("global", "command", "message.sbutils.joinCommands.globalCommandList",
+                            StringArgumentType.greedyString(),
+                            StringArgumentType::getString,
                             () -> getJoinCommands(true),
                             (command) -> onAddCommand(command, true),
                             (index) -> onDelCommand(index, true),
                             (index, command) -> onInsertCommand(index, command, true)))
-                    .then(CommandUtils.stringList("account", "command", "message.sbutils.joinCommands.accountCommandList",
+                    .then(CommandHelper.customIndexedList("account", "command", "message.sbutils.joinCommands.accountCommandList",
+                            StringArgumentType.greedyString(),
+                            StringArgumentType::getString,
                             () -> getJoinCommands(false),
                             (command) -> onAddCommand(command, false),
                             (index) -> onDelCommand(index, false),
                             (index, command) -> onInsertCommand(index, command, false)))
-                    .then(CommandUtils.doubl("delay", "seconds", "joinCommands.delay", () -> ModConfig.HANDLER.instance().joinCommands.delay, (value) -> ModConfig.HANDLER.instance().joinCommands.delay = value))
-                    .then(CommandUtils.doubl("initialDelay", "seconds", "joinCommands.initialDelay", () -> ModConfig.HANDLER.instance().joinCommands.initialDelay, (value) -> ModConfig.HANDLER.instance().joinCommands.initialDelay = value))
+                    .then(CommandHelper.doubl("delay", "seconds", "joinCommands.delay", () -> ModConfig.HANDLER.instance().joinCommands.delay, (value) -> ModConfig.HANDLER.instance().joinCommands.delay = value))
+                    .then(CommandHelper.doubl("initialDelay", "seconds", "joinCommands.initialDelay", () -> ModConfig.HANDLER.instance().joinCommands.initialDelay, (value) -> ModConfig.HANDLER.instance().joinCommands.initialDelay = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

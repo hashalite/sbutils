@@ -25,7 +25,7 @@ import net.minecraft.util.math.Direction;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.InvCleaner;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
@@ -47,15 +47,12 @@ public class AutoCrate {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoCrateNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoCrate", () -> ModConfig.HANDLER.instance().autoCrate.enabled, (value) -> {ModConfig.HANDLER.instance().autoCrate.enabled = value; if (!value) reset();})
-                    .then(CommandUtils.genericEnum("mode", "mode", "autoCrate.mode", ModConfig.Crate.class, () -> ModConfig.HANDLER.instance().autoCrate.mode, (value) -> ModConfig.HANDLER.instance().autoCrate.mode = value))
-                    .then(CommandUtils.doubl("delay", "seconds", "autoCrate.delay", () -> ModConfig.HANDLER.instance().autoCrate.delay, (value) -> ModConfig.HANDLER.instance().autoCrate.delay = value, 0.0))
-                    .then(CommandUtils.doubl("range", "range", "autoCrate.distance", () -> ModConfig.HANDLER.instance().autoCrate.distance, (value) -> ModConfig.HANDLER.instance().autoCrate.distance = value))
-                    .then(CommandUtils.bool("cleaner", "autoCrate.cleaner", () -> ModConfig.HANDLER.instance().autoCrate.cleaner, (value) -> ModConfig.HANDLER.instance().autoCrate.cleaner = value)
-                            .then(CommandUtils.stringList("items", "item", "message.sbutils.autoCrate.listItemsToClean", () -> ModConfig.HANDLER.instance().autoCrate.itemsToClean,
-                                    AutoCrate::onAddCleanerItem,
-                                    AutoCrate::onDelCleanerItem,
-                                    AutoCrate::onInsertCleanerItem)))
+                CommandHelper.toggle(COMMAND, "autoCrate", () -> ModConfig.HANDLER.instance().autoCrate.enabled, (value) -> {ModConfig.HANDLER.instance().autoCrate.enabled = value; if (!value) reset();})
+                    .then(CommandHelper.genericEnum("mode", "mode", "autoCrate.mode", ModConfig.Crate.class, () -> ModConfig.HANDLER.instance().autoCrate.mode, (value) -> ModConfig.HANDLER.instance().autoCrate.mode = value))
+                    .then(CommandHelper.doubl("delay", "seconds", "autoCrate.delay", () -> ModConfig.HANDLER.instance().autoCrate.delay, (value) -> ModConfig.HANDLER.instance().autoCrate.delay = value, 0.0))
+                    .then(CommandHelper.doubl("range", "range", "autoCrate.distance", () -> ModConfig.HANDLER.instance().autoCrate.distance, (value) -> ModConfig.HANDLER.instance().autoCrate.distance = value))
+                    .then(CommandHelper.bool("cleaner", "autoCrate.cleaner", () -> ModConfig.HANDLER.instance().autoCrate.cleaner, (value) -> ModConfig.HANDLER.instance().autoCrate.cleaner = value)
+                            .then(CommandHelper.stringList("items", "item", "autoCrate.itemsToClean", () -> ModConfig.HANDLER.instance().autoCrate.itemsToClean)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -63,39 +60,6 @@ public class AutoCrate {
                         dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(autoCrateNode));
-    }
-
-    private static void onAddCleanerItem(String item) {
-        ModConfig.HANDLER.instance().autoCrate.itemsToClean.add(item);
-        ModConfig.HANDLER.save();
-        Messenger.printMessage("message.sbutils.autoCrate.itemAddSuccess");
-        Messenger.printListSetting("message.sbutils.autoCrate.listItemsToClean", ModConfig.HANDLER.instance().autoCrate.itemsToClean);
-    }
-
-    private static void onDelCleanerItem(int index) {
-        int adjustedIndex = index - 1;
-        if (adjustedIndex >= ModConfig.HANDLER.instance().autoCrate.itemsToClean.size()) {
-            Messenger.printMessage("message.sbutils.autoCrate.indexOutOfBounds");
-            return;
-        }
-
-        ModConfig.HANDLER.instance().autoCrate.itemsToClean.remove(adjustedIndex);
-        ModConfig.HANDLER.save();
-        Messenger.printMessage("message.sbutils.autoCrate.itemDelSuccess");
-        Messenger.printListSetting("message.sbutils.autoCrate.listItemsToClean", ModConfig.HANDLER.instance().autoCrate.itemsToClean);
-    }
-
-    private static void onInsertCleanerItem(int index, String item) {
-        int adjustedIndex = index - 1;
-        if (adjustedIndex >= ModConfig.HANDLER.instance().autoCrate.itemsToClean.size()) {
-            Messenger.printMessage("message.sbutils.autoCrate.indexOutOfBounds");
-            return;
-        }
-
-        ModConfig.HANDLER.instance().autoCrate.itemsToClean.add(adjustedIndex, item);
-        ModConfig.HANDLER.save();
-        Messenger.printMessage("message.sbutils.autoCrate.itemAddSuccess");
-        Messenger.printListSetting("message.sbutils.autoCrate.listItemsToClean", ModConfig.HANDLER.instance().autoCrate.itemsToClean);
     }
 
     public static void tick() {

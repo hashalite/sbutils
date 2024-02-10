@@ -1,4 +1,4 @@
-package net.xolt.sbutils.config;
+package net.xolt.sbutils.config.gui;
 
 import com.google.gson.*;
 import dev.isxander.yacl3.api.Controller;

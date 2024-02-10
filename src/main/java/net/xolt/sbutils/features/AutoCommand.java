@@ -8,10 +8,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
-import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
+import net.xolt.sbutils.config.gui.KeyValueController.KeyValuePair;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.*;
@@ -30,9 +31,9 @@ public class AutoCommand {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoCommandNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoCommand", () -> ModConfig.HANDLER.instance().autoCommand.enabled, (value) -> ModConfig.HANDLER.instance().autoCommand.enabled = value)
-                        .then(CommandUtils.doubl("delay", "seconds", "autoCommand.minDelay", () -> ModConfig.HANDLER.instance().autoCommand.minDelay, (value) -> ModConfig.HANDLER.instance().autoCommand.minDelay = value))
-                        .then(CommandUtils.runnable("commands", AutoCommand::onCommandsCommand)
+                CommandHelper.toggle(COMMAND, "autoCommand", () -> ModConfig.HANDLER.instance().autoCommand.enabled, (value) -> ModConfig.HANDLER.instance().autoCommand.enabled = value)
+                        .then(CommandHelper.doubl("minDelay", "seconds", "autoCommand.minDelay", () -> ModConfig.HANDLER.instance().autoCommand.minDelay, (value) -> ModConfig.HANDLER.instance().autoCommand.minDelay = value))
+                        .then(CommandHelper.runnable("commands", AutoCommand::onCommandsCommand)
                             .then(ClientCommandManager.literal("add")
                                     .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg(1.0))
                                             .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())

@@ -11,7 +11,7 @@ import net.minecraft.item.PickaxeItem;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.argument.TimeArgumentType;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
 
@@ -31,12 +31,12 @@ public class AutoMine {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoMine", () -> ModConfig.HANDLER.instance().autoMine.enabled, (value) -> {ModConfig.HANDLER.instance().autoMine.enabled = value; if (!value) reset();})
-                    .then(CommandUtils.runnable("timer", () -> Messenger.printAutoMineTime(disableAt))
+                CommandHelper.toggle(COMMAND, "autoMine", () -> ModConfig.HANDLER.instance().autoMine.enabled, (value) -> {ModConfig.HANDLER.instance().autoMine.enabled = value; if (!value) reset();})
+                    .then(CommandHelper.runnable("timer", () -> Messenger.printAutoMineTime(disableAt))
                             .then(ClientCommandManager.argument("duration", TimeArgumentType.time())
                                     .executes(context -> onTimerCommand(DoubleArgumentType.getDouble(context, "duration")))))
-                    .then(CommandUtils.bool("switch", "autoMine.autoSwitch", () -> ModConfig.HANDLER.instance().autoMine.autoSwitch, (value) -> ModConfig.HANDLER.instance().autoMine.autoSwitch = value))
-                    .then(CommandUtils.integer("durability", "durability", "autoMine.switchDurability", () -> ModConfig.HANDLER.instance().autoMine.switchDurability, (value) -> ModConfig.HANDLER.instance().autoMine.switchDurability = value))
+                    .then(CommandHelper.bool("switch", "autoMine.autoSwitch", () -> ModConfig.HANDLER.instance().autoMine.autoSwitch, (value) -> ModConfig.HANDLER.instance().autoMine.autoSwitch = value))
+                    .then(CommandHelper.integer("durability", "durability", "autoMine.switchDurability", () -> ModConfig.HANDLER.instance().autoMine.switchDurability, (value) -> ModConfig.HANDLER.instance().autoMine.switchDurability = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

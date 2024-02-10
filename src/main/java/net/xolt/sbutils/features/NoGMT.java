@@ -16,7 +16,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.time.LocalDateTime;
@@ -39,9 +39,9 @@ public class NoGMT {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> noGMTNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "noGmt", () -> ModConfig.HANDLER.instance().noGmt.enabled, (value) -> ModConfig.HANDLER.instance().noGmt.enabled = value)
-                        .then(CommandUtils.string("timeZone", "zone", "noGmt.timeZone", () -> ModConfig.HANDLER.instance().noGmt.timeZone, (value) -> ModConfig.HANDLER.instance().noGmt.timeZone = value))
-                        .then(CommandUtils.bool("showTimeZone", "noGmt.showTimeZone", () -> ModConfig.HANDLER.instance().noGmt.showTimeZone, (value) -> ModConfig.HANDLER.instance().noGmt.showTimeZone = value))
+                CommandHelper.toggle(COMMAND, "noGmt", () -> ModConfig.HANDLER.instance().noGmt.enabled, (value) -> ModConfig.HANDLER.instance().noGmt.enabled = value)
+                        .then(CommandHelper.string("timeZone", "zone", "noGmt.timeZone", () -> ModConfig.HANDLER.instance().noGmt.timeZone, (value) -> ModConfig.HANDLER.instance().noGmt.timeZone = value))
+                        .then(CommandHelper.bool("showTimeZone", "noGmt.showTimeZone", () -> ModConfig.HANDLER.instance().noGmt.showTimeZone, (value) -> ModConfig.HANDLER.instance().noGmt.showTimeZone = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

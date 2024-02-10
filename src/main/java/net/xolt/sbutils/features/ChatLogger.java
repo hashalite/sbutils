@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.*;
 
@@ -47,13 +48,13 @@ public class ChatLogger {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(
-                CommandUtils.runnable(COMMAND, () -> Messenger.printEnabledFilters("message.sbutils.chatLogger.status", getFilters()))
-                    .then(CommandUtils.bool("incomingShop", "chatLogger.shopIncoming", () -> ModConfig.HANDLER.instance().chatLogger.shopIncoming, (value) -> ModConfig.HANDLER.instance().chatLogger.shopIncoming = value))
-                    .then(CommandUtils.bool("outgoingShop", "chatLogger.shopOutgoing", () -> ModConfig.HANDLER.instance().chatLogger.shopOutgoing, (value) -> ModConfig.HANDLER.instance().chatLogger.shopOutgoing = value))
-                    .then(CommandUtils.bool("incomingMsg", "chatLogger.msgIncoming", () -> ModConfig.HANDLER.instance().chatLogger.msgIncoming, (value) -> ModConfig.HANDLER.instance().chatLogger.msgIncoming = value))
-                    .then(CommandUtils.bool("outgoingMsg", "chatLogger.msgOutgoing", () -> ModConfig.HANDLER.instance().chatLogger.msgOutgoing, (value) -> ModConfig.HANDLER.instance().chatLogger.msgOutgoing = value))
-                    .then(CommandUtils.bool("visit", "chatLogger.visits", () -> ModConfig.HANDLER.instance().chatLogger.visits, (value) -> ModConfig.HANDLER.instance().chatLogger.visits = value))
-                    .then(CommandUtils.bool("dp", "chatLogger.dp", () -> ModConfig.HANDLER.instance().chatLogger.dp, (value) -> ModConfig.HANDLER.instance().chatLogger.dp = value))
+                CommandHelper.runnable(COMMAND, () -> Messenger.printEnabledFilters("message.sbutils.chatLogger.status", getFilters()))
+                    .then(CommandHelper.bool("incomingShop", "chatLogger.shopIncoming", () -> ModConfig.HANDLER.instance().chatLogger.shopIncoming, (value) -> ModConfig.HANDLER.instance().chatLogger.shopIncoming = value))
+                    .then(CommandHelper.bool("outgoingShop", "chatLogger.shopOutgoing", () -> ModConfig.HANDLER.instance().chatLogger.shopOutgoing, (value) -> ModConfig.HANDLER.instance().chatLogger.shopOutgoing = value))
+                    .then(CommandHelper.bool("incomingMsg", "chatLogger.msgIncoming", () -> ModConfig.HANDLER.instance().chatLogger.msgIncoming, (value) -> ModConfig.HANDLER.instance().chatLogger.msgIncoming = value))
+                    .then(CommandHelper.bool("outgoingMsg", "chatLogger.msgOutgoing", () -> ModConfig.HANDLER.instance().chatLogger.msgOutgoing, (value) -> ModConfig.HANDLER.instance().chatLogger.msgOutgoing = value))
+                    .then(CommandHelper.bool("visit", "chatLogger.visits", () -> ModConfig.HANDLER.instance().chatLogger.visits, (value) -> ModConfig.HANDLER.instance().chatLogger.visits = value))
+                    .then(CommandHelper.bool("dp", "chatLogger.dp", () -> ModConfig.HANDLER.instance().chatLogger.dp, (value) -> ModConfig.HANDLER.instance().chatLogger.dp = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

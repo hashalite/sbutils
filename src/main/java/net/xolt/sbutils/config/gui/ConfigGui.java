@@ -1,13 +1,14 @@
-package net.xolt.sbutils.config;
+package net.xolt.sbutils.config.gui;
 
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.*;
 import dev.isxander.yacl3.gui.controllers.slider.IntegerSliderController;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.AutoFix;
 import net.xolt.sbutils.features.AutoKit;
-import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
+import net.xolt.sbutils.config.gui.KeyValueController.KeyValuePair;
 
 import java.awt.*;
 import java.util.ArrayList;

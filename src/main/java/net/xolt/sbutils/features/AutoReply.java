@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.util.LinkedList;
@@ -31,9 +31,9 @@ public class AutoReply {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoReply", () -> ModConfig.HANDLER.instance().autoReply.enabled, (value) -> ModConfig.HANDLER.instance().autoReply.enabled = value)
-                    .then(CommandUtils.string("response", "response", "autoReply.response", () -> ModConfig.HANDLER.instance().autoReply.response, (value) -> ModConfig.HANDLER.instance().autoReply.response = value))
-                    .then(CommandUtils.doubl("delay", "seconds", "autoReply.delay", () -> ModConfig.HANDLER.instance().autoReply.delay, (value) -> ModConfig.HANDLER.instance().autoReply.delay = value))
+                CommandHelper.toggle(COMMAND, "autoReply", () -> ModConfig.HANDLER.instance().autoReply.enabled, (value) -> ModConfig.HANDLER.instance().autoReply.enabled = value)
+                    .then(CommandHelper.string("response", "response", "autoReply.response", () -> ModConfig.HANDLER.instance().autoReply.response, (value) -> ModConfig.HANDLER.instance().autoReply.response = value))
+                    .then(CommandHelper.doubl("delay", "seconds", "autoReply.delay", () -> ModConfig.HANDLER.instance().autoReply.delay, (value) -> ModConfig.HANDLER.instance().autoReply.delay = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

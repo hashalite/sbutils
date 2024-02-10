@@ -13,7 +13,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.List;
@@ -30,8 +30,8 @@ public class AntiPlace {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(CommandUtils.bool("heads", "antiPlace.heads", () -> ModConfig.HANDLER.instance().antiPlace.heads, (value) -> ModConfig.HANDLER.instance().antiPlace.heads = value))
-                .then(CommandUtils.bool("grass", "antiPlace.grass", () -> ModConfig.HANDLER.instance().antiPlace.grass, (value) -> ModConfig.HANDLER.instance().antiPlace.grass = value))
+                .then(CommandHelper.bool("heads", "antiPlace.heads", () -> ModConfig.HANDLER.instance().antiPlace.heads, (value) -> ModConfig.HANDLER.instance().antiPlace.heads = value))
+                .then(CommandHelper.bool("grass", "antiPlace.grass", () -> ModConfig.HANDLER.instance().antiPlace.grass, (value) -> ModConfig.HANDLER.instance().antiPlace.grass = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

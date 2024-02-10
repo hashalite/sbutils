@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.util.*;
@@ -30,16 +31,12 @@ public class AutoKit {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoKitNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoKit", () -> ModConfig.HANDLER.instance().autoKit.enabled, (value) -> ModConfig.HANDLER.instance().autoKit.enabled = value)
-                        .then(CommandUtils.doubl("commandDelay", "seconds", "autoKit.commandDelay", () -> ModConfig.HANDLER.instance().autoKit.commandDelay, (value) -> ModConfig.HANDLER.instance().autoKit.commandDelay = value, 0))
-                        .then(CommandUtils.doubl("claimDelay", "seconds", "autoKit.claimDelay", () -> ModConfig.HANDLER.instance().autoKit.claimDelay, (value) -> ModConfig.HANDLER.instance().autoKit.claimDelay = value, 0))
-                        .then(CommandUtils.doubl("systemDelay", "seconds", "autoKit.systemDelay", () -> ModConfig.HANDLER.instance().autoKit.systemDelay, (value) -> ModConfig.HANDLER.instance().autoKit.systemDelay = value, 0))
-                        .then(CommandUtils.enumList("kits", "kit", "message.sbutils.autoKit.kits", ModConfig.Kit.class,
-                                () -> ModConfig.HANDLER.instance().autoKit.kits,
-                                AutoKit::onAddCommand,
-                                AutoKit::onDelCommand,
-                                AutoKit::onInsertCommand))
-                        .then(CommandUtils.runnable("info", () -> Messenger.printAutoKitInfo(kitQueue, invFullList)))
+                CommandHelper.toggle(COMMAND, "autoKit", () -> ModConfig.HANDLER.instance().autoKit.enabled, (value) -> ModConfig.HANDLER.instance().autoKit.enabled = value)
+                        .then(CommandHelper.doubl("commandDelay", "seconds", "autoKit.commandDelay", () -> ModConfig.HANDLER.instance().autoKit.commandDelay, (value) -> ModConfig.HANDLER.instance().autoKit.commandDelay = value, 0))
+                        .then(CommandHelper.doubl("claimDelay", "seconds", "autoKit.claimDelay", () -> ModConfig.HANDLER.instance().autoKit.claimDelay, (value) -> ModConfig.HANDLER.instance().autoKit.claimDelay = value, 0))
+                        .then(CommandHelper.doubl("systemDelay", "seconds", "autoKit.systemDelay", () -> ModConfig.HANDLER.instance().autoKit.systemDelay, (value) -> ModConfig.HANDLER.instance().autoKit.systemDelay = value, 0))
+                        .then(CommandHelper.enumList("kits", "kit", "autoKit.kits", ModConfig.Kit.class, () -> ModConfig.HANDLER.instance().autoKit.kits))
+                        .then(CommandHelper.runnable("info", () -> Messenger.printAutoKitInfo(kitQueue, invFullList)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

@@ -3,6 +3,7 @@ package net.xolt.sbutils.features;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -14,7 +15,7 @@ import net.minecraft.util.Formatting;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
@@ -36,12 +37,14 @@ public class AutoAdvert {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoAdvert", () -> ModConfig.HANDLER.instance().autoAdvert.enabled, (value) -> ModConfig.HANDLER.instance().autoAdvert.enabled = value)
-                    .then(CommandUtils.runnable("info", () -> Messenger.printAutoAdvertInfo(ModConfig.HANDLER.instance().autoAdvert.enabled, ServerDetector.isOnSkyblock(), getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.HANDLER.instance().autoAdvert.useWhitelist)))
-                    .then(CommandUtils.string("sbFile", "filename", "autoAdvert.sbFile", () -> ModConfig.HANDLER.instance().autoAdvert.sbFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.sbFile = value))
-                    .then(CommandUtils.string("ecoFile", "filename", "autoAdvert.ecoFile", () -> ModConfig.HANDLER.instance().autoAdvert.ecoFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.ecoFile = value))
-                    .then(CommandUtils.string("classicFile", "filename", "autoAdvert.classicFile", () -> ModConfig.HANDLER.instance().autoAdvert.classicFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.classicFile = value))
-                    .then(CommandUtils.stringList("ads", "advert", "message.sbutils.autoAdvert.advertList",
+                CommandHelper.toggle(COMMAND, "autoAdvert", () -> ModConfig.HANDLER.instance().autoAdvert.enabled, (value) -> ModConfig.HANDLER.instance().autoAdvert.enabled = value)
+                    .then(CommandHelper.runnable("info", () -> Messenger.printAutoAdvertInfo(ModConfig.HANDLER.instance().autoAdvert.enabled, ServerDetector.isOnSkyblock(), getUpdatedAdIndex(getAdList()), delayLeft(), userWhitelisted(), ModConfig.HANDLER.instance().autoAdvert.useWhitelist)))
+                    .then(CommandHelper.string("sbFile", "filename", "autoAdvert.sbFile", () -> ModConfig.HANDLER.instance().autoAdvert.sbFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.sbFile = value))
+                    .then(CommandHelper.string("ecoFile", "filename", "autoAdvert.ecoFile", () -> ModConfig.HANDLER.instance().autoAdvert.ecoFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.ecoFile = value))
+                    .then(CommandHelper.string("classicFile", "filename", "autoAdvert.classicFile", () -> ModConfig.HANDLER.instance().autoAdvert.classicFile, (value) -> ModConfig.HANDLER.instance().autoAdvert.classicFile = value))
+                    .then(CommandHelper.customIndexedList("ads", "advert", "autoAdvert.adList",
+                            StringArgumentType.greedyString(),
+                            StringArgumentType::getString,
                             () -> formatAds(getAdList()),
                             AutoAdvert::onAddCommand,
                             AutoAdvert::onDelCommand,
@@ -51,14 +54,10 @@ public class AutoAdvert {
                                             .executes(context ->
                                                     onToggleCommand(IntegerArgumentType.getInteger(context, "index"))
                                             ))))
-                    .then(CommandUtils.doubl("delay", "seconds", "autoAdvert.delay", () -> ModConfig.HANDLER.instance().autoAdvert.delay, (value) -> ModConfig.HANDLER.instance().autoAdvert.delay = value))
-                    .then(CommandUtils.doubl("initialDelay", "seconds", "autoAdvert.initialDelay", () -> ModConfig.HANDLER.instance().autoAdvert.initialDelay, (value) -> ModConfig.HANDLER.instance().autoAdvert.initialDelay = value))
-                    .then(CommandUtils.stringList("whitelist", "user", "message.sbutils.autoAdvert.whitelist",
-                            () -> ModConfig.HANDLER.instance().autoAdvert.whitelist,
-                            AutoAdvert::onAddUserCommand,
-                            AutoAdvert::onDelUserCommand,
-                            AutoAdvert::onInsertUserCommand))
-                    .then(CommandUtils.runnable("reset", () -> {
+                    .then(CommandHelper.doubl("delay", "seconds", "autoAdvert.delay", () -> ModConfig.HANDLER.instance().autoAdvert.delay, (value) -> ModConfig.HANDLER.instance().autoAdvert.delay = value))
+                    .then(CommandHelper.doubl("initialDelay", "seconds", "autoAdvert.initialDelay", () -> ModConfig.HANDLER.instance().autoAdvert.initialDelay, (value) -> ModConfig.HANDLER.instance().autoAdvert.initialDelay = value))
+                    .then(CommandHelper.stringList("whitelist", "user", "autoAdvert.whitelist", () -> ModConfig.HANDLER.instance().autoAdvert.whitelist))
+                    .then(CommandHelper.runnable("reset", () -> {
                         reset();
                         Messenger.printMessage("message.sbutils.autoAdvert.reset");
                     }))
@@ -152,54 +151,6 @@ public class AutoAdvert {
 
         Messenger.printListSetting("message.sbutils.autoAdvert.toggleSuccess", formatAds(adverts));
         return Command.SINGLE_SUCCESS;
-    }
-
-    private static void onAddUserCommand(String user) {
-        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().autoAdvert.whitelist);
-
-        if (whitelist.contains(user)) {
-            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddFail", user);
-            return;
-        }
-
-        whitelist.add(user);
-        ModConfig.HANDLER.instance().autoAdvert.whitelist = whitelist;
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddSuccess", user);
-    }
-
-    private static void onDelUserCommand(int index) {
-        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().autoAdvert.whitelist);
-
-        int adjustedIndex = index - 1;
-        if (adjustedIndex >= whitelist.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistInvalidIndex", index);
-            return;
-        }
-
-        String user = whitelist.remove(adjustedIndex);
-        ModConfig.HANDLER.instance().autoAdvert.whitelist = whitelist;
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistDelSuccess", user);
-    }
-
-    private static void onInsertUserCommand(int index, String user) {
-        List<String> whitelist = new ArrayList<>(ModConfig.HANDLER.instance().autoAdvert.whitelist);
-
-        int adjustedIndex = index - 1;
-        if (adjustedIndex > whitelist.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistInvalidIndex", index);
-        }
-
-        if (whitelist.contains(user)) {
-            Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddFail", user);
-            return;
-        }
-
-        whitelist.add(adjustedIndex, user);
-        ModConfig.HANDLER.instance().autoAdvert.whitelist = whitelist;
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoAdvert.whitelistAddSuccess", user);
     }
 
     public static void tick() {

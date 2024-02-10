@@ -21,7 +21,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.List;
@@ -38,8 +38,8 @@ public class ToolSaver {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "toolSaver", () -> ModConfig.HANDLER.instance().toolSaver.enabled, (value) -> ModConfig.HANDLER.instance().toolSaver.enabled = value)
-                    .then(CommandUtils.integer("durability", "durability", "toolSaver.durability", () -> ModConfig.HANDLER.instance().toolSaver.durability, (value) -> ModConfig.HANDLER.instance().toolSaver.durability = value))
+                CommandHelper.toggle(COMMAND, "toolSaver", () -> ModConfig.HANDLER.instance().toolSaver.enabled, (value) -> ModConfig.HANDLER.instance().toolSaver.enabled = value)
+                    .then(CommandHelper.integer("durability", "durability", "toolSaver.durability", () -> ModConfig.HANDLER.instance().toolSaver.durability, (value) -> ModConfig.HANDLER.instance().toolSaver.durability = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

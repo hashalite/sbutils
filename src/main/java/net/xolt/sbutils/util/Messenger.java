@@ -6,13 +6,14 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.xolt.sbutils.config.KeyValueController;
+import net.xolt.sbutils.config.gui.KeyValueController;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.AutoKit;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.IntFunction;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -61,25 +62,16 @@ public class Messenger {
         MC.player.sendMessage(prefix.append(message));
     }
 
-    public static void sendPlaceholderTitle(String message, Formatting placeholderFormat, Object ... args) {
-        MutableText messageText = Text.translatable(message).withColor(getMessageColor());
-        List<MutableText> placeholders = new ArrayList<>();
-        for (Object placeholder : args) {
-            placeholders.add(Text.translatable(String.valueOf(placeholder)).formatted(placeholderFormat));
-        }
-        sendTitle(insertPlaceholders(messageText, placeholders.toArray(MutableText[]::new)));
-    }
-
     public static void sendTitle(String message) {
         sendTitle(message, getMessageColor());
     }
-
-    public static void sendTitle(String message, Formatting formatting) {
-        sendTitle(Text.translatable(message).formatted(formatting));
-    }
     
     public static void sendTitle(String message, int color) {
-        sendTitle(Text.translatable(message).withColor(color));
+        sendTitle(Text.translatable(message).withColor(color), 5, 30, 5);
+    }
+
+    public static void sendTitle(String message, int color, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+        sendTitle(Text.translatable(message).withColor(color), fadeInTicks, stayTicks, fadeOutTicks);
     }
 
     public static void sendTitle(Text message) {
@@ -91,21 +83,14 @@ public class Messenger {
         MC.inGameHud.setTitle(message);
     }
 
-    private static int getMessageColor() {
-        return ModConfig.HANDLER.instance().messageColor.getRGB();
-    }
-
-    private static int getValueColor() {
-        return ModConfig.HANDLER.instance().valueColor.getRGB();
+    public static void sendPlaceholderTitle(String message, Object ... args) {
+        MutableText messageText = Text.translatable(message).withColor(getMessageColor());
+        sendTitle(insertPlaceholders(messageText, format(args)));
     }
 
     public static void printWithPlaceholders(String message, Object ... args) {
         MutableText messageText = Text.translatable(message).withColor(getMessageColor());
-        List<MutableText> placeholders = new ArrayList<>();
-        for (Object placeholder : args) {
-            placeholders.add(format(placeholder));
-        }
-        printMessage(insertPlaceholders(messageText, placeholders.toArray(MutableText[]::new)));
+        printMessage(insertPlaceholders(messageText, format(args)));
     }
 
     private static MutableText insertPlaceholders(MutableText message, MutableText ... args) {
@@ -130,30 +115,6 @@ public class Messenger {
         return formatted;
     }
 
-    private static <T> MutableText format(T input) {
-        MutableText result;
-        if (input instanceof MutableText) {
-            result = (MutableText) input;
-        } else if (input instanceof Boolean) {
-            result = boolToText((Boolean) input);
-        } else if (input instanceof NameableEnum) {
-            result = ((NameableEnum)input).getDisplayName().copy().withColor(getValueColor());
-        } else if (input instanceof Number) {
-            result = Text.literal(String.valueOf(input)).withColor(getValueColor());
-        } else if (input instanceof String) {
-            result = Text.literal(!((String) input).isEmpty() ? (String) input : "nothing").withColor(!((String) input).isEmpty() ? getValueColor() : getMessageColor());
-        } else if (input instanceof Color) {
-            result = Text.literal("#" + String.format("%06x", ((Color) input).getRGB() & 0x00FFFFFF)).withColor(((Color) input).getRGB());
-        } else {
-            result = Text.literal(String.valueOf(input)).withColor(getValueColor());
-        }
-        return result;
-    }
-
-    private static MutableText boolToText(boolean bool) {
-        return Text.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled").formatted(getBooleanColor(bool));
-    }
-
     public static void printChangedSetting(String setting, Object value) {
         printSetting(setting, value, true);
     }
@@ -171,6 +132,52 @@ public class Messenger {
         }
         MutableText message = Text.translatable(changed ? "message.sbutils.changeOtherSetting" : "message.sbutils.printOtherSetting").withColor(getMessageColor());
         printMessage(insertPlaceholders(message, settingText, format(value)));
+    }
+
+    public static <T> void printListSetting(String setting, List<T> list) {
+        printListSetting(setting, list, false);
+    }
+
+    public static <T> void printListSetting(String setting, List<T> list, boolean numbered) {
+        printWithPlaceholders("message.sbutils.printListSetting", Text.translatable(setting).withColor(getValueColor()));
+        printList(list, numbered);
+    }
+
+    private static <T> void printList(List<T> items, boolean numbered) {
+        for (int i = 0; i < items.size(); i++)
+            printMessage(Text.literal(" " + (numbered ? (i + 1) + ". " : "- ")).withColor(getValueColor()).append(format(items.get(i))), false);
+    }
+
+    public static void printInvalidListIndex(String setting, int index) {
+        printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable(setting).withColor(getValueColor()));
+    }
+
+    public static void printListSizeError(String setting, int maxSize) {
+        printWithPlaceholders("message.sbutils.listSizeError", maxSize, Text.translatable(setting).withColor(getValueColor()));
+    }
+
+    public static <T> void printListDupeError(String setting, T dupe) {
+        printWithPlaceholders("message.sbutils.listDupeError", dupe, Text.translatable(setting).withColor(getValueColor()));
+    }
+
+    public static <T> void printListAddSuccess(String setting, T added) {
+        printWithPlaceholders("message.sbutils.listAddSuccess", added, Text.translatable(setting).withColor(getValueColor()));
+    }
+
+    public static <T> void printListDelSuccess(String setting, T removed) {
+        printWithPlaceholders("message.sbutils.listDelSuccess", removed, Text.translatable(setting).withColor(getValueColor()));
+    }
+
+    public static <T> void printListDelFail(String setting, T removed) {
+        printWithPlaceholders("message.sbutils.listDelFail", removed, Text.translatable(setting).withColor(getValueColor()));
+    }
+
+    public static void sendLlamaTitle() {
+        sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Text.translatable("message.sbutils.eventNotifier.vpLlama").withColor(getValueColor()));
+    }
+
+    public static void sendTraderTitle() {
+        sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Text.translatable("message.sbutils.eventNotifier.wanderingTrader").withColor(getValueColor()));
     }
 
     public static void printAutoAdvertInfo(boolean enabled, boolean onSkyblock, int adIndex, int remainingDelay, boolean userWhitelisted, boolean whitelistEnabled) {
@@ -229,35 +236,15 @@ public class Messenger {
         printMessage(dcsAndRemainderText, false);
     }
 
-    public static <T> void printListSetting(String message, List<T> list) {
-        printMessage(message);
-        printNumberedList(list);
-    }
-
-    private static <T> void  printNumberedList(List<T> items) {
-        if (MC.player == null) {
-            return;
-        }
-
-        for (int i = 0; i < items.size(); i++) {
-            printMessage(Text.literal((i + 1) + ". ").withColor(getValueColor()).append(format(items.get(i))), false);
-        }
-    }
-
     public static void printEnabledFilters(String message, List<ChatFilter> filters) {
-        if (MC.player == null) {
-            return;
-        }
-
         printMessage(message);
-
-        for (ChatFilter filter : filters) {
+        List<MutableText> formatted = filters.stream().map((filter) -> {
             boolean enabled = filter.isEnabled();
-            MutableText prefix = Text.literal("- ").withColor(getValueColor());
             MutableText name = Text.translatable(filter.getKey()).append(": ").withColor(getMessageColor());
             MutableText enabledText = Text.literal(enabled ? "enabled" : "disabled").formatted(getBooleanColor(enabled));
-            printMessage(prefix.append(name).append(enabledText), false);
-        }
+            return name.append(enabledText);
+        }).toList();
+        printList(formatted, false);
     }
 
     public static void printEnchantCooldown(double cooldownTime) {
@@ -358,10 +345,6 @@ public class Messenger {
         Messenger.printWithPlaceholders("message.sbutils.centered.extraSpace", extraSpace[3], extraSpace[2], extraSpace[0], extraSpace[1]);
     }
 
-    private static Formatting getBooleanColor(boolean bool) {
-        return bool ? Formatting.GREEN : Formatting.RED;
-    }
-
     public static void printInvCleanFailed(String featureName) {
         printWithPlaceholders("message.sbutils.invCleaner.cleanFailed", Text.translatable(featureName).withColor(getValueColor()));
     }
@@ -381,6 +364,39 @@ public class Messenger {
         printWithPlaceholders("message.sbutils.autoMine.disabledIn", Text.translatable("text.sbutils.config.category.autoMine").withColor(getValueColor()), formatTime(timeLeft));
     }
 
+    private static <T> MutableText format(T input) {
+        MutableText result;
+        if (input instanceof MutableText) {
+            result = (MutableText) input;
+        } else if (input instanceof Boolean) {
+            result = boolToText((Boolean) input);
+        } else if (input instanceof NameableEnum) {
+            result = ((NameableEnum)input).getDisplayName().copy().withColor(getValueColor());
+        } else if (input instanceof Number) {
+            result = Text.literal(String.valueOf(input)).withColor(getValueColor());
+        } else if (input instanceof String) {
+            result = Text.literal(!((String) input).isEmpty() ? (String) input : "nothing").withColor(!((String) input).isEmpty() ? getValueColor() : getMessageColor());
+            if (((String) input).isEmpty())
+                result = result.formatted(Formatting.ITALIC);
+        } else if (input instanceof Color) {
+            result = Text.literal("#" + String.format("%06x", ((Color) input).getRGB() & 0x00FFFFFF)).withColor(((Color) input).getRGB());
+        } else {
+            result = Text.literal(String.valueOf(input)).withColor(getValueColor());
+        }
+        return result;
+    }
+
+    private static <T> MutableText[] format(T[] input) {
+        MutableText[] result = new MutableText[input.length];
+        for (int i = 0; i < input.length; i++)
+            result[i] = format(input[i]);
+        return result;
+    }
+
+    private static MutableText boolToText(boolean bool) {
+        return Text.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled").formatted(getBooleanColor(bool));
+    }
+
     private static String formatTime(double seconds) {
         int days = (int)(seconds / 86400.0);
         int hours = (int)((seconds % 86400.0)  / 3600.0);
@@ -391,5 +407,17 @@ public class Messenger {
 
     private static String formatTime(long millis) {
         return formatTime((double)millis/1000.0);
+    }
+
+    private static int getMessageColor() {
+        return ModConfig.HANDLER.instance().messageColor.getRGB();
+    }
+
+    private static int getValueColor() {
+        return ModConfig.HANDLER.instance().valueColor.getRGB();
+    }
+
+    private static Formatting getBooleanColor(boolean bool) {
+        return bool ? Formatting.GREEN : Formatting.RED;
     }
 }

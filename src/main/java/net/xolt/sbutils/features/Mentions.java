@@ -8,7 +8,7 @@ import net.minecraft.text.*;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.argument.ColorArgumentType;
-import net.xolt.sbutils.util.CommandUtils;
+import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -28,20 +28,16 @@ public class Mentions {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> mentionsNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "mentions", () -> ModConfig.HANDLER.instance().mentions.enabled, (value) -> ModConfig.HANDLER.instance().mentions.enabled = value)
-                    .then(CommandUtils.bool("playSound", "mentions.playSound", () -> ModConfig.HANDLER.instance().mentions.playSound, (value) -> ModConfig.HANDLER.instance().mentions.playSound = value))
-                    .then(CommandUtils.bool("excludeServer", "mentions.excludeServerMsgs", () -> ModConfig.HANDLER.instance().mentions.excludeServerMsgs, (value) -> ModConfig.HANDLER.instance().mentions.excludeServerMsgs = value))
-                    .then(CommandUtils.bool("excludeSelf", "mentions.excludeSelfMsgs", () -> ModConfig.HANDLER.instance().mentions.excludeSelfMsgs, (value) -> ModConfig.HANDLER.instance().mentions.excludeSelfMsgs = value))
-                    .then(CommandUtils.bool("excludeSender", "mentions.excludeSender", () -> ModConfig.HANDLER.instance().mentions.excludeSender, (value) -> ModConfig.HANDLER.instance().mentions.excludeSender = value))
-                    .then(CommandUtils.bool("currentAccount", "mentions.currentAccount", () -> ModConfig.HANDLER.instance().mentions.currentAccount, (value) -> ModConfig.HANDLER.instance().mentions.currentAccount = value))
-                    .then(CommandUtils.stringList("aliases", "alias", "message.sbutils.mentions.aliases",
-                            () -> ModConfig.HANDLER.instance().mentions.aliases,
-                            Mentions::onAddAliasCommand,
-                            Mentions::onDelAliasCommand,
-                            Mentions::onInsertAliasCommand))
-                    .then(CommandUtils.genericEnum("sound", "sound", "mentions.sound", ModConfig.NotifSound.class, () -> ModConfig.HANDLER.instance().mentions.sound, (value) -> ModConfig.HANDLER.instance().mentions.sound = value))
-                    .then(CommandUtils.bool("highlight", "mentions.highlight", () -> ModConfig.HANDLER.instance().mentions.highlight, (value) -> ModConfig.HANDLER.instance().mentions.highlight = value)
-                            .then(CommandUtils.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ColorArgumentType.color(), ColorArgumentType::getColor))
+                CommandHelper.toggle(COMMAND, "mentions", () -> ModConfig.HANDLER.instance().mentions.enabled, (value) -> ModConfig.HANDLER.instance().mentions.enabled = value)
+                    .then(CommandHelper.bool("playSound", "mentions.playSound", () -> ModConfig.HANDLER.instance().mentions.playSound, (value) -> ModConfig.HANDLER.instance().mentions.playSound = value))
+                    .then(CommandHelper.bool("excludeServer", "mentions.excludeServerMsgs", () -> ModConfig.HANDLER.instance().mentions.excludeServerMsgs, (value) -> ModConfig.HANDLER.instance().mentions.excludeServerMsgs = value))
+                    .then(CommandHelper.bool("excludeSelf", "mentions.excludeSelfMsgs", () -> ModConfig.HANDLER.instance().mentions.excludeSelfMsgs, (value) -> ModConfig.HANDLER.instance().mentions.excludeSelfMsgs = value))
+                    .then(CommandHelper.bool("excludeSender", "mentions.excludeSender", () -> ModConfig.HANDLER.instance().mentions.excludeSender, (value) -> ModConfig.HANDLER.instance().mentions.excludeSender = value))
+                    .then(CommandHelper.bool("currentAccount", "mentions.currentAccount", () -> ModConfig.HANDLER.instance().mentions.currentAccount, (value) -> ModConfig.HANDLER.instance().mentions.currentAccount = value))
+                    .then(CommandHelper.stringList("aliases", "alias", "message.sbutils.mentions.aliases", () -> ModConfig.HANDLER.instance().mentions.aliases))
+                    .then(CommandHelper.genericEnum("sound", "sound", "mentions.sound", ModConfig.NotifSound.class, () -> ModConfig.HANDLER.instance().mentions.sound, (value) -> ModConfig.HANDLER.instance().mentions.sound = value))
+                    .then(CommandHelper.bool("highlight", "mentions.highlight", () -> ModConfig.HANDLER.instance().mentions.highlight, (value) -> ModConfig.HANDLER.instance().mentions.highlight = value)
+                            .then(CommandHelper.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ColorArgumentType.color(), ColorArgumentType::getColor))
                             )
         );
 
