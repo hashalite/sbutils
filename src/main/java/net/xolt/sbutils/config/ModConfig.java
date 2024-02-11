@@ -16,8 +16,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
-import net.xolt.sbutils.config.gui.KeyValueController;
-import net.xolt.sbutils.config.gui.KeyValueController.KeyValuePair;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -29,7 +27,6 @@ public class ModConfig {
             .id(new Identifier("sbutils", "config"))
             .serializer(config -> GsonConfigSerializerBuilder.create(config)
                     .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
-                    .appendGsonBuilder(builder -> builder.registerTypeHierarchyAdapter(KeyValueController.KeyValuePair.class, new KeyValueController.KeyValuePair.KeyValueTypeAdapter()))
                     .appendGsonBuilder(builder -> builder.setFieldNamingPolicy(FieldNamingPolicy.IDENTITY))
                     .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
                     .build()).build();
@@ -64,7 +61,25 @@ public class ModConfig {
     public static class AutoCommandConfig {
         @SerialEntry public boolean enabled = false;
         @SerialEntry public double minDelay = 1.5;
-        @SerialEntry public List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> commands = List.of(new KeyValuePair<>("", new KeyValuePair<>(5.0, false)));
+        @SerialEntry public List<AutoCommandEntry> commands = List.of(new AutoCommandEntry("", 5.0, false));
+
+        public static class AutoCommandEntry {
+            @SerialEntry public String command;
+            @SerialEntry public double delay;
+            @SerialEntry public boolean enabled;
+
+            public AutoCommandEntry(String command, double delay, boolean enabled) {
+                this.command = command;
+                this.delay = delay;
+                this.enabled = enabled;
+            }
+
+            @Override public boolean equals(Object obj) {
+                if (!(obj instanceof AutoCommandEntry other))
+                    return false;
+                return this.command.equals(other.command) && this.delay == other.delay && this.enabled == other.enabled;
+            }
+        }
     }
 
     @SerialEntry public AutoCrateConfig autoCrate = new AutoCrateConfig();

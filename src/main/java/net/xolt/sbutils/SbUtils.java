@@ -10,8 +10,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.command.CommandRegistryAccess;
-import net.xolt.sbutils.config.gui.ConfigGui;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.gui.ConfigGui;
 import net.xolt.sbutils.features.*;
 import net.xolt.sbutils.util.IOHandler;
 import org.lwjgl.glfw.GLFW;
@@ -92,7 +92,7 @@ public class SbUtils implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (configKey.wasPressed()) {
-                MC.setScreen(ConfigGui.getModConfigScreen(MC.currentScreen));
+                MC.setScreen(ConfigGui.getConfigScreen(MC.currentScreen));
             }
 
             if (MC.getNetworkHandler() == null) {

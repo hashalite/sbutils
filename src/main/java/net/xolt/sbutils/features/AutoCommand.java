@@ -8,9 +8,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
-import net.xolt.sbutils.config.gui.KeyValueController.KeyValuePair;
+import net.xolt.sbutils.config.ModConfig.AutoCommandConfig.AutoCommandEntry;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.Messenger;
@@ -23,8 +22,8 @@ public class AutoCommand {
 
     private static final String COMMAND = "autocmd";
     private static final String ALIAS = "acmd";
-    private static final HashMap<KeyValuePair<String, KeyValuePair<Double, Boolean>>, Long> cmdsLastSentAt = new HashMap<>();
-    private static final Queue<KeyValuePair<String, KeyValuePair<Double, Boolean>>> cmdQueue = new LinkedList<>();
+    private static final HashMap<AutoCommandEntry, Long> cmdsLastSentAt = new HashMap<>();
+    private static final Queue<AutoCommandEntry> cmdQueue = new LinkedList<>();
 
     private static long lastCommandSentAt;
 
@@ -66,64 +65,66 @@ public class AutoCommand {
     }
 
     private static int onAddCommand(double delay, String command) {
-        ModConfig.HANDLER.instance().autoCommand.commands.add(new KeyValuePair<>(command, new KeyValuePair<>(delay, false)));
+        ModConfig.HANDLER.instance().autoCommand.commands.add(new AutoCommandEntry(command, delay, false));
         ModConfig.HANDLER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandAddSuccess", command, delay);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int onDelCommand(int index) {
-        List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
+        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
             Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
             return Command.SINGLE_SUCCESS;
         }
-        KeyValuePair<String, KeyValuePair<Double, Boolean>> command = autoCommands.remove(adjustedIndex);
+        AutoCommandEntry command = autoCommands.remove(adjustedIndex);
         ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandDelSuccess", command.getKey());
+        Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandDelSuccess", command.command);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int onToggleCommand(int index) {
-        List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
+        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
             Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
             return Command.SINGLE_SUCCESS;
         }
-        KeyValuePair<String, KeyValuePair<Double, Boolean>> command = autoCommands.get(adjustedIndex);
-        command.getValue().setValue(!command.getValue().getValue());
+        AutoCommandEntry command = autoCommands.get(adjustedIndex);
+        command.enabled = !command.enabled;
         ModConfig.HANDLER.save();
-        Messenger.printAutoCommandToggled(command, autoCommands.get(adjustedIndex).getValue().getValue());
+        Messenger.printAutoCommandToggled(command, command.enabled);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int onSetDelayCommand(int index, double newDelay) {
-        List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
+        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
             Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
             return Command.SINGLE_SUCCESS;
         }
-        KeyValuePair<String, KeyValuePair<Double, Boolean>> command = autoCommands.get(adjustedIndex);
-        command.getValue().setKey(newDelay);
+        AutoCommandEntry command = autoCommands.get(adjustedIndex);
+        double oldDelay = command.delay;
+        command.delay = newDelay;
         ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoCommand.delaySetSuccess", command.getKey(), command.getValue().getKey(), newDelay);
+        Messenger.printWithPlaceholders("message.sbutils.autoCommand.delaySetSuccess", command.command, oldDelay, newDelay);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int onSetCommandCommand(int index, String newCommand) {
-        List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
+        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
             Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
             return Command.SINGLE_SUCCESS;
         }
-        KeyValuePair<String, KeyValuePair<Double, Boolean>> command = autoCommands.get(adjustedIndex);
-        command.setKey(newCommand);
+        AutoCommandEntry command = autoCommands.get(adjustedIndex);
+        String oldCommand = command.command;
+        command.command = newCommand;
         ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandSetSuccess", command.getKey(), newCommand);
+        Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandSetSuccess", oldCommand, newCommand);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -144,27 +145,27 @@ public class AutoCommand {
             return;
         }
 
-        for (KeyValuePair<String, KeyValuePair<Double, Boolean>> pair : ModConfig.HANDLER.instance().autoCommand.commands) {
-            if (pair.getValue().getValue() && !cmdQueue.contains(pair)) {
-                cmdQueue.offer(pair);
-            } else if (!pair.getValue().getValue()) {
-                cmdQueue.remove(pair);
+        for (AutoCommandEntry command : ModConfig.HANDLER.instance().autoCommand.commands) {
+            if (command.enabled && !cmdQueue.contains(command)) {
+                cmdQueue.offer(command);
+            } else if (!command.enabled) {
+                cmdQueue.remove(command);
             }
         }
 
         if (!cmdQueue.isEmpty()) {
-            KeyValuePair<String, KeyValuePair<Double, Boolean>> pair = cmdQueue.poll();
-            if (cmdsLastSentAt.containsKey(pair)) {
-                if (System.currentTimeMillis() - cmdsLastSentAt.get(pair) >= pair.getValue().getKey() * 1000) {
-                    sendCommand(pair.getKey());
+            AutoCommandEntry command = cmdQueue.poll();
+            if (cmdsLastSentAt.containsKey(command)) {
+                if (System.currentTimeMillis() - cmdsLastSentAt.get(command) >= command.delay * 1000) {
+                    sendCommand(command.command);
                     long currentTime = System.currentTimeMillis();
-                    cmdsLastSentAt.put(pair, currentTime);
+                    cmdsLastSentAt.put(command, currentTime);
                     lastCommandSentAt = currentTime;
                 }
             } else {
-                sendCommand(pair.getKey());
+                sendCommand(command.command);
                 long currentTime = System.currentTimeMillis();
-                cmdsLastSentAt.put(pair, currentTime);
+                cmdsLastSentAt.put(command, currentTime);
                 lastCommandSentAt = currentTime;
             }
         }

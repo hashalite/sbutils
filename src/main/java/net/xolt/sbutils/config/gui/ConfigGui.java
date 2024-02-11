@@ -6,9 +6,9 @@ import dev.isxander.yacl3.gui.controllers.slider.IntegerSliderController;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.gui.controllers.AutoCommandEntryController;
 import net.xolt.sbutils.features.AutoFix;
 import net.xolt.sbutils.features.AutoKit;
-import net.xolt.sbutils.config.gui.KeyValueController.KeyValuePair;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.LinkedHashSet;
 
 public class ConfigGui {
 
-    public static Screen getModConfigScreen(Screen parent) {
+    public static Screen getConfigScreen(Screen parent) {
         return YetAnotherConfigLib.create(ModConfig.HANDLER, (defaults, config, builder) -> builder
                         .title(Text.translatable("text.sbutils.config.title"))
                         .category(buildSbutilsCategory(defaults, config))
@@ -249,7 +249,7 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .build())
-                .group(ListOption.<KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>>>createBuilder()
+                .group(ListOption.<ModConfig.AutoCommandConfig.AutoCommandEntry>createBuilder()
                         .name(Text.translatable("text.sbutils.config.option.autoCommand.commands"))
                         .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCommand.commands.tooltip")))
                         .insertEntriesAtEnd(true)
@@ -258,12 +258,8 @@ public class ConfigGui {
                                 () -> config.autoCommand.commands,
                                 (value) -> config.autoCommand.commands = value
                         )
-                        .controller((option) -> KeyValueController.Builder.create(option)
-                                .keyController("text.sbutils.config.option.autoCommand.commands.command", StringControllerBuilder::create)
-                                .valueController(null,  (subOption) -> KeyValueController.Builder.create(subOption)
-                                        .keyController("text.sbutils.config.option.autoCommand.commands.delay", (delay) -> DoubleFieldControllerBuilder.create(delay).min(1.0))
-                                        .valueController("text.sbutils.config.option.autoCommand.commands.enabled", TickBoxControllerBuilder::create)))
-                        .initial(new KeyValuePair<>("", new KeyValuePair<>(5.0, false)))
+                        .customController(AutoCommandEntryController::new)
+                        .initial(new ModConfig.AutoCommandConfig.AutoCommandEntry("", 5.0, false))
                         .build())
                 .build();
     }

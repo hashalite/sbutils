@@ -6,7 +6,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.xolt.sbutils.config.gui.KeyValueController;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.AutoKit;
 
@@ -281,24 +280,22 @@ public class Messenger {
         }
     }
 
-    public static void printAutoCommands(List<KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>>> commands, HashMap<KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>>, Long> cmdsLastSentAt, boolean enabled) {
+    public static void printAutoCommands(List<ModConfig.AutoCommandConfig.AutoCommandEntry> commands, HashMap<ModConfig.AutoCommandConfig.AutoCommandEntry, Long> cmdsLastSentAt, boolean enabled) {
         printMessage("message.sbutils.autoCommand.commands");
         MutableText commandEntryFormat = Text.translatable("message.sbutils.autoCommand.commandEntry").withColor(getMessageColor());
         int valueColor = getValueColor();
         long currentTime = System.currentTimeMillis();
         for (int i = 0; i < commands.size(); i++) {
-            KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>> command = commands.get(i);
-            MutableText commandText = format(command.getKey());
-            double delay = command.getValue().getKey();
-            MutableText delayText = Text.literal(formatTime(delay)).withColor(valueColor);
-            boolean cmdEnabled = command.getValue().getValue();
-            MutableText enabledText = format(cmdEnabled);
+            ModConfig.AutoCommandConfig.AutoCommandEntry command = commands.get(i);
+            MutableText commandText = format(command.command);
+            MutableText delayText = Text.literal(formatTime(command.delay)).withColor(valueColor);
+            MutableText enabledText = format(command.enabled);
             Long cmdLastSentAt = cmdsLastSentAt.get(command);
             MutableText delayLeftText;
-            if (!enabled || !cmdEnabled || cmdLastSentAt == null) {
+            if (!enabled || !command.enabled || cmdLastSentAt == null) {
               delayLeftText = Text.literal("N/A").withColor(valueColor);
             } else {
-                long delayLeftMillis = (long)(delay * 1000.0) - (currentTime - cmdLastSentAt);
+                long delayLeftMillis = (long)(command.delay * 1000.0) - (currentTime - cmdLastSentAt);
                 double delayLeft = (double)Math.max(delayLeftMillis, 0) / 1000.0;
                 delayLeftText = Text.literal(formatTime(delayLeft)).withColor(valueColor);
             }
@@ -307,9 +304,9 @@ public class Messenger {
         }
     }
 
-    public static void printAutoCommandToggled(KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>> command, boolean enabled) {
+    public static void printAutoCommandToggled(ModConfig.AutoCommandConfig.AutoCommandEntry command, boolean enabled) {
         MutableText format = Text.translatable("message.sbutils.autoCommand.commandToggleSuccess");
-        MutableText commandText = Text.literal(command.getKey()).withColor(getValueColor());
+        MutableText commandText = Text.literal(command.command).withColor(getValueColor());
         MutableText enabledText = boolToText(enabled);
         insertPlaceholders(format, commandText, enabledText);
     }
