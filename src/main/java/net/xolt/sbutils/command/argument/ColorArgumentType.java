@@ -13,7 +13,7 @@ import java.awt.*;
 
 public class ColorArgumentType implements ArgumentType<Color> {
 
-    private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(message -> Text.translatable("message.sbutils.colorArgumentType.colorParseException").append((Text)message));
+    private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(input -> Text.stringifiedTranslatable("message.sbutils.colorArgumentType.invalidColorFormat", input));
 
     public static ColorArgumentType color() {
         return new ColorArgumentType();
@@ -32,7 +32,7 @@ public class ColorArgumentType implements ArgumentType<Color> {
         if (colorCode.length() == 1) {
             Formatting color = Formatting.byCode(colorCode.charAt(0));
             if (color == null || color.getColorValue() == null)
-                throw COLOR_PARSE_EXCEPTION.create(Text.stringifiedTranslatable("message.sbutils.colorArgumentType.invalidColorCode", colorCode));
+                throw COLOR_PARSE_EXCEPTION.create(colorCode);
             return new Color(color.getColorValue());
         }
         if (colorCode.length() == 6) {
@@ -40,9 +40,9 @@ public class ColorArgumentType implements ArgumentType<Color> {
                 int color = Integer.valueOf(colorCode, 16);
                 return new Color(color);
             } catch (NumberFormatException nfe) {
-                throw COLOR_PARSE_EXCEPTION.create(Text.stringifiedTranslatable("message.sbutils.colorArgumentType.invalidHexColor", colorCode));
+                throw COLOR_PARSE_EXCEPTION.create(colorCode);
             }
         }
-        throw COLOR_PARSE_EXCEPTION.create(Text.stringifiedTranslatable("message.sbutils.colorArgumentType.invalidColorFormat", colorCode));
+        throw COLOR_PARSE_EXCEPTION.create(colorCode);
     }
 }

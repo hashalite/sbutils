@@ -17,10 +17,7 @@
 
   "message.sbutils.timeArgumentType.invalidUnitException": "Invalid time unit",
   "message.sbutils.timeArgumentType.timeTooLowException": "%s is below minimum time %s",
-  "message.sbutils.colorArgumentType.colorParseException": "Could not parse color: ",
   "message.sbutils.colorArgumentType.invalidColorFormat": "Invalid color format \"%s\"",
-  "message.sbutils.colorArgumentType.invalidHexColor": "Invalid hex color \"#%s\"",
-  "message.sbutils.colorArgumentType.invalidColorCode": "Invalid legacy color code \"&%s\"",
 
   "message.sbutils.invCleaner.cleaning": "Cleaning your inventory...",
   "message.sbutils.invCleaner.cleanFailed": "Disabling %s because your inventory is full, and couldn't to be cleaned.",

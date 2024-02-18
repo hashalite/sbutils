@@ -46,49 +46,6 @@ public class AutoKit {
                 .redirect(autoKitNode));
     }
 
-    private static void onAddCommand(ModConfig.Kit kit) {
-        if (ModConfig.HANDLER.instance().autoKit.kits.contains(kit)) {
-            Messenger.printMessage("message.sbutils.autoKit.duplicateKit");
-            return;
-        }
-
-        ModConfig.HANDLER.instance().autoKit.kits.add(kit);
-        ModConfig.HANDLER.save();
-        Messenger.printListSetting("message.sbutils.autoKit.kitAddSuccess", ModConfig.HANDLER.instance().autoKit.kits);
-        onKitListChanged();
-    }
-
-    private static void onDelCommand(int index) {
-        int adjustedIndex = index - 1;
-        if (adjustedIndex >= ModConfig.HANDLER.instance().autoKit.kits.size()) {
-            Messenger.printMessage("message.sbutils.autoKit.indexOutOfBounds");
-            return;
-        }
-
-        ModConfig.HANDLER.instance().autoKit.kits.remove(adjustedIndex);
-        ModConfig.HANDLER.save();
-        Messenger.printListSetting("message.sbutils.autoKit.kitDelSuccess", ModConfig.HANDLER.instance().autoKit.kits);
-        onKitListChanged();
-    }
-
-    private static void onInsertCommand(int index, ModConfig.Kit kit) {
-        if (ModConfig.HANDLER.instance().autoKit.kits.contains(kit)) {
-            Messenger.printMessage("message.sbutils.autoKit.duplicateKit");
-            return;
-        }
-
-        int adjustedIndex = index - 1;
-        if (adjustedIndex > ModConfig.HANDLER.instance().autoKit.kits.size()) {
-            Messenger.printMessage("message.sbutils.autoKit.indexOutOfBounds");
-            return;
-        }
-
-        ModConfig.HANDLER.instance().autoKit.kits.add(adjustedIndex, kit);
-        ModConfig.HANDLER.save();
-        Messenger.printListSetting("message.sbutils.autoKit.kitAddSuccess", ModConfig.HANDLER.instance().autoKit.kits);
-        onKitListChanged();
-    }
-
     public static void tick() {
         if (enabled != ModConfig.HANDLER.instance().autoKit.enabled) {
             enabled = ModConfig.HANDLER.instance().autoKit.enabled;
