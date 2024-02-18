@@ -39,7 +39,7 @@ public class TimeArgumentType implements ArgumentType<Double> {
         return new TimeArgumentType(minimum);
     }
 
-    public Double parse(StringReader stringReader) throws CommandSyntaxException {
+    @Override public Double parse(StringReader stringReader) throws CommandSyntaxException {
         double value = stringReader.readDouble();
         String string = stringReader.readUnquotedString();
         double unit = UNITS.getOrDefault(string, 0.0);

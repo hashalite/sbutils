@@ -7,8 +7,8 @@
   "message.sbutils.listSizeError": "You may not add more than %s items to your %s.",
   "message.sbutils.invalidListIndex": "The index %s is not present in your %s.",
   "message.sbutils.listDupeError": "%s is already in your %s.",
-  "message.sbutils.listAddSuccess": "Successfully added %s to your %s.",
-  "message.sbutils.listDelSuccess": "Successfully removed %s from your %s.",
+  "message.sbutils.listAddSuccess": "Added %s to your %s.",
+  "message.sbutils.listDelSuccess": "Removed %s from your %s.",
   "message.sbutils.listDelFail": "%s is not in your %s.",
   "message.sbutils.enabled": "enabled",
   "message.sbutils.disabled": "disabled",
@@ -41,12 +41,6 @@
   "message.sbutils.joinCommands.invalidIndex": "A join command with that index does not exist.",
   "message.sbutils.joinCommands.addSuccess": "Join command successfully added. Current commands:",
   "message.sbutils.joinCommands.deleteSuccess": "Join command successfully removed. Current commands:",
-
-  "message.sbutils.mentions.aliases": "Current mention aliases:",
-  "message.sbutils.mentions.aliasAddSuccess": "Mentions will now match the alias %s.",
-  "message.sbutils.mentions.aliasAddFail": "%s is already in the mention alias list.",
-  "message.sbutils.mentions.aliasDelSuccess": "Mentions will no longer match the alias %s.",
-  "message.sbutils.mentions.aliasInvalidIndex": "Index %s is not in the mention alias list.",
 
   "message.sbutils.enchantAll.complete": "Enchanting complete.",
   "message.sbutils.enchantAll.pleaseWait": "Please wait until the current item is finished enchanting.",
@@ -83,14 +77,10 @@
   "message.sbutils.antiPlace.grassBlocked": "Grass placement blocked.",
   "message.sbutils.antiPlace.headBlocked": "Head placement blocked.",
 
-  "message.sbutils.autoCommand.commands": "Current Auto Command commands:",
   "message.sbutils.autoCommand.commandEntry": "%s | Delay: %s | %s | Left: %s",
-  "message.sbutils.autoCommand.commandAddSuccess": "Successfully added the command %s with delay %s.",
-  "message.sbutils.autoCommand.commandDelSuccess": "Successfully removed the command %s.",
   "message.sbutils.autoCommand.commandToggleSuccess": "Command %s has been %s.",
   "message.sbutils.autoCommand.delaySetSuccess": "Delay for command %s has been updated from %s to %s.",
   "message.sbutils.autoCommand.commandSetSuccess": "Command changed from %s to %s.",
-  "message.sbutils.autoCommand.invalidCommandIndex": "Auto Command list does not contain index %s.",
 
   "message.sbutils.autoRaffle.buying": "Buying %s raffle ticket(s)...",
   "message.sbutils.autoRaffle.notEnoughGrass": "You don't have enough grass to purchase raffle tickets.",

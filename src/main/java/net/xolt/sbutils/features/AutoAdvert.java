@@ -95,7 +95,7 @@ public class AutoAdvert {
 
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
-            Messenger.printInvalidListIndex("text.sbutils.config.option.autoAdvert.adList", index);
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoAdvert.adList"));
             return;
         }
 
@@ -116,7 +116,7 @@ public class AutoAdvert {
 
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
-            Messenger.printInvalidListIndex("text.sbutils.config.option.autoAdvert.adList", index);
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoAdvert.adList"));
             return;
         }
 
@@ -137,7 +137,7 @@ public class AutoAdvert {
 
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
-            Messenger.printInvalidListIndex("text.sbutils.config.option.autoAdvert.adList", index);
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoAdvert.adList"));
             return Command.SINGLE_SUCCESS;
         }
 

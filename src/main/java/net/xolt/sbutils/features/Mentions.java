@@ -34,67 +34,16 @@ public class Mentions {
                     .then(CommandHelper.bool("excludeSelf", "mentions.excludeSelfMsgs", () -> ModConfig.HANDLER.instance().mentions.excludeSelfMsgs, (value) -> ModConfig.HANDLER.instance().mentions.excludeSelfMsgs = value))
                     .then(CommandHelper.bool("excludeSender", "mentions.excludeSender", () -> ModConfig.HANDLER.instance().mentions.excludeSender, (value) -> ModConfig.HANDLER.instance().mentions.excludeSender = value))
                     .then(CommandHelper.bool("currentAccount", "mentions.currentAccount", () -> ModConfig.HANDLER.instance().mentions.currentAccount, (value) -> ModConfig.HANDLER.instance().mentions.currentAccount = value))
-                    .then(CommandHelper.stringList("aliases", "alias", "message.sbutils.mentions.aliases", () -> ModConfig.HANDLER.instance().mentions.aliases))
+                    .then(CommandHelper.stringList("aliases", "alias", "mentions.aliases", () -> ModConfig.HANDLER.instance().mentions.aliases))
                     .then(CommandHelper.genericEnum("sound", "sound", "mentions.sound", ModConfig.NotifSound.class, () -> ModConfig.HANDLER.instance().mentions.sound, (value) -> ModConfig.HANDLER.instance().mentions.sound = value))
                     .then(CommandHelper.bool("highlight", "mentions.highlight", () -> ModConfig.HANDLER.instance().mentions.highlight, (value) -> ModConfig.HANDLER.instance().mentions.highlight = value)
-                            .then(CommandHelper.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ColorArgumentType.color(), ColorArgumentType::getColor))
-                            )
-        );
+                            .then(CommandHelper.getterSetter("color", "color", "mentions.highlightColor", () -> ModConfig.HANDLER.instance().mentions.highlightColor, (value) -> ModConfig.HANDLER.instance().mentions.highlightColor = value, ColorArgumentType.color(), ColorArgumentType::getColor))));
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
                         dispatcher.execute(COMMAND, context.getSource())
                 )
                 .redirect(mentionsNode));
-    }
-
-    private static void onAddAliasCommand(String name) {
-        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().mentions.aliases);
-
-        if (names.contains(name)) {
-            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddFail", name);
-            return;
-        }
-
-        names.add(name);
-        ModConfig.HANDLER.instance().mentions.aliases = names;
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddSuccess", name);
-    }
-
-    private static void onDelAliasCommand(int index) {
-        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().mentions.aliases);
-
-        int adjustedIndex = index - 1;
-        if (adjustedIndex < 0 || adjustedIndex >= names.size()) {
-            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasInvalidIndex", index);
-            return;
-        }
-
-        String name = names.remove(adjustedIndex);
-        ModConfig.HANDLER.instance().mentions.aliases = names;
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.mentions.aliasDelSuccess", name);
-    }
-
-    private static void onInsertAliasCommand(int index, String name) {
-        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().mentions.aliases);
-
-        int adjustedIndex = index - 1;
-        if (adjustedIndex < 0 || adjustedIndex > names.size()) {
-            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasInvalidIndex", index);
-            return;
-        }
-
-        if (names.contains(name)) {
-            Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddFail", name);
-            return;
-        }
-
-        names.add(adjustedIndex, name);
-        ModConfig.HANDLER.instance().mentions.aliases = names;
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.mentions.aliasAddSuccess", name);
     }
 
     public static void processMessage(Text message) {

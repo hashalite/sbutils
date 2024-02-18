@@ -13,12 +13,15 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
+import net.xolt.sbutils.features.AutoCommand;
+import net.xolt.sbutils.util.Messenger;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ModConfig {
@@ -54,16 +57,16 @@ public class ModConfig {
         @SerialEntry public double delay = 300.0;
         @SerialEntry public double initialDelay = 10.0;
         @SerialEntry public boolean useWhitelist = false;
-        @SerialEntry public List<String> whitelist = List.of();
+        @SerialEntry public List<String> whitelist = Arrays.asList();
     }
 
     @SerialEntry public AutoCommandConfig autoCommand = new AutoCommandConfig();
     public static class AutoCommandConfig {
         @SerialEntry public boolean enabled = false;
         @SerialEntry public double minDelay = 1.5;
-        @SerialEntry public List<AutoCommandEntry> commands = List.of(new AutoCommandEntry("", 5.0, false));
+        @SerialEntry public List<AutoCommandEntry> commands = Arrays.asList(new AutoCommandEntry("", 1.0, false));
 
-        public static class AutoCommandEntry {
+        public static class AutoCommandEntry implements MultiValue {
             @SerialEntry public String command;
             @SerialEntry public double delay;
             @SerialEntry public boolean enabled;
@@ -79,6 +82,23 @@ public class ModConfig {
                     return false;
                 return this.command.equals(other.command) && this.delay == other.delay && this.enabled == other.enabled;
             }
+
+            @Override public MutableText format() {
+                Long cmdLastSentAt = AutoCommand.getCmdsLastSentAt().get(this);
+                MutableText delayLeftText;
+                if (!ModConfig.HANDLER.instance().autoCommand.enabled || !enabled || cmdLastSentAt == null) {
+                    delayLeftText = Text.literal("N/A");
+                } else {
+                    long delayLeftMillis = (long)(delay * 1000.0) - (System.currentTimeMillis() - cmdLastSentAt);
+                    double delayLeft = (double)Math.max(delayLeftMillis, 0) / 1000.0;
+                    delayLeftText = Text.literal(Messenger.formatTime(delayLeft));
+                }
+                return Messenger.insertPlaceholders("message.sbutils.autoCommand.commandEntry", command, Messenger.formatTime(delay), enabled, delayLeftText);
+            }
+
+            @Override public String toString() {
+                return command;
+            }
         }
     }
 
@@ -89,7 +109,7 @@ public class ModConfig {
         @SerialEntry public double delay = 0.25;
         @SerialEntry public double distance = 4.0;
         @SerialEntry public boolean cleaner = true;
-        @SerialEntry public List<String> itemsToClean = List.of("cobblestone");
+        @SerialEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
     }
 
     @SerialEntry public AutoFixConfig autoFix = new AutoFixConfig();
@@ -108,7 +128,7 @@ public class ModConfig {
         @SerialEntry public double commandDelay = 1.0;
         @SerialEntry public double claimDelay = 10.0;
         @SerialEntry public double systemDelay = 10.0;
-        @SerialEntry public List<Kit> kits = List.of();
+        @SerialEntry public List<Kit> kits = Arrays.asList();
     }
 
     @SerialEntry public AutoMineConfig autoMine = new AutoMineConfig();
@@ -121,7 +141,7 @@ public class ModConfig {
     @SerialEntry public AutoPrivateConfig autoPrivate = new AutoPrivateConfig();
     public static class AutoPrivateConfig {
         @SerialEntry public boolean enabled = false;
-        @SerialEntry public List<String> names = new ArrayList<>();
+        @SerialEntry public List<String> names = Arrays.asList();
     }
 
     @SerialEntry public AutoRaffleConfig autoRaffle = new AutoRaffleConfig();
@@ -218,7 +238,7 @@ public class ModConfig {
         @SerialEntry public boolean excludeSelfMsgs = true;
         @SerialEntry public boolean excludeSender = false;
         @SerialEntry public boolean currentAccount = true;
-        @SerialEntry public List<String> aliases = List.of();
+        @SerialEntry public List<String> aliases = Arrays.asList();
     }
 
     @SerialEntry public NoGmtConfig noGmt = new NoGmtConfig();
@@ -468,5 +488,10 @@ public class ModConfig {
         public String asString() {
             return getDisplayName().getString();
         }
+    }
+
+    public interface MultiValue {
+
+        MutableText format();
     }
 }

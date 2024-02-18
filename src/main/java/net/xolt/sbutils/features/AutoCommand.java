@@ -8,7 +8,10 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.command.argument.AutoCommandEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig.AutoCommandConfig.AutoCommandEntry;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -32,26 +35,18 @@ public class AutoCommand {
         final LiteralCommandNode<FabricClientCommandSource> autoCommandNode = dispatcher.register(
                 CommandHelper.toggle(COMMAND, "autoCommand", () -> ModConfig.HANDLER.instance().autoCommand.enabled, (value) -> ModConfig.HANDLER.instance().autoCommand.enabled = value)
                         .then(CommandHelper.doubl("minDelay", "seconds", "autoCommand.minDelay", () -> ModConfig.HANDLER.instance().autoCommand.minDelay, (value) -> ModConfig.HANDLER.instance().autoCommand.minDelay = value))
-                        .then(CommandHelper.runnable("commands", AutoCommand::onCommandsCommand)
-                            .then(ClientCommandManager.literal("add")
-                                    .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg(1.0))
-                                            .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
-                                                    .executes(context -> onAddCommand(DoubleArgumentType.getDouble(context, "delay"), StringArgumentType.getString(context, "command"))))))
-                            .then(ClientCommandManager.literal("del")
-                                    .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                            .executes(context -> onDelCommand(IntegerArgumentType.getInteger(context, "index")))))
-                            .then(ClientCommandManager.literal("toggle")
-                                    .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                            .executes(context -> onToggleCommand(IntegerArgumentType.getInteger(context, "index")))))
-                            .then(ClientCommandManager.literal("set")
-                                    .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
-                                            .then(ClientCommandManager.literal("delay")
-                                                    .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg(1.0))
-                                                            .executes(context -> onSetDelayCommand(IntegerArgumentType.getInteger(context, "index"), DoubleArgumentType.getDouble(context, "delay")))))
-                                            .then(ClientCommandManager.literal("command")
-                                                    .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
-                                                            .executes(context -> onSetCommandCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "command")))))
-                                    ))));
+                        .then(CommandHelper.genericList("commands", "command", "autoCommand.commands", -1, true, true, AutoCommandEntryArgumentType.commandEntry(), AutoCommandEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().autoCommand.commands)
+                                .then(ClientCommandManager.literal("toggle")
+                                        .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                                .executes(context -> onToggleCommand(IntegerArgumentType.getInteger(context, "index")))))
+                                .then(ClientCommandManager.literal("set")
+                                                .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                                        .then(ClientCommandManager.literal("delay")
+                                                                .then(ClientCommandManager.argument("delay", DoubleArgumentType.doubleArg(1.0))
+                                                                        .executes(context -> onSetDelayCommand(IntegerArgumentType.getInteger(context, "index"), DoubleArgumentType.getDouble(context, "delay")))))
+                                                        .then(ClientCommandManager.literal("command")
+                                                                .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
+                                                                        .executes(context -> onSetCommandCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "command")))))))));
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
                 .executes(context ->
@@ -60,41 +55,17 @@ public class AutoCommand {
                 .redirect(autoCommandNode));
     }
 
-    private static void onCommandsCommand() {
-        Messenger.printAutoCommands(ModConfig.HANDLER.instance().autoCommand.commands, cmdsLastSentAt, ModConfig.HANDLER.instance().autoCommand.enabled);
-    }
-
-    private static int onAddCommand(double delay, String command) {
-        ModConfig.HANDLER.instance().autoCommand.commands.add(new AutoCommandEntry(command, delay, false));
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandAddSuccess", command, delay);
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int onDelCommand(int index) {
-        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
-        int adjustedIndex = index - 1;
-        if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
-            return Command.SINGLE_SUCCESS;
-        }
-        AutoCommandEntry command = autoCommands.remove(adjustedIndex);
-        ModConfig.HANDLER.save();
-        Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandDelSuccess", command.command);
-        return Command.SINGLE_SUCCESS;
-    }
-
     private static int onToggleCommand(int index) {
         List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoCommand.commands"));
             return Command.SINGLE_SUCCESS;
         }
         AutoCommandEntry command = autoCommands.get(adjustedIndex);
         command.enabled = !command.enabled;
         ModConfig.HANDLER.save();
-        Messenger.printAutoCommandToggled(command, command.enabled);
+        Messenger.printWithPlaceholders("message.sbutils.autoCommand.commandToggleSuccess", command.command, command.enabled);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -102,7 +73,7 @@ public class AutoCommand {
         List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoCommand.commands"));
             return Command.SINGLE_SUCCESS;
         }
         AutoCommandEntry command = autoCommands.get(adjustedIndex);
@@ -117,7 +88,7 @@ public class AutoCommand {
         List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.autoCommand.invalidCommandIndex", index);
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoCommand.commands"));
             return Command.SINGLE_SUCCESS;
         }
         AutoCommandEntry command = autoCommands.get(adjustedIndex);
@@ -169,6 +140,10 @@ public class AutoCommand {
                 lastCommandSentAt = currentTime;
             }
         }
+    }
+
+    public static HashMap<AutoCommandEntry, Long> getCmdsLastSentAt() {
+        return cmdsLastSentAt;
     }
 
     private static void sendCommand(String command) {

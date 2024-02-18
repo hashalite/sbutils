@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
 import net.xolt.sbutils.command.argument.GenericEnumArgumentType;
 import net.xolt.sbutils.config.ModConfig;
@@ -79,48 +80,51 @@ public class CommandHelper {
     public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<T>> get) {
         Consumer<T> add = (value) -> {
             if (maxSize > -1 && get.get().size() >= maxSize) {
-                Messenger.printListSizeError(OPTION_KEY + setting, maxSize);
+                Messenger.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Text.translatable(OPTION_KEY + setting));
                 return;
             }
 
             if (!allowDupes && get.get().contains(value)) {
-                Messenger.printListDupeError(OPTION_KEY + setting, value);
+                Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Text.translatable(OPTION_KEY + setting));
                 return;
             }
 
             get.get().add(value);
             ModConfig.HANDLER.save();
-            Messenger.printListAddSuccess(OPTION_KEY + setting, value);
+            Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Text.translatable(OPTION_KEY + setting));
+            Messenger.printListSetting(OPTION_KEY + setting, get.get(), indexed);
         };
 
         if (indexed)
             return customIndexedList(command, argument, setting, argumentType, getArgument, get, add,
                     (index) -> {
                         int adjustedIndex = index - 1;
-                        if (adjustedIndex >= get.get().size() || adjustedIndex <= 0) {
-                            Messenger.printInvalidListIndex(OPTION_KEY + setting, adjustedIndex);
+                        if (adjustedIndex >= get.get().size() || adjustedIndex < 0) {
+                            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable(OPTION_KEY + setting));
                             return;
                         }
 
                         T removed = get.get().remove(adjustedIndex);
                         ModConfig.HANDLER.save();
-                        Messenger.printListDelSuccess(OPTION_KEY + setting, removed);
+                        Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Text.translatable(OPTION_KEY + setting));
+                        Messenger.printListSetting(OPTION_KEY + setting, get.get(), true);
                     },
                     (index, value) -> {
                         int adjustedIndex = index - 1;
-                        if (adjustedIndex >= get.get().size() || adjustedIndex <= 0) {
-                            Messenger.printInvalidListIndex(OPTION_KEY + setting, adjustedIndex);
+                        if (adjustedIndex >= get.get().size() || adjustedIndex < 0) {
+                            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable(OPTION_KEY + setting));
                             return;
                         }
 
                         if (!allowDupes && get.get().contains(value)) {
-                            Messenger.printListDupeError(OPTION_KEY + setting, value);
+                            Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Text.translatable(OPTION_KEY + setting));
                             return;
                         }
 
                         get.get().add(index, value);
                         ModConfig.HANDLER.save();
-                        Messenger.printListAddSuccess(OPTION_KEY + setting, value);
+                        Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Text.translatable(OPTION_KEY + setting));
+                        Messenger.printListSetting(OPTION_KEY + setting, get.get(), true);
                     }
             );
 
@@ -129,9 +133,10 @@ public class CommandHelper {
                     boolean result = get.get().remove(value);
                     ModConfig.HANDLER.save();
                     if (result) {
-                        Messenger.printListDelSuccess(OPTION_KEY + setting, value);
+                        Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", value, Text.translatable(OPTION_KEY + setting));
+                        Messenger.printListSetting(OPTION_KEY + setting, get.get());
                     } else {
-                        Messenger.printListDelFail(OPTION_KEY + setting, value);
+                        Messenger.printWithPlaceholders("message.sbutils.listDelFail", value, Text.translatable(OPTION_KEY + setting));
                     }
                 }
         );

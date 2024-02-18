@@ -56,22 +56,22 @@ public class EventNotifier {
     }
 
     private static void doLlamaNotification() {
-        if (ModConfig.HANDLER.instance().eventNotifier.playLlamaSound) {
+        if (ModConfig.HANDLER.instance().eventNotifier.playLlamaSound && MC.player != null) {
             MC.player.playSound(ModConfig.HANDLER.instance().eventNotifier.llamaSound.getSound(), 1, 1);
         }
 
         if (ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle) {
-            Messenger.sendLlamaTitle();
+            Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Text.translatable("message.sbutils.eventNotifier.vpLlama"));
         }
     }
 
     private static void doTraderNotification() {
-        if (ModConfig.HANDLER.instance().eventNotifier.playTraderSound) {
+        if (ModConfig.HANDLER.instance().eventNotifier.playTraderSound && MC.player != null) {
             MC.player.playSound(ModConfig.HANDLER.instance().eventNotifier.traderSound.getSound(), 1, 1);
         }
 
         if (ModConfig.HANDLER.instance().eventNotifier.showTraderTitle) {
-            Messenger.sendTraderTitle();
+            Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Text.translatable("message.sbutils.eventNotifier.wanderingTrader"));
         }
     }
 

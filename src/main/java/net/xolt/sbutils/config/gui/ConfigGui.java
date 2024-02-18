@@ -259,7 +259,7 @@ public class ConfigGui {
                                 (value) -> config.autoCommand.commands = value
                         )
                         .customController(AutoCommandEntryController::new)
-                        .initial(new ModConfig.AutoCommandConfig.AutoCommandEntry("", 5.0, false))
+                        .initial(new ModConfig.AutoCommandConfig.AutoCommandEntry("", 1.0, false))
                         .build())
                 .build();
     }
