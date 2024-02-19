@@ -15,6 +15,7 @@ import net.minecraft.network.message.ArgumentSignatureDataMap;
 import net.minecraft.network.message.LastSeenMessagesCollector;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.registry.Registries;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.xolt.sbutils.SbUtils;
@@ -147,9 +148,10 @@ public class EnchantAll {
 
         if (done()) {
             if (inventory && itemPrevSlot != -1) {
-                if (!InvUtils.canSwapSlot(itemPrevSlot))
+                ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
+                if (!InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
                     return;
-                InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot);
+                InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
             }
             Messenger.printMessage("message.sbutils.enchantAll.complete");
             reset();
@@ -238,16 +240,17 @@ public class EnchantAll {
             }
             int enchantableSlot = findEnchantableSlot(unenchant);
             if (enchantableSlot != -1) {
+                ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
                 if (itemPrevSlot != -1) {
-                    if (!InvUtils.canSwapSlot(itemPrevSlot))
+                    if (!InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
                         return;
-                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot);
+                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
                     itemPrevSlot = -1;
                 }
-                if (!InvUtils.canSwapSlot(enchantableSlot)) {
+                if (!InvUtils.canSwapSlot(enchantableSlot, currentScreenHandler)) {
                     return;
                 }
-                InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selectedSlot);
+                InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
                 itemPrevSlot = enchantableSlot;
                 pause = true;
             }

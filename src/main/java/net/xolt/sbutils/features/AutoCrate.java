@@ -145,14 +145,20 @@ public class AutoCrate {
             return false;
         }
 
-        if (!MC.player.getInventory().getMainHandStack().isEmpty()) {
+        // If there is a key in the hotbar, swap to it
+        if (keySlot < 9) {
+            player.getInventory().selectedSlot = keySlot;
+            return true;
+        }
+
+        if (!player.getInventory().getMainHandStack().isEmpty()) {
             int emptySlot = InvUtils.findEmptyHotbarSlot();
             if (emptySlot != -1) {
-                MC.player.getInventory().selectedSlot = emptySlot;
+                player.getInventory().selectedSlot = emptySlot;
             }
         }
 
-        InvUtils.swapToHotbar(keySlot, MC.player.getInventory().selectedSlot);
+        InvUtils.swapToHotbar(keySlot, player.getInventory().selectedSlot, player.currentScreenHandler);
 
         return true;
     }

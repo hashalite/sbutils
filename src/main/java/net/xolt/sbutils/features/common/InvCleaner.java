@@ -82,7 +82,7 @@ public class InvCleaner {
         for (int i = 0; i < 36; i++) {
             if (!itemsToClean.test(MC.player.getInventory().getStack(i)))
                 continue;
-            InvUtils.quickMove(i);
+            InvUtils.quickMove(i, MC.player.currentScreenHandler);
             lastClick = System.currentTimeMillis();
             stacksCleaned++;
             return;

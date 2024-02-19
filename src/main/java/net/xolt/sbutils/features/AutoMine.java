@@ -23,8 +23,6 @@ public class AutoMine {
 
     private static final String COMMAND = "automine";
     private static final String ALIAS = "mine";
-
-    //private static int timer;
     private static long disableAt = -1;
 
 
@@ -72,7 +70,7 @@ public class AutoMine {
         if (ModConfig.HANDLER.instance().autoMine.autoSwitch && !AutoFix.fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamage() <= minDurability) {
             int newPickaxeSlot = findNewPickaxe();
             if (newPickaxeSlot != -1) {
-                InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selectedSlot);
+                InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selectedSlot, MC.player.currentScreenHandler);
             } else if (!ModConfig.HANDLER.instance().autoFix.enabled) {
                 ModConfig.HANDLER.instance().autoMine.enabled = false;
                 ModConfig.HANDLER.save();

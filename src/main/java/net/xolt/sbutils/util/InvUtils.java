@@ -15,20 +15,20 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class InvUtils {
 
-    public static void swapToHotbar(int sourceIndex, int hotbarIndex) {
+    public static void swapToHotbar(int sourceIndex, int hotbarIndex, ScreenHandler screenHandler) {
         if (MC.interactionManager == null || MC.player == null || sourceIndex == hotbarIndex) {
             return;
         }
 
-        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(sourceIndex), hotbarIndex, SlotActionType.SWAP, MC.player);
+        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(sourceIndex, screenHandler), hotbarIndex, SlotActionType.SWAP, MC.player);
     }
 
-    public static void quickMove(int index) {
+    public static void quickMove(int index, ScreenHandler screenHandler) {
         if (MC.interactionManager == null || MC.player == null) {
             return;
         }
 
-        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(index), 0, SlotActionType.QUICK_MOVE, MC.player);
+        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(index, screenHandler), 0, SlotActionType.QUICK_MOVE, MC.player);
     }
 
     public static int findEmptyHotbarSlot() {
@@ -39,18 +39,13 @@ public class InvUtils {
         return emptySlot < 9 ? emptySlot : -1;
     }
 
-    // Converts an index in the player's inventory to a slot id for the current screen
-    private static int indexToInventorySlot(int index) {
-        if (index < 0 || index > 40) {
+    // Converts an index in the player's inventory to a slot id for the provided screen handler
+    private static int indexToInventorySlot(int index, ScreenHandler screenHandler) {
+        if (screenHandler == null || index < 0 || index > 40) {
             return -1;
         }
 
-        if (MC.player == null) {
-            return -1;
-        }
-
-        ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
-        boolean playerScreenOpen = playerScreenOpen();
+        boolean playerScreenOpen = isPlayerScreen(screenHandler);
 
         int invOffset;
         if (playerScreenOpen) {
@@ -60,7 +55,7 @@ public class InvUtils {
                 // Armor and offhand slots inaccessible
                 return -1;
             }
-            invOffset = currentScreenHandler.slots.size() - 36;
+            invOffset = screenHandler.slots.size() - 36;
         }
 
         if (index >= 0 && index <= 8) {
@@ -87,27 +82,25 @@ public class InvUtils {
     }
 
     // Returns true if the offhand and armor slots are accessible from the current screen
-    public static boolean playerScreenOpen() {
-        return MC.player != null && (MC.player.currentScreenHandler instanceof PlayerScreenHandler || MC.player.currentScreenHandler instanceof CreativeInventoryScreen.CreativeScreenHandler);
+    private static boolean isPlayerScreen(ScreenHandler screenHandler) {
+        return screenHandler instanceof PlayerScreenHandler || screenHandler instanceof CreativeInventoryScreen.CreativeScreenHandler;
     }
 
-    public static boolean canSwapSlot(int slotIndex) {
-        return !(slotIndex >= 36 && slotIndex <= 40 && !playerScreenOpen());
+    public static boolean canSwapSlot(int slotIndex, ScreenHandler screenHandler) {
+        return !(slotIndex >= 36 && slotIndex <= 40 && !isPlayerScreen(screenHandler));
     }
 
     public static boolean doesKitFit(PlayerInventory inventory, List<ItemStack> kit) {
-        List<ItemStack> kitClone = kit.stream().map(ItemStack::copy).toList();
-
-        List<ItemStack> invClone = new ArrayList<>();
+        List<ItemStack> invItems = new ArrayList<>();
         for (int i = 0; i < 36; i++) {
             if (inventory.getStack(i).getItem() == Items.AIR)
                 continue;
-            invClone.add(inventory.getStack(i).copy());
+            invItems.add(inventory.getStack(i).copy());
         }
 
         for (ItemStack stack : kit) {
             int count = stack.getCount();
-            for (ItemStack invStack : invClone) {
+            for (ItemStack invStack : invItems) {
                 if (!invStack.getItem().equals(stack.getItem()) || invStack.getCount() == invStack.getMaxCount())
                     continue;
                 if (invStack.getMaxCount() - invStack.getCount() >= stack.getCount()) {
@@ -122,10 +115,10 @@ public class InvUtils {
                 }
             }
             if (count > 0) {
-                invClone.add(new ItemStack(stack.getItem(), count));
+                invItems.add(new ItemStack(stack.getItem(), count));
             }
         }
 
-        return invClone.size() <= 36;
+        return invItems.size() <= 36;
     }
 }

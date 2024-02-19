@@ -5,6 +5,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -124,8 +125,13 @@ public class AutoFix {
     }
 
     private static void doAutoFix() {
+        if (MC.player == null) {
+            return;
+        }
+
         if (!fixing) {
-            if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot)) {
+            ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
+            if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)) {
                 fixing = true;
 
                 if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL) {
@@ -138,28 +144,29 @@ public class AutoFix {
                     MC.player.getInventory().selectedSlot = itemPrevSlot;
                     selectedSlot = itemPrevSlot;
                 } else {
-                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot);
+                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
                     selectedSlot = MC.player.getInventory().selectedSlot;
                 }
 
                 lastActionPerformedAt = System.currentTimeMillis();
             }
-        } else {
-            if (MC.player.getInventory().selectedSlot != findMostDamaged()) {
-                reset();
-                return;
-            }
-
-            if (tries == 0) {
-                Messenger.printMessage("message.sbutils.autoFix.fixingItem");
-            }
-
-            sendFixCommand();
-
-            tries++;
-            lastActionPerformedAt = System.currentTimeMillis();
-            waitingForResponse = true;
+            return;
         }
+
+        if (MC.player.getInventory().selectedSlot != findMostDamaged()) {
+            reset();
+            return;
+        }
+
+        if (tries == 0) {
+            Messenger.printMessage("message.sbutils.autoFix.fixingItem");
+        }
+
+        sendFixCommand();
+
+        tries++;
+        lastActionPerformedAt = System.currentTimeMillis();
+        waitingForResponse = true;
     }
 
     public static void processMessage(Text message) {
@@ -233,11 +240,14 @@ public class AutoFix {
     }
 
     private static void returnAndSwapBack() {
-        if (MC.player == null && itemPrevSlot != -1 || !InvUtils.canSwapSlot(itemPrevSlot)) {
+        if (MC.player == null)
             return;
-        }
 
-        InvUtils.swapToHotbar(itemPrevSlot, selectedSlot);
+        ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
+        if (itemPrevSlot != -1 || !InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
+            return;
+
+        InvUtils.swapToHotbar(itemPrevSlot, selectedSlot, currentScreenHandler);
         MC.player.getInventory().selectedSlot = prevSelectedSlot;
     }
 
