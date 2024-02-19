@@ -35,7 +35,7 @@ public abstract class MultiValueController<T> implements Controller<T> {
         return Option.<T>createBuilder()
                 .name(name != null ? Text.translatable(name) : Text.literal(""))
                 .binding(
-                        get.get(),
+                        def,
                         get,
                         set
                 )
