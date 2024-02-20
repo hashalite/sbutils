@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.gui.controllers.AutoCommandEntryController;
+import net.xolt.sbutils.config.gui.controllers.JoinCommandsEntryController;
 import net.xolt.sbutils.features.AutoFix;
 import net.xolt.sbutils.features.AutoKit;
 
@@ -1084,6 +1085,18 @@ public class ConfigGui {
                                 )
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
+                        .build())
+                .group(ListOption.<ModConfig.JoinCommandsConfig.JoinCommandsEntry>createBuilder()
+                        .name(Text.translatable("text.sbutils.config.option.joinCommands.commands"))
+                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.joinCommands.commands.tooltip")))
+                        .insertEntriesAtEnd(true)
+                        .binding(
+                                defaults.joinCommands.commands,
+                                () -> config.joinCommands.commands,
+                                (value) -> config.joinCommands.commands = value
+                        )
+                        .customController(JoinCommandsEntryController::new)
+                        .initial(new ModConfig.JoinCommandsConfig.JoinCommandsEntry("", ""))
                         .build())
                 .build();
     }

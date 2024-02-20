@@ -21,6 +21,7 @@ import net.xolt.sbutils.features.AutoCommand;
 import net.xolt.sbutils.util.Messenger;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class ModConfig {
         @SerialEntry public double delay = 300.0;
         @SerialEntry public double initialDelay = 10.0;
         @SerialEntry public boolean useWhitelist = false;
-        @SerialEntry public List<String> whitelist = Arrays.asList();
+        @SerialEntry public List<String> whitelist = new ArrayList<>();
     }
 
     @SerialEntry public AutoCommandConfig autoCommand = new AutoCommandConfig();
@@ -128,7 +129,7 @@ public class ModConfig {
         @SerialEntry public double commandDelay = 1.0;
         @SerialEntry public double claimDelay = 10.0;
         @SerialEntry public double systemDelay = 10.0;
-        @SerialEntry public List<Kit> kits = Arrays.asList();
+        @SerialEntry public List<Kit> kits = new ArrayList<>();
     }
 
     @SerialEntry public AutoMineConfig autoMine = new AutoMineConfig();
@@ -141,7 +142,7 @@ public class ModConfig {
     @SerialEntry public AutoPrivateConfig autoPrivate = new AutoPrivateConfig();
     public static class AutoPrivateConfig {
         @SerialEntry public boolean enabled = false;
-        @SerialEntry public List<String> names = Arrays.asList();
+        @SerialEntry public List<String> names = new ArrayList<>();
     }
 
     @SerialEntry public AutoRaffleConfig autoRaffle = new AutoRaffleConfig();
@@ -225,6 +226,42 @@ public class ModConfig {
         @SerialEntry public boolean enabled = false;
         @SerialEntry public double initialDelay = 0.0;
         @SerialEntry public double delay = 0.0;
+        @SerialEntry public List<JoinCommandsEntry> commands = new ArrayList<>();
+
+        public static class JoinCommandsEntry implements MultiValue {
+            @SerialEntry public String command;
+            @SerialEntry public String accounts;
+
+            public JoinCommandsEntry(String command, String accounts) {
+                this.command = command;
+                this.accounts = accounts;
+            }
+
+            @Override public boolean equals(Object obj) {
+                if (!(obj instanceof JoinCommandsConfig.JoinCommandsEntry other))
+                    return false;
+                return this.command.equals(other.command) && this.accounts.equals(other.accounts);
+            }
+
+            @Override public MutableText format() {
+                return Messenger.insertPlaceholders("message.sbutils.joinCommands.commandEntry", command, formatAccounts());
+            }
+
+            public List<String> getAccounts() {
+                return Arrays.asList(accounts.replaceAll(" ", "").split(",")).stream().filter((account) -> !account.isEmpty()).toList();
+            }
+
+            public MutableText formatAccounts() {
+                List<String> accountList = getAccounts();
+                if (accountList.isEmpty())
+                    return Text.literal("*");
+                return Text.literal(String.join(", ", getAccounts()));
+            }
+
+            @Override public String toString() {
+                return command;
+            }
+        }
     }
 
     @SerialEntry public MentionsConfig mentions = new MentionsConfig();
@@ -238,7 +275,7 @@ public class ModConfig {
         @SerialEntry public boolean excludeSelfMsgs = true;
         @SerialEntry public boolean excludeSender = false;
         @SerialEntry public boolean currentAccount = true;
-        @SerialEntry public List<String> aliases = Arrays.asList();
+        @SerialEntry public List<String> aliases = new ArrayList<>();
     }
 
     @SerialEntry public NoGmtConfig noGmt = new NoGmtConfig();
@@ -350,42 +387,39 @@ public class ModConfig {
     }
 
     public enum NotifSound implements NameableEnum, StringIdentifiable {
-        EXPERIENCE(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.getId().toShortTranslationKey(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP),
-        LAY_EGG(SoundEvents.ENTITY_CHICKEN_EGG.getId().toShortTranslationKey(), SoundEvents.ENTITY_CHICKEN_EGG),
-        DISPENSER(SoundEvents.BLOCK_DISPENSER_FAIL.getId().toShortTranslationKey(), SoundEvents.BLOCK_DISPENSER_FAIL),
-        BUTTON(SoundEvents.BLOCK_STONE_BUTTON_CLICK_ON.getId().toShortTranslationKey(), SoundEvents.BLOCK_STONE_BUTTON_CLICK_ON),
-        ANVIL_LAND(SoundEvents.BLOCK_ANVIL_LAND.getId().toShortTranslationKey(), SoundEvents.BLOCK_ANVIL_LAND),
-        BANJO(SoundEvents.BLOCK_NOTE_BLOCK_BANJO.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_BANJO.value()),
-        BASEDRUM(SoundEvents.BLOCK_NOTE_BLOCK_BASEDRUM.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_BASEDRUM.value()),
-        BASS(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()),
-        BELL(SoundEvents.BLOCK_NOTE_BLOCK_BELL.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_BELL.value()),
-        BIT(SoundEvents.BLOCK_NOTE_BLOCK_BIT.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_BIT.value()),
-        CHIME(SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value()),
-        COW_BELL(SoundEvents.BLOCK_NOTE_BLOCK_COW_BELL.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_COW_BELL.value()),
-        DIDGERIDOO(SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value()),
-        FLUTE(SoundEvents.BLOCK_NOTE_BLOCK_FLUTE.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_FLUTE.value()),
-        GUITAR(SoundEvents.BLOCK_NOTE_BLOCK_GUITAR.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_GUITAR.value()),
-        HARP(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_HARP.value()),
-        HAT(SoundEvents.BLOCK_NOTE_BLOCK_HAT.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_HAT.value()),
-        IRON_XYLOPHONE(SoundEvents.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE.value()),
-        PLING(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()),
-        SNARE(SoundEvents.BLOCK_NOTE_BLOCK_SNARE.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_SNARE.value()),
-        XYLOPHONE(SoundEvents.BLOCK_NOTE_BLOCK_XYLOPHONE.value().getId().toShortTranslationKey(), SoundEvents.BLOCK_NOTE_BLOCK_XYLOPHONE.value());
-
-        private final String name;
+        EXPERIENCE(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP),
+        LAY_EGG(SoundEvents.ENTITY_CHICKEN_EGG),
+        DISPENSER(SoundEvents.BLOCK_DISPENSER_FAIL),
+        BUTTON(SoundEvents.BLOCK_STONE_BUTTON_CLICK_ON),
+        ANVIL_LAND(SoundEvents.BLOCK_ANVIL_LAND),
+        BANJO(SoundEvents.BLOCK_NOTE_BLOCK_BANJO.value()),
+        BASEDRUM(SoundEvents.BLOCK_NOTE_BLOCK_BASEDRUM.value()),
+        BASS(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()),
+        BELL(SoundEvents.BLOCK_NOTE_BLOCK_BELL.value()),
+        BIT(SoundEvents.BLOCK_NOTE_BLOCK_BIT.value()),
+        CHIME(SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value()),
+        COW_BELL(SoundEvents.BLOCK_NOTE_BLOCK_COW_BELL.value()),
+        DIDGERIDOO(SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value()),
+        FLUTE(SoundEvents.BLOCK_NOTE_BLOCK_FLUTE.value()),
+        GUITAR(SoundEvents.BLOCK_NOTE_BLOCK_GUITAR.value()),
+        HARP(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value()),
+        HAT(SoundEvents.BLOCK_NOTE_BLOCK_HAT.value()),
+        IRON_XYLOPHONE(SoundEvents.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE.value()),
+        PLING(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()),
+        SNARE(SoundEvents.BLOCK_NOTE_BLOCK_SNARE.value()),
+        XYLOPHONE(SoundEvents.BLOCK_NOTE_BLOCK_XYLOPHONE.value());
         private final SoundEvent sound;
 
-        NotifSound(String name, SoundEvent sound) {
-            this.name = name;
+        NotifSound(SoundEvent sound) {
             this.sound = sound;
         }
 
         public String asString() {
-            return name;
+            return sound.getId().toShortTranslationKey();
         }
 
         public Text getDisplayName() {
-            return Text.translatable(name);
+            return Text.literal(asString());
         }
 
         public SoundEvent getSound() {

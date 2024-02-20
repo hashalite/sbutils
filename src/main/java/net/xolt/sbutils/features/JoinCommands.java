@@ -1,20 +1,24 @@
 package net.xolt.sbutils.features;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.command.argument.JoinCommandsEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.Messenger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.xolt.sbutils.SbUtils.MC;
@@ -24,30 +28,23 @@ public class JoinCommands {
     private static final String COMMAND = "joincmds";
     private static final String ALIAS = "jc";
 
-    private static boolean waitingToSend;
     private static long joinedAt;
     private static long lastCommandSentAt;
-    private static int commandIndex;
-    private static List<String> joinCommands;
+    private static Queue<String> commandQueue = new LinkedList<>();
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(
                 CommandHelper.toggle(COMMAND, "joinCommands", () -> ModConfig.HANDLER.instance().joinCommands.enabled, (value) -> ModConfig.HANDLER.instance().joinCommands.enabled = value)
-                    .then(CommandHelper.customIndexedList("global", "command", "message.sbutils.joinCommands.globalCommandList",
-                            StringArgumentType.greedyString(),
-                            StringArgumentType::getString,
-                            () -> getJoinCommands(true),
-                            (command) -> onAddCommand(command, true),
-                            (index) -> onDelCommand(index, true),
-                            (index, command) -> onInsertCommand(index, command, true)))
-                    .then(CommandHelper.customIndexedList("account", "command", "message.sbutils.joinCommands.accountCommandList",
-                            StringArgumentType.greedyString(),
-                            StringArgumentType::getString,
-                            () -> getJoinCommands(false),
-                            (command) -> onAddCommand(command, false),
-                            (index) -> onDelCommand(index, false),
-                            (index, command) -> onInsertCommand(index, command, false)))
+                    .then(CommandHelper.genericList("commands", "command", "joinCommands.commands", -1, true, true, JoinCommandsEntryArgumentType.commandEntry(), JoinCommandsEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().joinCommands.commands)
+                            .then(ClientCommandManager.literal("set")
+                                    .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
+                                            .then(ClientCommandManager.literal("command")
+                                                    .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
+                                                            .executes(context -> onSetCommandCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "command")))))
+                                            .then(ClientCommandManager.literal("accounts")
+                                                    .then(ClientCommandManager.argument("accounts", StringArgumentType.greedyString())
+                                                            .executes(context -> onSetAccountsCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "accounts"))))))))
                     .then(CommandHelper.doubl("delay", "seconds", "joinCommands.delay", () -> ModConfig.HANDLER.instance().joinCommands.delay, (value) -> ModConfig.HANDLER.instance().joinCommands.delay = value))
                     .then(CommandHelper.doubl("initialDelay", "seconds", "joinCommands.initialDelay", () -> ModConfig.HANDLER.instance().joinCommands.initialDelay, (value) -> ModConfig.HANDLER.instance().joinCommands.initialDelay = value))
         );
@@ -59,8 +56,37 @@ public class JoinCommands {
                 .redirect(joinCommandsNode));
     }
 
+    private static int onSetCommandCommand(int index, String newCommand) {
+        List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.HANDLER.instance().joinCommands.commands;
+        int adjustedIndex = index - 1;
+        if (adjustedIndex >= joinCommands.size() || adjustedIndex < 0) {
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.joinCommands.commands"));
+            return Command.SINGLE_SUCCESS;
+        }
+        ModConfig.JoinCommandsConfig.JoinCommandsEntry command = joinCommands.get(adjustedIndex);
+        String oldCommand = command.command;
+        command.command = newCommand;
+        ModConfig.HANDLER.save();
+        Messenger.printWithPlaceholders("message.sbutils.joinCommands.commandSetSuccess", oldCommand, newCommand);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int onSetAccountsCommand(int index, String newAccounts) {
+        List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.HANDLER.instance().joinCommands.commands;
+        int adjustedIndex = index - 1;
+        if (adjustedIndex >= joinCommands.size() || adjustedIndex < 0) {
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.joinCommands.commands"));
+            return Command.SINGLE_SUCCESS;
+        }
+        ModConfig.JoinCommandsConfig.JoinCommandsEntry command = joinCommands.get(adjustedIndex);
+        command.accounts = newAccounts;
+        ModConfig.HANDLER.save();
+        Messenger.printWithPlaceholders("message.sbutils.joinCommands.accountsSetSuccess", command.command, command.formatAccounts());
+        return Command.SINGLE_SUCCESS;
+    }
+
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().joinCommands.enabled || !ServerDetector.isOnSkyblock() || !waitingToSend) {
+        if (!ModConfig.HANDLER.instance().joinCommands.enabled || !ServerDetector.isOnSkyblock() || commandQueue.isEmpty()) {
             return;
         }
 
@@ -71,126 +97,47 @@ public class JoinCommands {
         }
     }
 
-    private static void onAddCommand(String command, boolean global) {
-        if (MC.player == null) {
-            return;
-        }
-
-        List<String> joinCommands = getJoinCommands(global);
-        joinCommands.add(command);
-        IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
-
-        Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", joinCommands);
-    }
-
-    private static void onDelCommand(int index, boolean global) {
-        if (MC.player == null) {
-            return;
-        }
-
-        List<String> joinCommands = getJoinCommands(global);
-
-        int adjustedIndex = index - 1;
-        if (adjustedIndex < 0 || adjustedIndex >= joinCommands.size()) {
-            Messenger.printMessage("message.sbutils.joinCommands.invalidIndex");
-            return;
-        }
-
-        joinCommands.remove(adjustedIndex);
-        IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
-
-        Messenger.printListSetting("message.sbutils.joinCommands.deleteSuccess", joinCommands);
-    }
-
-    private static void onInsertCommand(int index, String command, boolean global) {
-        if (MC.player == null) {
-            return;
-        }
-
-        List<String> joinCommands = getJoinCommands(global);
-
-        int adjustedIndex = index - 1;
-        if (adjustedIndex < 0 || adjustedIndex > joinCommands.size()) {
-            Messenger.printMessage("message.sbutils.joinCommands.invalidIndex");
-            return;
-        }
-
-        joinCommands.add(adjustedIndex, command);
-        IOHandler.writeAccountCommands(MC.player.getGameProfile(), joinCommands);
-
-        Messenger.printListSetting("message.sbutils.joinCommands.addSuccess", joinCommands);
-    }
-
     public static void onDisconnect() {
         reset();
     }
 
     public static void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().joinCommands.enabled) {
+        if (!ModConfig.HANDLER.instance().joinCommands.enabled || ModConfig.HANDLER.instance().joinCommands.commands.isEmpty() || MC.player == null) {
             return;
         }
 
-        joinCommands = getJoinCommands();
-
-        if (joinCommands == null || joinCommands.size() == 0) {
-            return;
-        }
-
-        commandIndex = 0;
-        waitingToSend = true;
+        reset();
+        commandQueue.addAll(getJoinCommands(MC.player));
         joinedAt = System.currentTimeMillis();
     }
 
-    private static List<String> getJoinCommands() {
-        if (MC.player == null) {
-            return null;
-        }
-
-        ArrayList<String> joinCommands = new ArrayList<>();
-        joinCommands.addAll(getJoinCommands(true));
-        joinCommands.addAll(getJoinCommands(false));
-
-        return joinCommands;
-    }
-
-    private static List<String> getJoinCommands(boolean global) {
-        if (MC.player == null) {
-            return null;
-        }
-
-        String fileContents = global ? IOHandler.readGlobalJoinCmds() : IOHandler.readJoinCmdsForAccount(MC.player.getGameProfile());
-
-        List<String> joinCommands = new ArrayList<>(Arrays.asList(fileContents.split("[\\r\\n]+")));
-
-        joinCommands = joinCommands.stream().filter((command) -> command.length() > 0).collect(Collectors.toList());
-
-        return joinCommands;
+    private static List<String> getJoinCommands(PlayerEntity player) {
+        String playerName = player.getName().getString().toLowerCase();
+        return ModConfig.HANDLER.instance().joinCommands.commands.stream().filter((command) -> {
+            List<String> accounts = command.getAccounts();
+            return accounts.isEmpty() || accounts.stream().map(String::toLowerCase).toList().contains(playerName);
+        }).map((command) -> command.command).toList();
     }
 
     private static void sendJoinCommand() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getNetworkHandler() == null)
             return;
-        }
 
-        String command = joinCommands.get(commandIndex);
-        if (command.startsWith("/")) {
+        String command = commandQueue.poll();
+
+        if (command == null)
+            return;
+
+        if (command.startsWith("/"))
             command = command.substring(1);
-        }
 
         MC.getNetworkHandler().sendChatCommand(command);
         lastCommandSentAt = System.currentTimeMillis();
-        commandIndex++;
-
-        if (commandIndex >= joinCommands.size()) {
-            reset();
-        }
     }
 
     private static void reset() {
-        waitingToSend = false;
         joinedAt = 0;
         lastCommandSentAt = 0;
-        commandIndex = 0;
-        joinCommands = null;
+        commandQueue = new LinkedList<>();
     }
 }

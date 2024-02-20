@@ -26,9 +26,7 @@ public class IOHandler {
 
     public static final File modDirectory = new File(mcDirectory + File.separator + "sbutils");
     public static final File autoAdvertDir = new File(modDirectory + File.separator + "autoadvert");
-    public static final File joinCommandsDir = new File(modDirectory + File.separator + "joincommands");
     public static final File loggerDir = new File(modDirectory + File.separator + "chatlogger");
-    public static final File globalJoinCmdsFile = new File(joinCommandsDir + File.separator + "global.txt");
     public static final File messageLogFile = new File(loggerDir + File.separator + "messages.txt");
     public static final File transactionLogFile = new File(loggerDir + File.separator + "transactions.txt");
     public static final File visitLogFile = new File(loggerDir + File.separator + "visits.txt");
@@ -44,7 +42,6 @@ public class IOHandler {
         try {
             modDirectory.mkdir();
             autoAdvertDir.mkdir();
-            joinCommandsDir.mkdir();
             loggerDir.mkdir();
             autoKitDir.mkdir();
         } catch (SecurityException e) {
@@ -56,7 +53,6 @@ public class IOHandler {
 
     private static boolean createFiles() {
         try {
-            globalJoinCmdsFile.createNewFile();
             transactionLogFile.createNewFile();
             messageLogFile.createNewFile();
             visitLogFile.createNewFile();
@@ -71,37 +67,6 @@ public class IOHandler {
 
     public static String readAdFile(String filename) {
         return readFile(new File(autoAdvertDir + File.separator + filename));
-    }
-
-    public static String readGlobalJoinCmds() {
-        return readFile(globalJoinCmdsFile);
-    }
-
-    public static String readJoinCmdsForAccount(GameProfile account) {
-        File nameFile = new File(joinCommandsDir + File.separator + account.getName() + ".txt");
-        File uuidFile = new File(joinCommandsDir + File.separator + account.getId().toString() + ".txt");
-        boolean nameFilePresent = nameFile.exists();
-        boolean uuidFilePresent = uuidFile.exists();
-
-        if (!nameFilePresent && !uuidFilePresent) {
-            LOGGER.info("No join commands file found for " + account.getName() + ".");
-            return "";
-        }
-
-        String cmdsForAccount = "";
-        try {
-            if (uuidFilePresent) { // UUID file takes precedence over username file
-                cmdsForAccount += Files.readString(uuidFile.toPath());
-                return cmdsForAccount;
-            }
-            if (nameFilePresent) {
-                cmdsForAccount += Files.readString(nameFile.toPath());
-            }
-        } catch (IOException e) {
-            LOGGER.error("Unable to read join commands for " + account.getName() + ":" + e.getMessage());
-        }
-
-        return cmdsForAccount;
     }
 
     public static String readFile(File file) {
@@ -140,25 +105,6 @@ public class IOHandler {
         File advertFile = new File(autoAdvertDir + File.separator + adFile);
 
         return overwriteFile(advertFile, adverts);
-    }
-
-    public static boolean writeAccountCommands(GameProfile account, List<String> commands) {
-        File nameFile = new File(joinCommandsDir + File.separator + account.getName() + ".txt");
-        File uuidFile = new File(joinCommandsDir + File.separator + account.getId().toString() + ".txt");
-
-        if (!nameFile.exists() && !uuidFile.exists()) {
-            return overwriteFile(uuidFile, commands);
-        }
-
-        if (uuidFile.exists()) {
-            return overwriteFile(uuidFile, commands);
-        }
-
-        if (nameFile.exists()) {
-            return overwriteFile(nameFile, commands);
-        }
-
-        return false;
     }
 
     public static boolean logToFile(String text, File file) {
