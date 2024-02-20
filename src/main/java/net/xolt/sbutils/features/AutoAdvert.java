@@ -56,7 +56,7 @@ public class AutoAdvert {
                                             ))))
                     .then(CommandHelper.doubl("delay", "seconds", "autoAdvert.delay", () -> ModConfig.HANDLER.instance().autoAdvert.delay, (value) -> ModConfig.HANDLER.instance().autoAdvert.delay = value))
                     .then(CommandHelper.doubl("initialDelay", "seconds", "autoAdvert.initialDelay", () -> ModConfig.HANDLER.instance().autoAdvert.initialDelay, (value) -> ModConfig.HANDLER.instance().autoAdvert.initialDelay = value))
-                    .then(CommandHelper.stringList("whitelist", "user", "autoAdvert.whitelist", () -> ModConfig.HANDLER.instance().autoAdvert.whitelist)
+                    .then(CommandHelper.stringList("whitelist", "user", "autoAdvert.whitelist", () -> ModConfig.HANDLER.instance().autoAdvert.whitelist, (value) -> ModConfig.HANDLER.instance().autoAdvert.whitelist = value)
                             .then(CommandHelper.bool("enabled", "autoAdvert.useWhitelist", () -> ModConfig.HANDLER.instance().autoAdvert.useWhitelist, (value) -> ModConfig.HANDLER.instance().autoAdvert.useWhitelist = value)))
                     .then(CommandHelper.runnable("reset", () -> {
                         reset();

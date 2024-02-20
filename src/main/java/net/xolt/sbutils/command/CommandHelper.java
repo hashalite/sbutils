@@ -13,6 +13,7 @@ import net.xolt.sbutils.command.argument.GenericEnumArgumentType;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -55,86 +56,94 @@ public class CommandHelper {
 
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String argument, String setting, Supplier<List<String>> get) {
-        return stringList(command, argument, setting, -1, false, false, get);
+    public static LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String argument, String setting, Supplier<List<String>> get, Consumer<List<String>> set) {
+        return stringList(command, argument, setting, -1, false, false, get, set);
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, Supplier<List<String>> get) {
-        return genericList(command, argument, setting, maxSize, allowDupes, indexed, StringArgumentType.greedyString(), StringArgumentType::getString, get);
+    public static LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, Supplier<List<String>> get, Consumer<List<String>> set) {
+        return genericList(command, argument, setting, maxSize, allowDupes, indexed, StringArgumentType.greedyString(), StringArgumentType::getString, get, set);
     }
 
-    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, Class<T> type, Supplier<List<T>> get) {
-        return enumList(command, argument, setting, -1, false, false, type, get);
+    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
+        return enumList(command, argument, setting, -1, false, false, type, get, set);
     }
 
-    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, Class<T> type, Supplier<List<T>> get) {
-        return genericList(command, argument, setting, maxSize, allowDupes, indexed, GenericEnumArgumentType.genericEnum(type), (context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type), get);
+    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
+        return genericList(command, argument, setting, maxSize, allowDupes, indexed, GenericEnumArgumentType.genericEnum(type), (context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type), get, set);
     }
 
 
 
-    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String argument, String setting, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<T>> get) {
-        return genericList(command, argument, setting, -1, false, false, argumentType, getArgument, get);
+    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String argument, String setting, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<T>> get, Consumer<List<T>> set) {
+        return genericList(command, argument, setting, -1, false, false, argumentType, getArgument, get, set);
     }
 
-    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<T>> get) {
+    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<T>> get, Consumer<List<T>> set) {
         Consumer<T> add = (value) -> {
-            if (maxSize > -1 && get.get().size() >= maxSize) {
+            ArrayList<T> list = new ArrayList<>(get.get());
+            if (maxSize > -1 && list.size() >= maxSize) {
                 Messenger.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Text.translatable(OPTION_KEY + setting));
                 return;
             }
 
-            if (!allowDupes && get.get().contains(value)) {
+            if (!allowDupes && list.contains(value)) {
                 Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Text.translatable(OPTION_KEY + setting));
                 return;
             }
 
-            get.get().add(value);
+            list.add(value);
+            set.accept(list);
             ModConfig.HANDLER.save();
             Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Text.translatable(OPTION_KEY + setting));
-            Messenger.printListSetting(OPTION_KEY + setting, get.get(), indexed);
+            Messenger.printListSetting(OPTION_KEY + setting, list, indexed);
         };
 
         if (indexed)
             return customIndexedList(command, argument, setting, argumentType, getArgument, get, add,
                     (index) -> {
+                        ArrayList<T> list = new ArrayList<>(get.get());
                         int adjustedIndex = index - 1;
-                        if (adjustedIndex >= get.get().size() || adjustedIndex < 0) {
+                        if (adjustedIndex >= list.size() || adjustedIndex < 0) {
                             Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable(OPTION_KEY + setting));
                             return;
                         }
 
-                        T removed = get.get().remove(adjustedIndex);
+                        T removed = list.remove(adjustedIndex);
+                        set.accept(list);
                         ModConfig.HANDLER.save();
                         Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Text.translatable(OPTION_KEY + setting));
-                        Messenger.printListSetting(OPTION_KEY + setting, get.get(), true);
+                        Messenger.printListSetting(OPTION_KEY + setting, list, true);
                     },
                     (index, value) -> {
+                        ArrayList<T> list = new ArrayList<>(get.get());
                         int adjustedIndex = index - 1;
-                        if (adjustedIndex >= get.get().size() || adjustedIndex < 0) {
+                        if (adjustedIndex >= list.size() || adjustedIndex < 0) {
                             Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable(OPTION_KEY + setting));
                             return;
                         }
 
-                        if (!allowDupes && get.get().contains(value)) {
+                        if (!allowDupes && list.contains(value)) {
                             Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Text.translatable(OPTION_KEY + setting));
                             return;
                         }
 
-                        get.get().add(index, value);
+                        list.add(index, value);
+                        set.accept(list);
                         ModConfig.HANDLER.save();
                         Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Text.translatable(OPTION_KEY + setting));
-                        Messenger.printListSetting(OPTION_KEY + setting, get.get(), true);
+                        Messenger.printListSetting(OPTION_KEY + setting, list, true);
                     }
             );
 
         return customList(command, argument, setting, argumentType, getArgument, get, add,
                 (value) -> {
-                    boolean result = get.get().remove(value);
+                    ArrayList<T> list = new ArrayList<>(get.get());
+                    boolean result = list.remove(value);
+                    set.accept(list);
                     ModConfig.HANDLER.save();
                     if (result) {
                         Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", value, Text.translatable(OPTION_KEY + setting));
-                        Messenger.printListSetting(OPTION_KEY + setting, get.get());
+                        Messenger.printListSetting(OPTION_KEY + setting, list);
                     } else {
                         Messenger.printWithPlaceholders("message.sbutils.listDelFail", value, Text.translatable(OPTION_KEY + setting));
                     }

@@ -35,7 +35,7 @@ public class AutoKit {
                         .then(CommandHelper.doubl("commandDelay", "seconds", "autoKit.commandDelay", () -> ModConfig.HANDLER.instance().autoKit.commandDelay, (value) -> ModConfig.HANDLER.instance().autoKit.commandDelay = value, 0))
                         .then(CommandHelper.doubl("claimDelay", "seconds", "autoKit.claimDelay", () -> ModConfig.HANDLER.instance().autoKit.claimDelay, (value) -> ModConfig.HANDLER.instance().autoKit.claimDelay = value, 0))
                         .then(CommandHelper.doubl("systemDelay", "seconds", "autoKit.systemDelay", () -> ModConfig.HANDLER.instance().autoKit.systemDelay, (value) -> ModConfig.HANDLER.instance().autoKit.systemDelay = value, 0))
-                        .then(CommandHelper.enumList("kits", "kit", "autoKit.kits", ModConfig.Kit.class, () -> ModConfig.HANDLER.instance().autoKit.kits))
+                        .then(CommandHelper.enumList("kits", "kit", "autoKit.kits", ModConfig.Kit.class, () -> ModConfig.HANDLER.instance().autoKit.kits, (value) -> ModConfig.HANDLER.instance().autoKit.kits = value))
                         .then(CommandHelper.runnable("info", () -> Messenger.printAutoKitInfo(kitQueue, invFullList)))
         );
 

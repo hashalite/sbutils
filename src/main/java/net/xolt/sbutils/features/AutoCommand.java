@@ -35,7 +35,7 @@ public class AutoCommand {
         final LiteralCommandNode<FabricClientCommandSource> autoCommandNode = dispatcher.register(
                 CommandHelper.toggle(COMMAND, "autoCommand", () -> ModConfig.HANDLER.instance().autoCommand.enabled, (value) -> ModConfig.HANDLER.instance().autoCommand.enabled = value)
                         .then(CommandHelper.doubl("minDelay", "seconds", "autoCommand.minDelay", () -> ModConfig.HANDLER.instance().autoCommand.minDelay, (value) -> ModConfig.HANDLER.instance().autoCommand.minDelay = value))
-                        .then(CommandHelper.genericList("commands", "command", "autoCommand.commands", -1, true, true, AutoCommandEntryArgumentType.commandEntry(), AutoCommandEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().autoCommand.commands)
+                        .then(CommandHelper.genericList("commands", "command", "autoCommand.commands", -1, true, true, AutoCommandEntryArgumentType.commandEntry(), AutoCommandEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().autoCommand.commands, (value) -> ModConfig.HANDLER.instance().autoCommand.commands = value)
                                 .then(ClientCommandManager.literal("toggle")
                                         .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
                                                 .executes(context -> onToggleCommand(IntegerArgumentType.getInteger(context, "index")))))

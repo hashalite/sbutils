@@ -52,7 +52,7 @@ public class AutoCrate {
                     .then(CommandHelper.doubl("delay", "seconds", "autoCrate.delay", () -> ModConfig.HANDLER.instance().autoCrate.delay, (value) -> ModConfig.HANDLER.instance().autoCrate.delay = value, 0.0))
                     .then(CommandHelper.doubl("range", "range", "autoCrate.distance", () -> ModConfig.HANDLER.instance().autoCrate.distance, (value) -> ModConfig.HANDLER.instance().autoCrate.distance = value))
                     .then(CommandHelper.bool("cleaner", "autoCrate.cleaner", () -> ModConfig.HANDLER.instance().autoCrate.cleaner, (value) -> ModConfig.HANDLER.instance().autoCrate.cleaner = value)
-                            .then(CommandHelper.stringList("items", "item", "autoCrate.itemsToClean", () -> ModConfig.HANDLER.instance().autoCrate.itemsToClean)))
+                            .then(CommandHelper.stringList("items", "item", "autoCrate.itemsToClean", () -> ModConfig.HANDLER.instance().autoCrate.itemsToClean, (value) -> ModConfig.HANDLER.instance().autoCrate.itemsToClean = value)))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

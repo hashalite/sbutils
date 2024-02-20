@@ -36,7 +36,7 @@ public class JoinCommands {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(
                 CommandHelper.toggle(COMMAND, "joinCommands", () -> ModConfig.HANDLER.instance().joinCommands.enabled, (value) -> ModConfig.HANDLER.instance().joinCommands.enabled = value)
-                    .then(CommandHelper.genericList("commands", "command", "joinCommands.commands", -1, true, true, JoinCommandsEntryArgumentType.commandEntry(), JoinCommandsEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().joinCommands.commands)
+                    .then(CommandHelper.genericList("commands", "command", "joinCommands.commands", -1, true, true, JoinCommandsEntryArgumentType.commandEntry(), JoinCommandsEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().joinCommands.commands, (value) -> ModConfig.HANDLER.instance().joinCommands.commands = value)
                             .then(ClientCommandManager.literal("set")
                                     .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
                                             .then(ClientCommandManager.literal("command")

@@ -27,7 +27,7 @@ public class AutoPrivate {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoPrivateNode = dispatcher.register(
                 CommandHelper.toggle(COMMAND, "autoPrivate", () -> ModConfig.HANDLER.instance().autoPrivate.enabled, (value) -> ModConfig.HANDLER.instance().autoPrivate.enabled = value)
-                        .then(CommandHelper.stringList("names", "name", "autoPrivate.names", 2, false, false, () -> ModConfig.HANDLER.instance().autoPrivate.names))
+                        .then(CommandHelper.stringList("names", "name", "autoPrivate.names", 2, false, false, () -> ModConfig.HANDLER.instance().autoPrivate.names, (value) -> ModConfig.HANDLER.instance().autoPrivate.names = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
