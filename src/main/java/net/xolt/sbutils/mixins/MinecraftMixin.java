@@ -1,8 +1,8 @@
 package net.xolt.sbutils.mixins;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Overlay;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Overlay;
+import net.minecraft.client.gui.screens.Screen;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
 import net.xolt.sbutils.features.common.InvCleaner;
@@ -13,19 +13,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin {
+@Mixin(Minecraft.class)
+public abstract class MinecraftMixin {
     @Shadow
-    public Screen currentScreen;
+    public Screen screen;
 
     @Shadow
     private Overlay overlay;
 
     @Shadow
-    protected int attackCooldown;
+    protected int missTime;
 
     @Shadow
-    protected abstract void handleBlockBreaking(boolean breaking);
+    protected abstract void continueAttack(boolean breaking);
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
@@ -45,20 +45,20 @@ public abstract class MinecraftClientMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTickTail(CallbackInfo ci) {
         AutoMine.tick();
-        if (ModConfig.HANDLER.instance().autoMine.enabled && AutoMine.shouldMine() && (currentScreen != null || overlay != null)) {
-            attackCooldown = 0;
-            handleBlockBreaking(true);
+        if (ModConfig.HANDLER.instance().autoMine.enabled && AutoMine.shouldMine() && (screen != null || overlay != null)) {
+            missTime = 0;
+            continueAttack(true);
         }
     }
 
-    @Inject(method = "handleBlockBreaking", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
     public void onHandleBlockBreaking(boolean breaking, CallbackInfo ci) {
         if (breaking && ToolSaver.shouldCancelAttack()) {
             ci.cancel();
         }
     }
 
-    @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
     public void onDoAttack(CallbackInfoReturnable<Boolean> cir) {
         if (ToolSaver.shouldCancelAttack()) {
             cir.cancel();

@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
@@ -119,7 +119,7 @@ public class AutoKit {
         reset();
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if (!enabled || !awaitingResponse || MC.player == null) {
             return;
         }
@@ -166,7 +166,7 @@ public class AutoKit {
             lastClaimed = currentTime - (((long)kitEntry.kit.getCooldown() * 3600000) - resetTime);
         }
 
-        kitData.get(player).put(kitEntry.kit.asString(), lastClaimed);
+        kitData.get(player).put(kitEntry.kit.getSerializedName(), lastClaimed);
         IOHandler.writeAutoKitData(kitData);
         kitQueue.poll();
         queueKit(kitEntry.kit);
@@ -174,11 +174,11 @@ public class AutoKit {
     }
 
     private static void claimKit(ModConfig.Kit kit) {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
 
-        MC.getNetworkHandler().sendChatCommand("kit " + kit.asString());
+        MC.getConnection().sendCommand("kit " + kit.getSerializedName());
         lastCommandSentAt = System.currentTimeMillis();
         awaitingResponse = true;
     }
@@ -202,8 +202,8 @@ public class AutoKit {
         }
         String player = MC.player.getName().getString();
         long lastClaimed = 0;
-        if (kitData.containsKey(player) && kitData.get(player).containsKey(kit.asString()))
-            lastClaimed = kitData.get(player).get(kit.asString());
+        if (kitData.containsKey(player) && kitData.get(player).containsKey(kit.getSerializedName()))
+            lastClaimed = kitData.get(player).get(kit.getSerializedName());
 
         long cooldownLeft = kitCooldownLeft(kit, lastClaimed);
 

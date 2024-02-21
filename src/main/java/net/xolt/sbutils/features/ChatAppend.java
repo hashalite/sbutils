@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
+import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -32,12 +32,12 @@ public class ChatAppend {
                 .redirect(chatAppendNode));
     }
 
-    public static ChatMessageC2SPacket processSentMessage(ChatMessageC2SPacket packet) {
+    public static ServerboundChatPacket processSentMessage(ServerboundChatPacket packet) {
         if (!ModConfig.HANDLER.instance().chatAppend.addPrefix && !ModConfig.HANDLER.instance().chatAppend.addSuffix) {
             return packet;
         }
 
-        String message = packet.chatMessage();
+        String message = packet.message();
 
         if (ModConfig.HANDLER.instance().chatAppend.addPrefix) {
             message = ModConfig.HANDLER.instance().chatAppend.prefix + message;
@@ -47,6 +47,6 @@ public class ChatAppend {
             message = message + ModConfig.HANDLER.instance().chatAppend.suffix;
         }
 
-        return new ChatMessageC2SPacket(message, packet.timestamp(), packet.salt(), packet.signature(), packet.acknowledgment());
+        return new ServerboundChatPacket(message, packet.timeStamp(), packet.salt(), packet.signature(), packet.lastSeenMessages());
     }
 }

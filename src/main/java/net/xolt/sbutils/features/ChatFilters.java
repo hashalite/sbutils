@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.ChatFilter;
@@ -57,7 +57,7 @@ public class ChatFilters {
                 .redirect(chatFilterNode));
     }
 
-    public static boolean shouldFilter(Text message) {
+    public static boolean shouldFilter(Component message) {
         if (!anyFiltersEnabled()) {
             return false;
         }

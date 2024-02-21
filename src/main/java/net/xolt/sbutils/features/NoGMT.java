@@ -4,16 +4,16 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.item.BookItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.WritableBookItem;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.BookItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.WritableBookItem;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -50,14 +50,14 @@ public class NoGMT {
                 .redirect(noGMTNode));
     }
 
-    public static Text modifyMessage(Text message) {
+    public static Component modifyMessage(Component message) {
         Matcher matcher = RegexFilters.emailFilter.matcher(message.getString());
         if (!matcher.matches())
             return message;
         return replaceGmtTime(message, matcher.group(1), EMAIL_DATE_FORMAT);
     }
 
-    public static boolean shouldModify(Text message) {
+    public static boolean shouldModify(Component message) {
         return ModConfig.HANDLER.instance().noGmt.enabled && RegexFilters.emailFilter.matcher(message.getString()).matches();
     }
 
@@ -69,32 +69,32 @@ public class NoGMT {
         if (!(stack.getItem() instanceof BookItem) && !(stack.getItem() instanceof WritableBookItem))
             return stack;
 
-        NbtCompound nbt = stack.getNbt();
-        if (nbt == null || !nbt.contains(ItemStack.DISPLAY_KEY))
+        CompoundTag nbt = stack.getTag();
+        if (nbt == null || !nbt.contains(ItemStack.TAG_DISPLAY))
             return stack;
 
-        NbtCompound displayNbt = nbt.getCompound(ItemStack.DISPLAY_KEY);
-        if (!displayNbt.contains(ItemStack.LORE_KEY))
+        CompoundTag displayNbt = nbt.getCompound(ItemStack.TAG_DISPLAY);
+        if (!displayNbt.contains(ItemStack.TAG_LORE))
             return stack;
 
-        NbtList nbtList = displayNbt.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        ListTag nbtList = displayNbt.getList(ItemStack.TAG_LORE, Tag.TAG_STRING);
         for (int j = 0; j < nbtList.size(); ++j) {
-            MutableText loreLine = Text.Serialization.fromJson(nbtList.getString(j));
+            MutableComponent loreLine = Component.Serializer.fromJson(nbtList.getString(j));
             if (loreLine == null)
                 continue;
             Matcher matcher = RegexFilters.mailLoreFilter.matcher(loreLine.getString());
             if (matcher.matches()) {
-                Text newLoreLine = replaceGmtTime(loreLine, matcher.group(1), MAIL_DATE_FORMAT);
-                nbtList.set(j, NbtString.of(Text.Serialization.toJsonString(newLoreLine)));
+                Component newLoreLine = replaceGmtTime(loreLine, matcher.group(1), MAIL_DATE_FORMAT);
+                nbtList.set(j, StringTag.valueOf(Component.Serializer.toJson(newLoreLine)));
             }
         }
 
         ItemStack result = stack.copy();
-        result.setSubNbt(ItemStack.LORE_KEY, nbtList);
+        result.addTagElement(ItemStack.TAG_LORE, nbtList);
         return result;
     }
 
-    private static Text replaceGmtTime(Text text, String target, DateTimeFormatter format) {
+    private static Component replaceGmtTime(Component text, String target, DateTimeFormatter format) {
         String zoneStr = ModConfig.HANDLER.instance().noGmt.timeZone;
         ZoneId localZone;
         try {
@@ -111,22 +111,22 @@ public class NoGMT {
         return replaceText(text, target, newTimeStr);
     }
 
-    private static Text replaceText(Text message, String target, String replacement) {
+    private static Component replaceText(Component message, String target, String replacement) {
         StringBuilder sb = new StringBuilder();
-        TextContent content = message.getContent();
+        ComponentContents content = message.getContents();
         content.visit(string -> {
             sb.append(string);
             return Optional.empty();
         });
         String stringText = sb.toString();
 
-        MutableText newMessage = MutableText.of(message.getContent()).setStyle(message.getStyle());
+        MutableComponent newMessage = MutableComponent.create(message.getContents()).setStyle(message.getStyle());
         if (stringText.contains(target)) {
             stringText = stringText.replaceAll(target, replacement);
-            newMessage = Text.literal(stringText).setStyle(message.getStyle());
+            newMessage = Component.literal(stringText).setStyle(message.getStyle());
         }
 
-        for (Text text : message.getSiblings()) {
+        for (Component text : message.getSiblings()) {
             newMessage.append(replaceText(text, target, replacement));
         }
 

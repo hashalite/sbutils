@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
@@ -63,7 +63,7 @@ public class ChatLogger {
                 .redirect(chatLoggerNode));
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if (!anyFiltersEnabled()) {
             return;
         }

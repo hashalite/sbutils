@@ -1,9 +1,5 @@
 package net.xolt.sbutils.mixins;
 
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.gui.hud.MessageIndicator;
-import net.minecraft.network.message.MessageSignatureData;
-import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.Mentions;
 import net.xolt.sbutils.features.NoGMT;
@@ -16,18 +12,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-@Mixin(ChatHud.class)
-public abstract class ChatHudMixin {
+import net.minecraft.client.GuiMessageTag;
+import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MessageSignature;
+
+@Mixin(ChatComponent.class)
+public abstract class ChatComponentMixin {
 
     @Invoker
-    abstract void callAddMessage(Text message, @Nullable MessageSignatureData signature, int ticks, @Nullable MessageIndicator indicator, boolean refresh);
+    abstract void callAddMessage(Component message, @Nullable MessageSignature signature, int ticks, @Nullable GuiMessageTag indicator, boolean refresh);
 
     @Invoker
-    abstract void callLogChatMessage(Text message, @Nullable MessageIndicator indicator);
+    abstract void callLogChatMessage(Component message, @Nullable GuiMessageTag indicator);
 
-    @Inject(method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", at = @At("HEAD"), cancellable = true)
-    public void onAddMessage(Text message, MessageSignatureData signature, MessageIndicator indicator, CallbackInfo ci) {
-        Text modified = message;
+    @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V", at = @At("HEAD"), cancellable = true)
+    public void onAddMessage(Component message, MessageSignature signature, GuiMessageTag indicator, CallbackInfo ci) {
+        Component modified = message;
         if (ModConfig.HANDLER.instance().mentions.enabled && ModConfig.HANDLER.instance().mentions.highlight && Mentions.isValidMessage(modified) && Mentions.mentioned(modified)) {
             ci.cancel();
             modified = Mentions.modifyMessage(modified);
@@ -40,7 +41,7 @@ public abstract class ChatHudMixin {
 
         if (ci.isCancelled()) {
             callLogChatMessage(message, indicator);
-            callAddMessage(modified, signature, MC.inGameHud.getTicks(), indicator, false);
+            callAddMessage(modified, signature, MC.gui.getGuiTicks(), indicator, false);
         }
     }
 }

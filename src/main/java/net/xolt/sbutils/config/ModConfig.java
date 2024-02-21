@@ -7,16 +7,16 @@ import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.xolt.sbutils.features.AutoCommand;
 import net.xolt.sbutils.util.Messenger;
 
@@ -28,7 +28,7 @@ import java.util.List;
 public class ModConfig {
 
     public static final ConfigClassHandler<ModConfig> HANDLER = ConfigClassHandler.createBuilder(ModConfig.class)
-            .id(new Identifier("sbutils", "config"))
+            .id(new ResourceLocation("sbutils", "config"))
             .serializer(config -> GsonConfigSerializerBuilder.create(config)
                     .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
                     .appendGsonBuilder(builder -> builder.setFieldNamingPolicy(FieldNamingPolicy.IDENTITY))
@@ -84,15 +84,15 @@ public class ModConfig {
                 return this.command.equals(other.command) && this.delay == other.delay && this.enabled == other.enabled;
             }
 
-            @Override public MutableText format() {
+            @Override public MutableComponent format() {
                 Long cmdLastSentAt = AutoCommand.getCmdsLastSentAt().get(this);
-                MutableText delayLeftText;
+                MutableComponent delayLeftText;
                 if (!ModConfig.HANDLER.instance().autoCommand.enabled || !enabled || cmdLastSentAt == null) {
-                    delayLeftText = Text.literal("N/A");
+                    delayLeftText = Component.literal("N/A");
                 } else {
                     long delayLeftMillis = (long)(delay * 1000.0) - (System.currentTimeMillis() - cmdLastSentAt);
                     double delayLeft = (double)Math.max(delayLeftMillis, 0) / 1000.0;
-                    delayLeftText = Text.literal(Messenger.formatTime(delayLeft));
+                    delayLeftText = Component.literal(Messenger.formatTime(delayLeft));
                 }
                 return Messenger.insertPlaceholders("message.sbutils.autoCommand.commandEntry", command, Messenger.formatTime(delay), enabled, delayLeftText);
             }
@@ -243,7 +243,7 @@ public class ModConfig {
                 return this.command.equals(other.command) && this.accounts.equals(other.accounts);
             }
 
-            @Override public MutableText format() {
+            @Override public MutableComponent format() {
                 return Messenger.insertPlaceholders("message.sbutils.joinCommands.commandEntry", command, formatAccounts());
             }
 
@@ -251,11 +251,11 @@ public class ModConfig {
                 return Arrays.asList(accounts.replaceAll(" ", "").split(",")).stream().filter((account) -> !account.isEmpty()).toList();
             }
 
-            public MutableText formatAccounts() {
+            public MutableComponent formatAccounts() {
                 List<String> accountList = getAccounts();
                 if (accountList.isEmpty())
-                    return Text.literal("*");
-                return Text.literal(String.join(", ", getAccounts()));
+                    return Component.literal("*");
+                return Component.literal(String.join(", ", getAccounts()));
             }
 
             @Override public String toString() {
@@ -299,7 +299,7 @@ public class ModConfig {
         @SerialEntry public int durability = 20;
     }
 
-    public enum FixMode implements NameableEnum, StringIdentifiable {
+    public enum FixMode implements NameableEnum, StringRepresentable {
         HAND("text.sbutils.config.option.autoFix.mode.hand"),
         ALL("text.sbutils.config.option.autoFix.mode.all");
 
@@ -309,16 +309,16 @@ public class ModConfig {
             this.name = name;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public Component getDisplayName() {
+            return Component.translatable(name);
         }
 
-        public String asString() {
+        public String getSerializedName() {
             return getDisplayName().getString();
         }
     }
 
-    public enum EnchantMode implements NameableEnum, StringIdentifiable {
+    public enum EnchantMode implements NameableEnum, StringRepresentable {
         INDIVIDUAL("text.sbutils.config.option.enchantAll.mode.individual"),
         ALL("text.sbutils.config.option.enchantAll.mode.all");
 
@@ -328,16 +328,16 @@ public class ModConfig {
             this.name = name;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public Component getDisplayName() {
+            return Component.translatable(name);
         }
 
-        public String asString() {
+        public String getSerializedName() {
             return getDisplayName().getString();
         }
     }
 
-    public enum SilkTarget implements NameableEnum, StringIdentifiable {
+    public enum SilkTarget implements NameableEnum, StringRepresentable {
         DIAMOND_PICKAXE(Items.DIAMOND_PICKAXE),
         DIAMOND_AXE(Items.DIAMOND_AXE),
         DIAMOND_SHOVEL(Items.DIAMOND_SHOVEL),
@@ -354,17 +354,17 @@ public class ModConfig {
             return tool;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(tool.getTranslationKey());
+        public Component getDisplayName() {
+            return Component.translatable(tool.getDescriptionId());
         }
 
         @Override
-        public String asString() {
-            return Registries.ITEM.getId(tool).getPath();
+        public String getSerializedName() {
+            return BuiltInRegistries.ITEM.getKey(tool).getPath();
         }
     }
 
-    public enum CornerButtonPos implements NameableEnum, StringIdentifiable {
+    public enum CornerButtonPos implements NameableEnum, StringRepresentable {
         TOP_LEFT("top_left"),
         TOP_RIGHT("top_right"),
         BOTTOM_LEFT("bottom_left"),
@@ -376,50 +376,50 @@ public class ModConfig {
             this.name = name;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public Component getDisplayName() {
+            return Component.translatable(name);
         }
 
         @Override
-        public String asString() {
+        public String getSerializedName() {
             return getDisplayName().getString();
         }
     }
 
-    public enum NotifSound implements NameableEnum, StringIdentifiable {
-        EXPERIENCE(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP),
-        LAY_EGG(SoundEvents.ENTITY_CHICKEN_EGG),
-        DISPENSER(SoundEvents.BLOCK_DISPENSER_FAIL),
-        BUTTON(SoundEvents.BLOCK_STONE_BUTTON_CLICK_ON),
-        ANVIL_LAND(SoundEvents.BLOCK_ANVIL_LAND),
-        BANJO(SoundEvents.BLOCK_NOTE_BLOCK_BANJO.value()),
-        BASEDRUM(SoundEvents.BLOCK_NOTE_BLOCK_BASEDRUM.value()),
-        BASS(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value()),
-        BELL(SoundEvents.BLOCK_NOTE_BLOCK_BELL.value()),
-        BIT(SoundEvents.BLOCK_NOTE_BLOCK_BIT.value()),
-        CHIME(SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value()),
-        COW_BELL(SoundEvents.BLOCK_NOTE_BLOCK_COW_BELL.value()),
-        DIDGERIDOO(SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value()),
-        FLUTE(SoundEvents.BLOCK_NOTE_BLOCK_FLUTE.value()),
-        GUITAR(SoundEvents.BLOCK_NOTE_BLOCK_GUITAR.value()),
-        HARP(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value()),
-        HAT(SoundEvents.BLOCK_NOTE_BLOCK_HAT.value()),
-        IRON_XYLOPHONE(SoundEvents.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE.value()),
-        PLING(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value()),
-        SNARE(SoundEvents.BLOCK_NOTE_BLOCK_SNARE.value()),
-        XYLOPHONE(SoundEvents.BLOCK_NOTE_BLOCK_XYLOPHONE.value());
+    public enum NotifSound implements NameableEnum, StringRepresentable {
+        EXPERIENCE(SoundEvents.EXPERIENCE_ORB_PICKUP),
+        LAY_EGG(SoundEvents.CHICKEN_EGG),
+        DISPENSER(SoundEvents.DISPENSER_FAIL),
+        BUTTON(SoundEvents.STONE_BUTTON_CLICK_ON),
+        ANVIL_LAND(SoundEvents.ANVIL_LAND),
+        BANJO(SoundEvents.NOTE_BLOCK_BANJO.value()),
+        BASEDRUM(SoundEvents.NOTE_BLOCK_BASEDRUM.value()),
+        BASS(SoundEvents.NOTE_BLOCK_BASS.value()),
+        BELL(SoundEvents.NOTE_BLOCK_BELL.value()),
+        BIT(SoundEvents.NOTE_BLOCK_BIT.value()),
+        CHIME(SoundEvents.NOTE_BLOCK_CHIME.value()),
+        COW_BELL(SoundEvents.NOTE_BLOCK_COW_BELL.value()),
+        DIDGERIDOO(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value()),
+        FLUTE(SoundEvents.NOTE_BLOCK_FLUTE.value()),
+        GUITAR(SoundEvents.NOTE_BLOCK_GUITAR.value()),
+        HARP(SoundEvents.NOTE_BLOCK_HARP.value()),
+        HAT(SoundEvents.NOTE_BLOCK_HAT.value()),
+        IRON_XYLOPHONE(SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE.value()),
+        PLING(SoundEvents.NOTE_BLOCK_PLING.value()),
+        SNARE(SoundEvents.NOTE_BLOCK_SNARE.value()),
+        XYLOPHONE(SoundEvents.NOTE_BLOCK_XYLOPHONE.value());
         private final SoundEvent sound;
 
         NotifSound(SoundEvent sound) {
             this.sound = sound;
         }
 
-        public String asString() {
-            return sound.getId().toShortTranslationKey();
+        public String getSerializedName() {
+            return sound.getLocation().toShortLanguageKey();
         }
 
-        public Text getDisplayName() {
-            return Text.literal(asString());
+        public Component getDisplayName() {
+            return Component.literal(getSerializedName());
         }
 
         public SoundEvent getSound() {
@@ -427,7 +427,7 @@ public class ModConfig {
         }
     }
 
-    public enum Crate implements NameableEnum, StringIdentifiable {
+    public enum Crate implements NameableEnum, StringRepresentable {
         VOTER("text.sbutils.config.option.autoCrate.mode.voter"),
         COMMON("text.sbutils.config.option.autoCrate.mode.common"),
         RARE("text.sbutils.config.option.autoCrate.mode.rare"),
@@ -440,16 +440,16 @@ public class ModConfig {
             this.name = name;
         }
 
-        public String asString() {
+        public String getSerializedName() {
             return getDisplayName().getString();
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public Component getDisplayName() {
+            return Component.translatable(name);
         }
     }
 
-    public enum Kit implements NameableEnum, StringIdentifiable {
+    public enum Kit implements NameableEnum, StringRepresentable {
 
         SKYTITAN("Skytitan", 24, List.of(
                 new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
@@ -514,18 +514,18 @@ public class ModConfig {
             return items;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public Component getDisplayName() {
+            return Component.translatable(name);
         }
 
         @Override
-        public String asString() {
+        public String getSerializedName() {
             return getDisplayName().getString();
         }
     }
 
     public interface MultiValue {
 
-        MutableText format();
+        MutableComponent format();
     }
 }

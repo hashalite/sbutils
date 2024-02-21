@@ -1,11 +1,11 @@
 package net.xolt.sbutils.util;
 
 import dev.isxander.yacl3.api.NameableEnum;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.AutoKit;
 
@@ -25,12 +25,12 @@ public class Messenger {
         printMessage(message, getMessageColor(), showPrefix);
     }
 
-    public static void printMessage(String message, Formatting formatting) {
+    public static void printMessage(String message, ChatFormatting formatting) {
         printMessage(message, formatting, true);
     }
 
-    public static void printMessage(String message, Formatting formatting, boolean showPrefix) {
-        printMessage(Text.translatable(message).formatted(formatting), showPrefix);
+    public static void printMessage(String message, ChatFormatting formatting, boolean showPrefix) {
+        printMessage(Component.translatable(message).withStyle(formatting), showPrefix);
     }
 
     public static void printMessage(String message, int color) {
@@ -38,26 +38,26 @@ public class Messenger {
     }
 
     public static void printMessage(String message, int color, boolean showPrefix) {
-        printMessage(Text.translatable(message).withColor(color), showPrefix);
+        printMessage(Component.translatable(message).withColor(color), showPrefix);
     }
 
-    public static void printMessage(Text message) {
+    public static void printMessage(Component message) {
         printMessage(message, true);
     }
 
-    public static void printMessage(Text message, boolean showPrefix) {
+    public static void printMessage(Component message, boolean showPrefix) {
         if (MC.player == null)
             return;
 
         if (!showPrefix) {
-            MC.player.sendMessage(message);
+            MC.player.sendSystemMessage(message);
             return;
         }
 
-        MutableText sbutilsText = Text.literal("sbutils").withColor(ModConfig.HANDLER.instance().sbutilsColor.getRGB());
-        MutableText prefix = insertPlaceholders(Text.literal(ModConfig.HANDLER.instance().prefixFormat + " ").withColor(ModConfig.HANDLER.instance().prefixColor.getRGB()), sbutilsText);
+        MutableComponent sbutilsText = Component.literal("sbutils").withColor(ModConfig.HANDLER.instance().sbutilsColor.getRGB());
+        MutableComponent prefix = insertPlaceholders(Component.literal(ModConfig.HANDLER.instance().prefixFormat + " ").withColor(ModConfig.HANDLER.instance().prefixColor.getRGB()), sbutilsText);
 
-        MC.player.sendMessage(prefix.append(message));
+        MC.player.sendSystemMessage(prefix.append(message));
     }
 
     public static void sendTitle(String message) {
@@ -65,20 +65,20 @@ public class Messenger {
     }
     
     public static void sendTitle(String message, int color) {
-        sendTitle(Text.translatable(message).withColor(color), 5, 30, 5);
+        sendTitle(Component.translatable(message).withColor(color), 5, 30, 5);
     }
 
     public static void sendTitle(String message, int color, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        sendTitle(Text.translatable(message).withColor(color), fadeInTicks, stayTicks, fadeOutTicks);
+        sendTitle(Component.translatable(message).withColor(color), fadeInTicks, stayTicks, fadeOutTicks);
     }
 
-    public static void sendTitle(Text message) {
+    public static void sendTitle(Component message) {
         sendTitle(message, 5, 30, 5);
     }
 
-    public static void sendTitle(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        MC.inGameHud.setTitleTicks(fadeInTicks, stayTicks, fadeOutTicks);
-        MC.inGameHud.setTitle(message);
+    public static void sendTitle(Component message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+        MC.gui.setTimes(fadeInTicks, stayTicks, fadeOutTicks);
+        MC.gui.setTitle(message);
     }
 
     public static void sendPlaceholderTitle(String message, Object ... args) {
@@ -90,26 +90,26 @@ public class Messenger {
     }
 
 
-    public static MutableText insertPlaceholders(String message, Object ... args) {
+    public static MutableComponent insertPlaceholders(String message, Object ... args) {
         return insertPlaceholders(message, formatPlaceholders(args));
     }
 
-    public static MutableText insertPlaceholders(String message, MutableText ... args) {
-        MutableText messageText = Text.translatable(message).withColor(getMessageColor());
+    public static MutableComponent insertPlaceholders(String message, MutableComponent ... args) {
+        MutableComponent messageText = Component.translatable(message).withColor(getMessageColor());
         return insertPlaceholders(messageText, args);
     }
 
-    public static MutableText insertPlaceholders(MutableText message, MutableText ... args) {
+    public static MutableComponent insertPlaceholders(MutableComponent message, MutableComponent ... args) {
         String messageString = message.getString();
         if (!messageString.contains("%s")) {
             return message;
         }
-        MutableText formatted = Text.empty();
+        MutableComponent formatted = Component.empty();
         Style style = message.getStyle();
         List<String> pieces = new ArrayList<>(Arrays.asList(messageString.split("%s")));
 
         for (int i = 0; i < pieces.size(); i++) {
-            MutableText piece = Text.literal(pieces.get(i));
+            MutableComponent piece = Component.literal(pieces.get(i));
             piece.setStyle(style);
             formatted.append(piece);
 
@@ -130,13 +130,13 @@ public class Messenger {
     }
 
     private static void printSetting(String setting, Object value, boolean changed) {
-        MutableText settingText = Text.translatable(setting).withColor(getValueColor());
+        MutableComponent settingText = Component.translatable(setting).withColor(getValueColor());
         if (value instanceof Boolean) {
-            MutableText message = Text.translatable(changed ? "message.sbutils.changeBooleanSetting" : "message.sbutils.printBooleanSetting").withColor(getMessageColor());
+            MutableComponent message = Component.translatable(changed ? "message.sbutils.changeBooleanSetting" : "message.sbutils.printBooleanSetting").withColor(getMessageColor());
             printMessage(insertPlaceholders(message, settingText, formatPlaceholder(value)));
             return;
         }
-        MutableText message = Text.translatable(changed ? "message.sbutils.changeOtherSetting" : "message.sbutils.printOtherSetting").withColor(getMessageColor());
+        MutableComponent message = Component.translatable(changed ? "message.sbutils.changeOtherSetting" : "message.sbutils.printOtherSetting").withColor(getMessageColor());
         printMessage(insertPlaceholders(message, settingText, formatPlaceholder(value)));
     }
 
@@ -145,13 +145,13 @@ public class Messenger {
     }
 
     public static <T> void printListSetting(String setting, List<T> list, boolean numbered) {
-        printWithPlaceholders("message.sbutils.printListSetting", Text.translatable(setting).withColor(getValueColor()));
+        printWithPlaceholders("message.sbutils.printListSetting", Component.translatable(setting).withColor(getValueColor()));
         printList(list, numbered);
     }
 
     private static <T> void printList(List<T> items, boolean numbered) {
         for (int i = 0; i < items.size(); i++)
-            printMessage(Text.literal(" " + (numbered ? (i + 1) + ". " : "- ")).withColor(getValueColor()).append(format(items.get(i))), false);
+            printMessage(Component.literal(" " + (numbered ? (i + 1) + ". " : "- ")).withColor(getValueColor()).append(format(items.get(i))), false);
     }
 
     public static void printAutoAdvertInfo(boolean enabled, boolean onSkyblock, int adIndex, int remainingDelay, boolean userWhitelisted, boolean whitelistEnabled) {
@@ -173,57 +173,57 @@ public class Messenger {
         int delayMinutes = remainingDelay / 60000;
         double delaySeconds = Math.round((double)(remainingDelay % 60000) / 100.0) / 10.0;
 
-        MutableText message;
-        MutableText index = Text.literal("#" + (adIndex + 1)).withColor(getValueColor());
-        MutableText seconds = Text.literal(String.valueOf(delaySeconds)).withColor(getValueColor());
+        MutableComponent message;
+        MutableComponent index = Component.literal("#" + (adIndex + 1)).withColor(getValueColor());
+        MutableComponent seconds = Component.literal(String.valueOf(delaySeconds)).withColor(getValueColor());
 
         if (delayMinutes > 0) {
-            message = Text.translatable("message.sbutils.autoAdvert.infoWithMinutes").withColor(getMessageColor());
-            MutableText minutes = Text.literal(String.valueOf(delayMinutes)).withColor(getValueColor());
+            message = Component.translatable("message.sbutils.autoAdvert.infoWithMinutes").withColor(getMessageColor());
+            MutableComponent minutes = Component.literal(String.valueOf(delayMinutes)).withColor(getValueColor());
             printMessage(insertPlaceholders(message, index, minutes, seconds));
         } else {
-            message = Text.translatable("message.sbutils.autoAdvert.infoJustSeconds").withColor(getMessageColor());
+            message = Component.translatable("message.sbutils.autoAdvert.infoJustSeconds").withColor(getMessageColor());
             printMessage(insertPlaceholders(message, index, seconds));
         }
     }
 
-    public static void printStaffNotification(PlayerListEntry player, boolean joined) {
-        MutableText message = Text.translatable("message.sbutils.staffDetector.notification").withColor(getMessageColor());
-        MutableText staff = Text.literal(player.getProfile().getName()).withColor(getValueColor());
-        MutableText status = Text.translatable(joined ? "message.sbutils.online" : "message.sbutils.offline").formatted(getBooleanColor(joined));
+    public static void printStaffNotification(PlayerInfo player, boolean joined) {
+        MutableComponent message = Component.translatable("message.sbutils.staffDetector.notification").withColor(getMessageColor());
+        MutableComponent staff = Component.literal(player.getProfile().getName()).withColor(getValueColor());
+        MutableComponent status = Component.translatable(joined ? "message.sbutils.online" : "message.sbutils.offline").withStyle(getBooleanColor(joined));
         printMessage(insertPlaceholders(message, staff, status));
     }
 
     public static void printConversions(String input, String items, String stacks, String dcs, String stacksAndRemainer, String dcsAndRemainder) {
-        MutableText message = Text.translatable("message.sbutils.convert.header").withColor(getMessageColor());
-        printMessage(insertPlaceholders(message, Text.literal(input).withColor(getValueColor())));
+        MutableComponent message = Component.translatable("message.sbutils.convert.header").withColor(getMessageColor());
+        printMessage(insertPlaceholders(message, Component.literal(input).withColor(getValueColor())));
 
-        MutableText itemsText = Text.literal("- " + items).withColor(getValueColor());
+        MutableComponent itemsText = Component.literal("- " + items).withColor(getValueColor());
         printMessage(itemsText, false);
-        MutableText stacksText = Text.literal("- " + stacks).withColor(getValueColor());
+        MutableComponent stacksText = Component.literal("- " + stacks).withColor(getValueColor());
         printMessage(stacksText, false);
-        MutableText dcsText = Text.literal("- " + dcs).withColor(getValueColor());
+        MutableComponent dcsText = Component.literal("- " + dcs).withColor(getValueColor());
         printMessage(dcsText, false);
-        MutableText stacksAndRemainderText = Text.literal("- " + stacksAndRemainer).withColor(getValueColor());
+        MutableComponent stacksAndRemainderText = Component.literal("- " + stacksAndRemainer).withColor(getValueColor());
         printMessage(stacksAndRemainderText, false);
-        MutableText dcsAndRemainderText = Text.literal("- " + dcsAndRemainder).withColor(getValueColor());
+        MutableComponent dcsAndRemainderText = Component.literal("- " + dcsAndRemainder).withColor(getValueColor());
         printMessage(dcsAndRemainderText, false);
     }
 
     public static void printEnabledFilters(String message, List<ChatFilter> filters) {
         printMessage(message);
-        List<MutableText> formatted = filters.stream().map((filter) -> {
+        List<MutableComponent> formatted = filters.stream().map((filter) -> {
             boolean enabled = filter.isEnabled();
-            MutableText name = Text.translatable(filter.getKey()).append(": ").withColor(getMessageColor());
-            MutableText enabledText = Text.literal(enabled ? "enabled" : "disabled").formatted(getBooleanColor(enabled));
+            MutableComponent name = Component.translatable(filter.getKey()).append(": ").withColor(getMessageColor());
+            MutableComponent enabledText = Component.literal(enabled ? "enabled" : "disabled").withStyle(getBooleanColor(enabled));
             return name.append(enabledText);
         }).toList();
         printList(formatted, false);
     }
 
     public static void printEnchantCooldown(double cooldownTime) {
-        MutableText message = Text.translatable("message.sbutils.enchantAll.cooldown").withColor(getMessageColor());
-        printMessage(insertPlaceholders(message, Text.literal(String.valueOf(cooldownTime)).withColor(getValueColor())));
+        MutableComponent message = Component.translatable("message.sbutils.enchantAll.cooldown").withColor(getMessageColor());
+        printMessage(insertPlaceholders(message, Component.literal(String.valueOf(cooldownTime)).withColor(getValueColor())));
     }
 
     public static void printAutoFixInfo(boolean enabled, boolean fixing, int mostDamagedItem, int remainingDelay) {
@@ -263,19 +263,19 @@ public class Messenger {
         kitList.sort(kitQueue.comparator());
         for (int i = 0; i < invFullList.size(); i++) {
             AutoKit.KitQueueEntry kit = invFullList.get(i);
-            MutableText message = Text.literal(i + 1 + ". ").withColor(getValueColor());
-            message.append(insertPlaceholders(Text.translatable("message.sbutils.autoKit.infoFormat").withColor(getMessageColor()),
-                    Text.literal(kit.kit.asString()).withColor(getValueColor()),
-                    Text.literal("INV FULL").formatted(Formatting.RED)));
+            MutableComponent message = Component.literal(i + 1 + ". ").withColor(getValueColor());
+            message.append(insertPlaceholders(Component.translatable("message.sbutils.autoKit.infoFormat").withColor(getMessageColor()),
+                    Component.literal(kit.kit.getSerializedName()).withColor(getValueColor()),
+                    Component.literal("INV FULL").withStyle(ChatFormatting.RED)));
             printMessage(message, false);
         }
         for (int i = 0; i < kitList.size(); i++) {
             AutoKit.KitQueueEntry kit = kitList.get(i);
-            MutableText message = Text.literal(i + invFullList.size() + 1 + ". ").withColor(getValueColor());
+            MutableComponent message = Component.literal(i + invFullList.size() + 1 + ". ").withColor(getValueColor());
             double timeLeft = Math.max(0, (kit.claimAt - System.currentTimeMillis())) / 1000.0;
-            message.append(insertPlaceholders(Text.translatable("message.sbutils.autoKit.infoFormat").withColor(getMessageColor()),
-                    Text.literal(kit.kit.asString()).withColor(getValueColor()),
-                    Text.literal(formatTime(timeLeft)).withColor(getValueColor())));
+            message.append(insertPlaceholders(Component.translatable("message.sbutils.autoKit.infoFormat").withColor(getMessageColor()),
+                    Component.literal(kit.kit.getSerializedName()).withColor(getValueColor()),
+                    Component.literal(formatTime(timeLeft)).withColor(getValueColor())));
             printMessage(message, false);
         }
     }
@@ -287,12 +287,12 @@ public class Messenger {
     }
 
     public static void printInvCleanFailed(String featureName) {
-        printWithPlaceholders("message.sbutils.invCleaner.cleanFailed", Text.translatable(featureName).withColor(getValueColor()));
+        printWithPlaceholders("message.sbutils.invCleaner.cleanFailed", Component.translatable(featureName).withColor(getValueColor()));
     }
 
     public static void printAutoMineEnabledFor(long disableAt) {
         long timeLeft = disableAt - System.currentTimeMillis();
-        printWithPlaceholders("message.sbutils.autoMine.enabledFor", Text.translatable("text.sbutils.config.category.autoMine").withColor(getValueColor()), formatTime(timeLeft));
+        printWithPlaceholders("message.sbutils.autoMine.enabledFor", Component.translatable("text.sbutils.config.category.autoMine").withColor(getValueColor()), formatTime(timeLeft));
     }
 
     public static void printAutoMineTime(long disableAt) {
@@ -302,25 +302,25 @@ public class Messenger {
         }
 
         long timeLeft = disableAt - System.currentTimeMillis();
-        printWithPlaceholders("message.sbutils.autoMine.disabledIn", Text.translatable("text.sbutils.config.category.autoMine").withColor(getValueColor()), formatTime(timeLeft));
+        printWithPlaceholders("message.sbutils.autoMine.disabledIn", Component.translatable("text.sbutils.config.category.autoMine").withColor(getValueColor()), formatTime(timeLeft));
     }
 
-    private static <T> MutableText format(T input) {
+    private static <T> MutableComponent format(T input) {
         if (input instanceof ModConfig.MultiValue multiValue)
             return multiValue.format();
         return formatPlaceholder(input);
     }
 
-    private static <T> MutableText[] format(T[] input) {
-        MutableText[] result = new MutableText[input.length];
+    private static <T> MutableComponent[] format(T[] input) {
+        MutableComponent[] result = new MutableComponent[input.length];
         for (int i = 0; i < input.length; i++)
             result[i] = format(input[i]);
         return result;
     }
 
-    private static <T> MutableText formatPlaceholder(T input) {
-        MutableText result;
-        if (input instanceof MutableText text) {
+    private static <T> MutableComponent formatPlaceholder(T input) {
+        MutableComponent result;
+        if (input instanceof MutableComponent text) {
             result = text;
             if (result.getStyle().isEmpty())
                 result = result.withColor(getValueColor());
@@ -329,28 +329,28 @@ public class Messenger {
         } else if (input instanceof NameableEnum nameableEnum) {
             result = nameableEnum.getDisplayName().copy().withColor(getValueColor());
         } else if (input instanceof Number) {
-            result = Text.literal(String.valueOf(input)).withColor(getValueColor());
+            result = Component.literal(String.valueOf(input)).withColor(getValueColor());
         } else if (input instanceof String string) {
-            result = Text.literal(!string.isEmpty() ? string : "nothing").withColor(!string.isEmpty() ? getValueColor() : getMessageColor());
+            result = Component.literal(!string.isEmpty() ? string : "nothing").withColor(!string.isEmpty() ? getValueColor() : getMessageColor());
             if (((String) input).isEmpty())
-                result = result.formatted(Formatting.ITALIC);
+                result = result.withStyle(ChatFormatting.ITALIC);
         } else if (input instanceof Color color) {
-            result = Text.literal("#" + String.format("%06x", color.getRGB() & 0x00FFFFFF)).withColor(color.getRGB());
+            result = Component.literal("#" + String.format("%06x", color.getRGB() & 0x00FFFFFF)).withColor(color.getRGB());
         } else {
-            result = Text.literal(String.valueOf(input)).withColor(getValueColor());
+            result = Component.literal(String.valueOf(input)).withColor(getValueColor());
         }
         return result;
     }
 
-    private static <T> MutableText[] formatPlaceholders(T[] input) {
-        MutableText[] result = new MutableText[input.length];
+    private static <T> MutableComponent[] formatPlaceholders(T[] input) {
+        MutableComponent[] result = new MutableComponent[input.length];
         for (int i = 0; i < input.length; i++)
             result[i] = formatPlaceholder(input[i]);
         return result;
     }
 
-    private static MutableText formatBoolean(boolean bool) {
-        return Text.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled").formatted(getBooleanColor(bool));
+    private static MutableComponent formatBoolean(boolean bool) {
+        return Component.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled").withStyle(getBooleanColor(bool));
     }
 
     public static String formatTime(double seconds) {
@@ -373,7 +373,7 @@ public class Messenger {
         return ModConfig.HANDLER.instance().valueColor.getRGB();
     }
 
-    private static Formatting getBooleanColor(boolean bool) {
-        return bool ? Formatting.GREEN : Formatting.RED;
+    private static ChatFormatting getBooleanColor(boolean bool) {
+        return bool ? ChatFormatting.GREEN : ChatFormatting.RED;
     }
 }

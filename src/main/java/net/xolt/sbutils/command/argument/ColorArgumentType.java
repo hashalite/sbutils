@@ -5,15 +5,13 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
 import java.awt.*;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 
 public class ColorArgumentType implements ArgumentType<Color> {
 
-    private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(input -> Text.stringifiedTranslatable("message.sbutils.colorArgumentType.invalidColorFormat", input));
+    private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(input -> Component.translatableEscape("message.sbutils.colorArgumentType.invalidColorFormat", input));
 
     public static ColorArgumentType color() {
         return new ColorArgumentType();
@@ -30,10 +28,10 @@ public class ColorArgumentType implements ArgumentType<Color> {
         String text = builder.toString();
         String colorCode = text.startsWith("#") || text.startsWith("&") ? text.substring(1) : text;
         if (colorCode.length() == 1) {
-            Formatting color = Formatting.byCode(colorCode.charAt(0));
-            if (color == null || color.getColorValue() == null)
+            ChatFormatting color = ChatFormatting.getByCode(colorCode.charAt(0));
+            if (color == null || color.getColor() == null)
                 throw COLOR_PARSE_EXCEPTION.create(colorCode);
-            return new Color(color.getColorValue());
+            return new Color(color.getColor());
         }
         if (colorCode.length() == 6) {
             try {

@@ -1,12 +1,12 @@
 package net.xolt.sbutils.mixins;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.EnchantmentScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.EnchantmentMenu;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.AutoSilk;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,9 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EnchantmentScreen.class)
-public abstract class EnchantmentScreenMixin extends HandledScreen<EnchantmentScreenHandler> {
+public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<EnchantmentMenu> {
 
-    public EnchantmentScreenMixin(EnchantmentScreenHandler handler, PlayerInventory inventory, Text title) {
+    public EnchantmentScreenMixin(EnchantmentMenu handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
     }
 
@@ -29,16 +29,16 @@ public abstract class EnchantmentScreenMixin extends HandledScreen<EnchantmentSc
         }
         ModConfig.CornerButtonPos buttonPos = ModConfig.HANDLER.instance().autoSilk.buttonPos;
         int y = switch (buttonPos) {
-            case TOP_LEFT, TOP_RIGHT -> ((this.height - this.backgroundHeight) / 2) - AutoSilk.BUTTON_HEIGHT;
-            case BOTTOM_LEFT, BOTTOM_RIGHT -> (this.height + this.backgroundHeight) / 2;
+            case TOP_LEFT, TOP_RIGHT -> ((this.height - this.imageHeight) / 2) - AutoSilk.BUTTON_HEIGHT;
+            case BOTTOM_LEFT, BOTTOM_RIGHT -> (this.height + this.imageHeight) / 2;
         };
         int x = switch (buttonPos) {
-            case TOP_LEFT, BOTTOM_LEFT -> (this.width - this.backgroundWidth) / 2;
-            case TOP_RIGHT, BOTTOM_RIGHT -> ((this.width + this.backgroundWidth) / 2) - AutoSilk.BUTTON_WIDTH;
+            case TOP_LEFT, BOTTOM_LEFT -> (this.width - this.imageWidth) / 2;
+            case TOP_RIGHT, BOTTOM_RIGHT -> ((this.width + this.imageWidth) / 2) - AutoSilk.BUTTON_WIDTH;
         };
-        AutoSilk.autoSilkButton = CyclingButtonWidget.onOffBuilder(Text.translatable("message.sbutils.enabled"), Text.translatable("message.sbutils.disabled"))
-                .initially(ModConfig.HANDLER.instance().autoSilk.enabled)
-                .build(x, y, 100, 20, Text.translatable("text.sbutils.config.category.autoSilk"), (button, value) -> {
+        AutoSilk.autoSilkButton = CycleButton.booleanBuilder(Component.translatable("message.sbutils.enabled"), Component.translatable("message.sbutils.disabled"))
+                .withInitialValue(ModConfig.HANDLER.instance().autoSilk.enabled)
+                .create(x, y, 100, 20, Component.translatable("text.sbutils.config.category.autoSilk"), (button, value) -> {
                     ModConfig.HANDLER.instance().autoSilk.enabled = value;
                     if (!value) {
                         ModConfig.HANDLER.save();
@@ -54,7 +54,7 @@ public abstract class EnchantmentScreenMixin extends HandledScreen<EnchantmentSc
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void onRender(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (ModConfig.HANDLER.instance().autoSilk.showButton && AutoSilk.autoSilkButton != null) {
             AutoSilk.autoSilkButton.render(context, mouseX, mouseY, delta);
         }

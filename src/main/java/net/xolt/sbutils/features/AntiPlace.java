@@ -4,13 +4,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -41,17 +41,17 @@ public class AntiPlace {
                 .redirect(antiPlaceNode));
     }
 
-    public static boolean shouldCancelBlockInteract(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult) {
-        if (MC.world == null) {
+    public static boolean shouldCancelBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
+        if (MC.level == null) {
             return false;
         }
 
-        ActionResult actionResult = MC.world.getBlockState(hitResult.getBlockPos()).onUse(MC.world, player, hand, hitResult);
-        if ((actionResult == ActionResult.CONSUME || actionResult == ActionResult.SUCCESS) && !player.isSneaking()) {
+        InteractionResult actionResult = MC.level.getBlockState(hitResult.getBlockPos()).use(MC.level, player, hand, hitResult);
+        if ((actionResult == InteractionResult.CONSUME || actionResult == InteractionResult.SUCCESS) && !player.isShiftKeyDown()) {
             return false;
         }
 
-        ItemStack held = player.getStackInHand(hand);
+        ItemStack held = player.getItemInHand(hand);
         if (ModConfig.HANDLER.instance().antiPlace.heads && isNamedHead(held)) {
             notifyBlocked("message.sbutils.antiPlace.headBlocked");
             return true;
@@ -66,7 +66,7 @@ public class AntiPlace {
     }
 
     private static boolean isNamedHead(ItemStack item) {
-        return item.getItem().equals(Items.PLAYER_HEAD) && item.hasCustomName();
+        return item.getItem().equals(Items.PLAYER_HEAD) && item.hasCustomHoverName();
     }
 
     private static boolean isGrass(ItemStack item) {
@@ -75,7 +75,7 @@ public class AntiPlace {
 
     private static void notifyBlocked(String message) {
         if (System.currentTimeMillis() - lastMessageSentAt >= 5000) {
-            Messenger.printMessage(message, Formatting.RED);
+            Messenger.printMessage(message, ChatFormatting.RED);
             lastMessageSentAt = System.currentTimeMillis();
         }
     }

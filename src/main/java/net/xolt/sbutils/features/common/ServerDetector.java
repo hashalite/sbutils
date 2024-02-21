@@ -1,7 +1,7 @@
 package net.xolt.sbutils.features.common;
 
 import com.mojang.brigadier.tree.CommandNode;
-import net.minecraft.command.CommandSource;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.xolt.sbutils.features.AutoAdvert;
 import net.xolt.sbutils.features.AutoKit;
 import net.xolt.sbutils.util.RegexFilters;
@@ -31,13 +31,13 @@ public class ServerDetector {
     }
 
     private static void determineServer() {
-        if (!receivedCommandTree || !receivedTabHeader || MC.getNetworkHandler() == null
-                || !RegexFilters.addressFilter.matcher(MC.getNetworkHandler().getConnection().getAddress().toString()).matches()) {
+        if (!receivedCommandTree || !receivedTabHeader || MC.getConnection() == null
+                || !RegexFilters.addressFilter.matcher(MC.getConnection().getConnection().getRemoteAddress().toString()).matches()) {
             updateServer(null);
             return;
         }
 
-        for (CommandNode<CommandSource> node : MC.getNetworkHandler().getCommandDispatcher().getRoot().getChildren()) {
+        for (CommandNode<SharedSuggestionProvider> node : MC.getConnection().getCommands().getRoot().getChildren()) {
             switch (node.getName()) {
                 case "crophoppers:crophoppers":
                     updateServer(SbServer.ECONOMY);

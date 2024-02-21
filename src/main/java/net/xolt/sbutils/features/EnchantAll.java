@@ -4,20 +4,20 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.item.AirBlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.encryption.NetworkEncryptionUtils;
-import net.minecraft.network.message.ArgumentSignatureDataMap;
-import net.minecraft.network.message.LastSeenMessagesCollector;
-import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
-import net.minecraft.registry.Registries;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.arguments.ArgumentSignatures;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.LastSeenMessagesTracker;
+import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
+import net.minecraft.util.Crypt;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.AirItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -94,34 +94,34 @@ public class EnchantAll {
         }
 
         if (enchanting || unenchanting) {
-            Messenger.printMessage("message.sbutils.enchantAll.pleaseWait", Formatting.RED);
+            Messenger.printMessage("message.sbutils.enchantAll.pleaseWait", ChatFormatting.RED);
             return;
         }
 
         enchanting = !unenchant;
         unenchanting = unenchant;
-        prevSelectedSlot = MC.player.getInventory().selectedSlot;
+        prevSelectedSlot = MC.player.getInventory().selected;
         inventory = inv;
 
         if (done()) {
             if (inv) {
-                Messenger.printMessage("message.sbutils.enchantAll.noEnchantableItems", Formatting.RED);
+                Messenger.printMessage("message.sbutils.enchantAll.noEnchantableItems", ChatFormatting.RED);
             } else {
-                Messenger.printMessage("message.sbutils.enchantAll.itemNotEnchantable", Formatting.RED);
+                Messenger.printMessage("message.sbutils.enchantAll.itemNotEnchantable", ChatFormatting.RED);
             }
             reset();
             return;
         }
 
-        if (inv && !(MC.player.getMainHandStack().getItem() instanceof AirBlockItem) && getEnchantsForItem(MC.player.getMainHandStack(), unenchant).size() < 1) {
+        if (inv && !(MC.player.getMainHandItem().getItem() instanceof AirItem) && getEnchantsForItem(MC.player.getMainHandItem(), unenchant).size() < 1) {
             int enchantableSlot = findEnchantableSlot(unenchant);
             if (enchantableSlot < 8) {
-                MC.player.getInventory().selectedSlot = prevSelectedSlot = enchantableSlot;
+                MC.player.getInventory().selected = prevSelectedSlot = enchantableSlot;
                 return;
             }
             int emptySlot = InvUtils.findEmptyHotbarSlot();
             if (emptySlot != -1)
-                MC.player.getInventory().selectedSlot = prevSelectedSlot = emptySlot;
+                MC.player.getInventory().selected = prevSelectedSlot = emptySlot;
         }
     }
 
@@ -132,26 +132,26 @@ public class EnchantAll {
 
         if (noPermission) {
             if (ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL && enchanting) {
-                Messenger.printMessage("message.sbutils.enchantAll.noEnchantAllPermission", Formatting.RED);
+                Messenger.printMessage("message.sbutils.enchantAll.noEnchantAllPermission", ChatFormatting.RED);
             } else {
-                Messenger.printMessage("message.sbutils.enchantAll.noEnchantPermission", Formatting.RED);
+                Messenger.printMessage("message.sbutils.enchantAll.noEnchantPermission", ChatFormatting.RED);
             }
             reset();
             return;
         }
 
-        if (MC.player.getInventory().selectedSlot != prevSelectedSlot) {
-            Messenger.printMessage("message.sbutils.enchantAll.cancelSlotSwitch", Formatting.RED);
+        if (MC.player.getInventory().selected != prevSelectedSlot) {
+            Messenger.printMessage("message.sbutils.enchantAll.cancelSlotSwitch", ChatFormatting.RED);
             reset();
             return;
         }
 
         if (done()) {
             if (inventory && itemPrevSlot != -1) {
-                ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
+                AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
                 if (!InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
                     return;
-                InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
+                InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selected, currentScreenHandler);
             }
             Messenger.printMessage("message.sbutils.enchantAll.complete");
             reset();
@@ -185,7 +185,7 @@ public class EnchantAll {
         reset();
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if ((!enchanting && !unenchanting) || !awaitingResponse) {
             return;
         }
@@ -207,13 +207,13 @@ public class EnchantAll {
             return;
         }
 
-        ItemStack hand = MC.player.getMainHandStack();
+        ItemStack hand = MC.player.getMainHandItem();
 
         if (!hand.getItem().isEnchantable(hand)) {
             return;
         }
 
-        List<Enchantment> enchants = getEnchantsForItem(MC.player.getMainHandStack(), unenchant);
+        List<Enchantment> enchants = getEnchantsForItem(MC.player.getMainHandItem(), unenchant);
 
         if (enchants.size() < 1) {
             if (shouldRemoveFrost()) {
@@ -230,7 +230,7 @@ public class EnchantAll {
             return;
         }
 
-        ItemStack hand = MC.player.getMainHandStack();
+        ItemStack hand = MC.player.getMainHandItem();
         List<Enchantment> enchants = getEnchantsForItem(hand, unenchant);
 
         if (enchants.size() < 1) {
@@ -240,17 +240,17 @@ public class EnchantAll {
             }
             int enchantableSlot = findEnchantableSlot(unenchant);
             if (enchantableSlot != -1) {
-                ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
+                AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
                 if (itemPrevSlot != -1) {
                     if (!InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
                         return;
-                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
+                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selected, currentScreenHandler);
                     itemPrevSlot = -1;
                 }
                 if (!InvUtils.canSwapSlot(enchantableSlot, currentScreenHandler)) {
                     return;
                 }
-                InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
+                InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selected, currentScreenHandler);
                 itemPrevSlot = enchantableSlot;
                 pause = true;
             }
@@ -270,22 +270,22 @@ public class EnchantAll {
     }
 
     private static void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
 
-        String enchantName = Registries.ENCHANTMENT.getId(enchantment).getPath().replaceAll("_", "");
-        MC.getNetworkHandler().sendChatCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()));
+        String enchantName = BuiltInRegistries.ENCHANTMENT.getKey(enchantment).getPath().replaceAll("_", "");
+        MC.getConnection().sendCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()));
         afterSendCommand();
     }
 
     private static void sendEnchantAllCommand() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
 
-        MC.getNetworkHandler().sendPacket(new CommandExecutionC2SPacket("enchantall", Instant.now(), NetworkEncryptionUtils.SecureRandomUtil.nextLong(),
-                ArgumentSignatureDataMap.EMPTY, new LastSeenMessagesCollector(20).collect().update()));
+        MC.getConnection().send(new ServerboundChatCommandPacket("enchantall", Instant.now(), Crypt.SaltSupplier.getLong(),
+                ArgumentSignatures.EMPTY, new LastSeenMessagesTracker(20).generateAndApplyUpdate().update()));
         afterSendCommand();
     }
 
@@ -300,12 +300,12 @@ public class EnchantAll {
             return -1;
         }
 
-        for (int i = 0; i < MC.player.getInventory().size(); i++) {
+        for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
             if (i >= 36 && i <= 39) {
                 // Skip armor slots
                 continue;
             }
-            ItemStack itemStack = MC.player.getInventory().getStack(i);
+            ItemStack itemStack = MC.player.getInventory().getItem(i);
             if (getEnchantsForItem(itemStack, unenchant).size() > 0) {
                 return i;
             }
@@ -321,11 +321,11 @@ public class EnchantAll {
             return new ArrayList<>();
         }
 
-        Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.fromNbt(itemStack.getEnchantments());
+        Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.deserializeEnchantments(itemStack.getEnchantmentTags());
         List<Enchantment> enchantments = new ArrayList<>();
         if (!unenchant) {
-            for (Enchantment enchantment : Registries.ENCHANTMENT) {
-                if (enchantment.isAcceptableItem(new ItemStack(item))) {
+            for (Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
+                if (enchantment.canEnchant(new ItemStack(item))) {
                     enchantments.add(enchantment);
                 }
             }
@@ -367,7 +367,7 @@ public class EnchantAll {
             return true;
         }
 
-        ItemStack hand = MC.player.getMainHandStack();
+        ItemStack hand = MC.player.getMainHandItem();
 
         return ((inventory && findEnchantableSlot(unenchanting) == -1) ||
                 (!inventory && getEnchantsForItem(hand, unenchanting).size() < 1)) &&
@@ -380,7 +380,7 @@ public class EnchantAll {
         }
 
         return ModConfig.HANDLER.instance().enchantAll.excludeFrost &&
-                EnchantmentHelper.fromNbt(MC.player.getMainHandStack().getEnchantments()).containsKey(Enchantments.FROST_WALKER);
+                EnchantmentHelper.deserializeEnchantments(MC.player.getMainHandItem().getEnchantmentTags()).containsKey(Enchantments.FROST_WALKER);
     }
 
     private static void reset() {

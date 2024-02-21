@@ -3,8 +3,8 @@ package net.xolt.sbutils.config.gui;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.*;
 import dev.isxander.yacl3.gui.controllers.slider.IntegerSliderController;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.gui.controllers.AutoCommandEntryController;
 import net.xolt.sbutils.config.gui.controllers.JoinCommandsEntryController;
@@ -19,7 +19,7 @@ public class ConfigGui {
 
     public static Screen getConfigScreen(Screen parent) {
         return YetAnotherConfigLib.create(ModConfig.HANDLER, (defaults, config, builder) -> builder
-                        .title(Text.translatable("text.sbutils.config.title"))
+                        .title(Component.translatable("text.sbutils.config.title"))
                         .category(buildSbutilsCategory(defaults, config))
                         .category(buildAntiPlaceCategory(defaults, config))
                         .category(buildAutoAdvertCategory(defaults, config))
@@ -48,12 +48,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildSbutilsCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.default"))
+                .name(Component.translatable("text.sbutils.config.category.default"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.sbutils"))
+                        .name(Component.translatable("text.sbutils.config.group.sbutils"))
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.messagePrefix"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.messagePrefix.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.messagePrefix"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.messagePrefix.tooltip")))
                                 .binding(
                                         defaults.prefixFormat,
                                         () -> config.prefixFormat,
@@ -62,8 +62,8 @@ public class ConfigGui {
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .option(Option.<Color>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.sbutilsColor"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.sbutilsColor.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.sbutilsColor"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.sbutilsColor.tooltip")))
                                 .binding(
                                         defaults.sbutilsColor,
                                         () -> config.sbutilsColor,
@@ -72,8 +72,8 @@ public class ConfigGui {
                                 .controller(ColorControllerBuilder::create)
                                 .build())
                         .option(Option.<Color>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.prefixColor"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.prefixColor.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.prefixColor"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.prefixColor.tooltip")))
                                 .binding(
                                         defaults.prefixColor,
                                         () -> config.prefixColor,
@@ -82,8 +82,8 @@ public class ConfigGui {
                                 .controller(ColorControllerBuilder::create)
                                 .build())
                         .option(Option.<Color>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.messageColor"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.messageColor.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.messageColor"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.messageColor.tooltip")))
                                 .binding(
                                         defaults.messageColor,
                                         () -> config.messageColor,
@@ -92,8 +92,8 @@ public class ConfigGui {
                                 .controller(ColorControllerBuilder::create)
                                 .build())
                         .option(Option.<Color>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.valueColor"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.valueColor.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.valueColor"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.valueColor.tooltip")))
                                 .binding(
                                         defaults.valueColor,
                                         () -> config.valueColor,
@@ -107,12 +107,12 @@ public class ConfigGui {
 
     public static ConfigCategory buildAntiPlaceCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.antiPlace"))
+                .name(Component.translatable("text.sbutils.config.category.antiPlace"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.antiPlace"))
+                        .name(Component.translatable("text.sbutils.config.group.antiPlace"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.antiPlace.heads"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.antiPlace.heads.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.antiPlace.heads"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.antiPlace.heads.tooltip")))
                                 .binding(
                                         defaults.antiPlace.heads,
                                         () -> config.antiPlace.heads,
@@ -121,8 +121,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.antiPlace.grass"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.antiPlace.grass")))
+                                .name(Component.translatable("text.sbutils.config.option.antiPlace.grass"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.antiPlace.grass")))
                                 .binding(
                                         defaults.antiPlace.grass,
                                         () -> config.antiPlace.grass,
@@ -136,12 +136,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoAdvertCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoAdvert"))
+                .name(Component.translatable("text.sbutils.config.category.autoAdvert"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoAdvert"))
+                        .name(Component.translatable("text.sbutils.config.group.autoAdvert"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoAdvert.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoAdvert.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.enabled.tooltip")))
                                 .binding(
                                         defaults.autoAdvert.enabled,
                                         () -> config.autoAdvert.enabled,
@@ -150,8 +150,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoAdvert.sbFile"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.sbFile.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoAdvert.sbFile"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.sbFile.tooltip")))
                                 .binding(
                                         defaults.autoAdvert.sbFile,
                                         () -> config.autoAdvert.sbFile,
@@ -160,8 +160,8 @@ public class ConfigGui {
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoAdvert.ecoFile"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.ecoFile.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoAdvert.ecoFile"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.ecoFile.tooltip")))
                                 .binding(
                                         defaults.autoAdvert.ecoFile,
                                         () -> config.autoAdvert.ecoFile,
@@ -170,8 +170,8 @@ public class ConfigGui {
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoAdvert.classicFile"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.classicFile.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoAdvert.classicFile"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.classicFile.tooltip")))
                                 .binding(
                                         defaults.autoAdvert.classicFile,
                                         () -> config.autoAdvert.classicFile,
@@ -180,8 +180,8 @@ public class ConfigGui {
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoAdvert.delay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.delay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoAdvert.delay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.delay.tooltip")))
                                 .binding(
                                         defaults.autoAdvert.delay,
                                         () -> config.autoAdvert.delay,
@@ -190,8 +190,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoAdvert.initialDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.initialDelay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoAdvert.initialDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.initialDelay.tooltip")))
                                 .binding(
                                         defaults.autoAdvert.initialDelay,
                                         () -> config.autoAdvert.initialDelay,
@@ -200,8 +200,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoAdvert.useWhitelist"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.useWhitelist.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoAdvert.useWhitelist"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.useWhitelist.tooltip")))
                                 .binding(
                                         defaults.autoAdvert.useWhitelist,
                                         () -> config.autoAdvert.useWhitelist,
@@ -211,8 +211,8 @@ public class ConfigGui {
                                 .build())
                         .build())
                 .group(ListOption.<String>createBuilder()
-                        .name(Text.translatable("text.sbutils.config.option.autoAdvert.whitelist"))
-                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoAdvert.whitelist.tooltip")))
+                        .name(Component.translatable("text.sbutils.config.option.autoAdvert.whitelist"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoAdvert.whitelist.tooltip")))
                         .binding(
                                 defaults.autoAdvert.whitelist,
                                 () -> config.autoAdvert.whitelist,
@@ -226,12 +226,12 @@ public class ConfigGui {
 
     public static ConfigCategory buildAutoCommandCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoCommand"))
+                .name(Component.translatable("text.sbutils.config.category.autoCommand"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoCommand"))
+                        .name(Component.translatable("text.sbutils.config.group.autoCommand"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCommand.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCommand.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoCommand.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCommand.enabled.tooltip")))
                                 .binding(
                                         defaults.autoCommand.enabled,
                                         () -> config.autoCommand.enabled,
@@ -240,8 +240,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCommand.minDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCommand.minDelay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoCommand.minDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCommand.minDelay.tooltip")))
                                 .binding(
                                         defaults.autoCommand.minDelay,
                                         () -> config.autoCommand.minDelay,
@@ -251,8 +251,8 @@ public class ConfigGui {
                                 .build())
                         .build())
                 .group(ListOption.<ModConfig.AutoCommandConfig.AutoCommandEntry>createBuilder()
-                        .name(Text.translatable("text.sbutils.config.option.autoCommand.commands"))
-                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCommand.commands.tooltip")))
+                        .name(Component.translatable("text.sbutils.config.option.autoCommand.commands"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCommand.commands.tooltip")))
                         .insertEntriesAtEnd(true)
                         .binding(
                                 defaults.autoCommand.commands,
@@ -267,12 +267,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoCrateCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoCrate"))
+                .name(Component.translatable("text.sbutils.config.category.autoCrate"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoCrate"))
+                        .name(Component.translatable("text.sbutils.config.group.autoCrate"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCrate.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoCrate.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCrate.enabled.tooltip")))
                                 .binding(
                                         defaults.autoCrate.enabled,
                                         () -> config.autoCrate.enabled,
@@ -281,8 +281,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.Crate>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCrate.mode"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.mode.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoCrate.mode"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCrate.mode.tooltip")))
                                 .binding(
                                         defaults.autoCrate.mode,
                                         () -> config.autoCrate.mode,
@@ -291,8 +291,8 @@ public class ConfigGui {
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Crate.class))
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCrate.delay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.delay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoCrate.delay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCrate.delay.tooltip")))
                                 .binding(
                                         defaults.autoCrate.delay,
                                         () -> config.autoCrate.delay,
@@ -301,8 +301,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCrate.distance"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.distance.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoCrate.distance"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCrate.distance.tooltip")))
                                 .binding(
                                         defaults.autoCrate.distance,
                                         () -> config.autoCrate.distance,
@@ -311,8 +311,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoCrate.cleaner"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.cleaner.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoCrate.cleaner"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCrate.cleaner.tooltip")))
                                 .binding(
                                         defaults.autoCrate.cleaner,
                                         () -> config.autoCrate.cleaner,
@@ -322,8 +322,8 @@ public class ConfigGui {
                                 .build())
                         .build())
                 .group(ListOption.<String>createBuilder()
-                        .name(Text.translatable("text.sbutils.config.option.autoCrate.itemsToClean"))
-                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoCrate.itemsToClean.tooltip")))
+                        .name(Component.translatable("text.sbutils.config.option.autoCrate.itemsToClean"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoCrate.itemsToClean.tooltip")))
                         .binding(
                                 defaults.autoCrate.itemsToClean,
                                 () -> config.autoCrate.itemsToClean,
@@ -337,12 +337,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoFixCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoFix"))
+                .name(Component.translatable("text.sbutils.config.category.autoFix"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoFix"))
+                        .name(Component.translatable("text.sbutils.config.group.autoFix"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoFix.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoFix.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoFix.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoFix.enabled.tooltip")))
                                 .binding(
                                         defaults.autoFix.enabled,
                                         () -> config.autoFix.enabled,
@@ -351,8 +351,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.FixMode>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoFix.mode"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoFix.mode.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoFix.mode"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoFix.mode.tooltip")))
                                 .binding(
                                         defaults.autoFix.mode,
                                         () -> config.autoFix.mode,
@@ -361,8 +361,8 @@ public class ConfigGui {
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.FixMode.class))
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoFix.percent"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoFix.percent.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoFix.percent"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoFix.percent.tooltip")))
                                 .binding(
                                         defaults.autoFix.percent,
                                         () -> config.autoFix.percent,
@@ -372,8 +372,8 @@ public class ConfigGui {
                                 .listener(((doubleOption, aDouble) -> AutoFix.onChangeMaxFixPercent()))
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoFix.delay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoFix.delay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoFix.delay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoFix.delay.tooltip")))
                                 .binding(
                                         defaults.autoFix.delay,
                                         () -> config.autoFix.delay,
@@ -382,8 +382,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoFix.retryDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoFix.retryDelay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoFix.retryDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoFix.retryDelay.tooltip")))
                                 .binding(
                                         defaults.autoFix.retryDelay,
                                         () -> config.autoFix.retryDelay,
@@ -392,8 +392,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Integer>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoFix.maxRetries"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoFix.maxRetries.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoFix.maxRetries"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoFix.maxRetries.tooltip")))
                                 .binding(
                                         defaults.autoFix.maxRetries,
                                         () -> config.autoFix.maxRetries,
@@ -407,12 +407,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoKitCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoKit"))
+                .name(Component.translatable("text.sbutils.config.category.autoKit"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoKit"))
+                        .name(Component.translatable("text.sbutils.config.group.autoKit"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoKit.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKit.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoKit.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoKit.enabled.tooltip")))
                                 .binding(
                                         defaults.autoKit.enabled,
                                         () -> config.autoKit.enabled,
@@ -421,8 +421,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoKit.commandDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKit.commandDelay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoKit.commandDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoKit.commandDelay.tooltip")))
                                 .binding(
                                         defaults.autoKit.commandDelay,
                                         () -> config.autoKit.commandDelay,
@@ -431,8 +431,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoKit.claimDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKit.claimDelay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoKit.claimDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoKit.claimDelay.tooltip")))
                                 .binding(
                                         defaults.autoKit.claimDelay,
                                         () -> config.autoKit.claimDelay,
@@ -441,8 +441,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoKit.systemDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKit.systemDelay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoKit.systemDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoKit.systemDelay.tooltip")))
                                 .binding(
                                         defaults.autoKit.systemDelay,
                                         () -> config.autoKit.systemDelay,
@@ -452,8 +452,8 @@ public class ConfigGui {
                                 .build())
                         .build())
                 .group(ListOption.<ModConfig.Kit>createBuilder()
-                        .name(Text.translatable("text.sbutils.config.option.autoKit.kits"))
-                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoKit.kits.tooltip")))
+                        .name(Component.translatable("text.sbutils.config.option.autoKit.kits"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoKit.kits.tooltip")))
                         .insertEntriesAtEnd(true)
                         .binding(
                                 defaults.autoKit.kits,
@@ -469,12 +469,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoMineCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoMine"))
+                .name(Component.translatable("text.sbutils.config.category.autoMine"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoMine"))
+                        .name(Component.translatable("text.sbutils.config.group.autoMine"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoMine.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoMine.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoMine.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoMine.enabled.tooltip")))
                                 .binding(
                                         defaults.autoMine.enabled,
                                         () -> config.autoMine.enabled,
@@ -483,8 +483,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoMine.autoSwitch"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoMine.autoSwitch.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoMine.autoSwitch"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoMine.autoSwitch.tooltip")))
                                 .binding(
                                         defaults.autoMine.autoSwitch,
                                         () -> config.autoMine.autoSwitch,
@@ -493,8 +493,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Integer>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoMine.switchDurability"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoMine.switchDurability.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoMine.switchDurability"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoMine.switchDurability.tooltip")))
                                 .binding(
                                         defaults.autoMine.switchDurability,
                                         () -> config.autoMine.switchDurability,
@@ -508,12 +508,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoPrivateCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoPrivate"))
+                .name(Component.translatable("text.sbutils.config.category.autoPrivate"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoPrivate"))
+                        .name(Component.translatable("text.sbutils.config.group.autoPrivate"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoPrivate.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoPrivate.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoPrivate.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoPrivate.enabled.tooltip")))
                                 .binding(
                                         defaults.autoPrivate.enabled,
                                         () -> config.autoPrivate.enabled,
@@ -523,8 +523,8 @@ public class ConfigGui {
                                 .build())
                         .build())
                 .group(ListOption.<String>createBuilder()
-                        .name(Text.translatable("text.sbutils.config.option.autoPrivate.names"))
-                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoPrivate.names.tooltip")))
+                        .name(Component.translatable("text.sbutils.config.option.autoPrivate.names"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoPrivate.names.tooltip")))
                         .maximumNumberOfEntries(2)
                         .insertEntriesAtEnd(true)
                         .binding(
@@ -540,12 +540,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoRaffleCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoRaffle"))
+                .name(Component.translatable("text.sbutils.config.category.autoRaffle"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoRaffle"))
+                        .name(Component.translatable("text.sbutils.config.group.autoRaffle"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoRaffle.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoRaffle.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoRaffle.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoRaffle.enabled.tooltip")))
                                 .binding(
                                         defaults.autoRaffle.enabled,
                                         () -> config.autoRaffle.enabled,
@@ -554,8 +554,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Integer>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoRaffle.sbTickets"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoRaffle.sbTickets.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoRaffle.sbTickets"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoRaffle.sbTickets.tooltip")))
                                 .binding(
                                         defaults.autoRaffle.sbTickets,
                                         () -> config.autoRaffle.sbTickets,
@@ -564,8 +564,8 @@ public class ConfigGui {
                                 .customController(integerOption -> new IntegerSliderController(integerOption, 1, 2, 1))
                                 .build())
                         .option(Option.<Integer>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoRaffle.ecoTickets"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoRaffle.ecoTickets.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoRaffle.ecoTickets"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoRaffle.ecoTickets.tooltip")))
                                 .binding(
                                         defaults.autoRaffle.ecoTickets,
                                         () -> config.autoRaffle.ecoTickets,
@@ -579,12 +579,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoReplyCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoReply"))
+                .name(Component.translatable("text.sbutils.config.category.autoReply"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoReply"))
+                        .name(Component.translatable("text.sbutils.config.group.autoReply"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoReply.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoReply.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoReply.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoReply.enabled.tooltip")))
                                 .binding(
                                         defaults.autoReply.enabled,
                                         () -> config.autoReply.enabled,
@@ -593,8 +593,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoReply.response"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoReply.response.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoReply.response"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoReply.response.tooltip")))
                                 .binding(
                                         defaults.autoReply.response,
                                         () -> config.autoReply.response,
@@ -603,8 +603,8 @@ public class ConfigGui {
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoReply.delay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoReply.delay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoReply.delay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoReply.delay.tooltip")))
                                 .binding(
                                         defaults.autoReply.delay,
                                         () -> config.autoReply.delay,
@@ -618,12 +618,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildAutoSilkCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.autoSilk"))
+                .name(Component.translatable("text.sbutils.config.category.autoSilk"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.autoSilk"))
+                        .name(Component.translatable("text.sbutils.config.group.autoSilk"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoSilk.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoSilk.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoSilk.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoSilk.enabled.tooltip")))
                                 .binding(
                                         defaults.autoSilk.enabled,
                                         () -> config.autoSilk.enabled,
@@ -632,8 +632,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.SilkTarget>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoSilk.targetTool"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoSilk.targetTool.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoSilk.targetTool"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoSilk.targetTool.tooltip")))
                                 .binding(
                                         defaults.autoSilk.targetTool,
                                         () -> config.autoSilk.targetTool,
@@ -642,8 +642,8 @@ public class ConfigGui {
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.SilkTarget.class))
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoSilk.cleaner"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoSilk.cleaner.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoSilk.cleaner"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoSilk.cleaner.tooltip")))
                                 .binding(
                                         defaults.autoSilk.cleaner,
                                         () -> config.autoSilk.cleaner,
@@ -652,8 +652,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoSilk.delay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoSilk.delay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoSilk.delay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoSilk.delay.tooltip")))
                                 .binding(
                                         defaults.autoSilk.delay,
                                         () -> config.autoSilk.delay,
@@ -662,8 +662,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoSilk.showButton"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoSilk.showButton.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoSilk.showButton"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoSilk.showButton.tooltip")))
                                 .binding(
                                         defaults.autoSilk.showButton,
                                         () -> config.autoSilk.showButton,
@@ -672,8 +672,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.CornerButtonPos>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.autoSilk.buttonPos"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.autoSilk.buttonPos.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.autoSilk.buttonPos"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.autoSilk.buttonPos.tooltip")))
                                 .binding(
                                         defaults.autoSilk.buttonPos,
                                         () -> config.autoSilk.buttonPos,
@@ -687,12 +687,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildChatAppendCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.chatAppend"))
+                .name(Component.translatable("text.sbutils.config.category.chatAppend"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.chatAppend"))
+                        .name(Component.translatable("text.sbutils.config.group.chatAppend"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatAppend.addPrefix"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatAppend.addPrefix.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatAppend.addPrefix"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatAppend.addPrefix.tooltip")))
                                 .binding(
                                         defaults.chatAppend.addPrefix,
                                         () -> config.chatAppend.addPrefix,
@@ -701,8 +701,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatAppend.prefix"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatAppend.prefix.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatAppend.prefix"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatAppend.prefix.tooltip")))
                                 .binding(
                                         defaults.chatAppend.prefix,
                                         () -> config.chatAppend.prefix,
@@ -711,8 +711,8 @@ public class ConfigGui {
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatAppend.addSuffix"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatAppend.addSuffix.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatAppend.addSuffix"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatAppend.addSuffix.tooltip")))
                                 .binding(
                                         defaults.chatAppend.addSuffix,
                                         () -> config.chatAppend.addSuffix,
@@ -721,8 +721,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatAppend.suffix"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatAppend.suffix.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatAppend.suffix"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatAppend.suffix.tooltip")))
                                 .binding(
                                         defaults.chatAppend.suffix,
                                         () -> config.chatAppend.suffix,
@@ -736,12 +736,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildChatFiltersCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.chatFilters"))
+                .name(Component.translatable("text.sbutils.config.category.chatFilters"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.chatFilters"))
+                        .name(Component.translatable("text.sbutils.config.group.chatFilters"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.tipsFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.tipsFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.tipsFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.tipsFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.tipsFilter,
                                         () -> config.chatFilters.tipsFilter,
@@ -750,8 +750,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.advancementsFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.advancementsFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.advancementsFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.advancementsFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.advancementsFilter,
                                         () -> config.chatFilters.advancementsFilter,
@@ -760,8 +760,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.welcomeFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.welcomeFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.welcomeFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.welcomeFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.welcomeFilter,
                                         () -> config.chatFilters.welcomeFilter,
@@ -770,8 +770,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.friendJoinFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.friendJoinFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.friendJoinFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.friendJoinFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.friendJoinFilter,
                                         () -> config.chatFilters.friendJoinFilter,
@@ -780,8 +780,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.motdFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.motdFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.motdFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.motdFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.motdFilter,
                                         () -> config.chatFilters.motdFilter,
@@ -790,8 +790,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.voteFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.voteFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.voteFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.voteFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.voteFilter,
                                         () -> config.chatFilters.voteFilter,
@@ -800,8 +800,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.voteRewardFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.voteRewardFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.voteRewardFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.voteRewardFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.voteRewardFilter,
                                         () -> config.chatFilters.voteRewardFilter,
@@ -810,8 +810,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.raffleFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.raffleFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.raffleFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.raffleFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.raffleFilter,
                                         () -> config.chatFilters.raffleFilter,
@@ -820,8 +820,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.cratesFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.cratesFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.cratesFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.cratesFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.cratesFilter,
                                         () -> config.chatFilters.cratesFilter,
@@ -830,8 +830,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.perishedInVoidFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.perishedInVoidFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.perishedInVoidFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.perishedInVoidFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.perishedInVoidFilter,
                                         () -> config.chatFilters.perishedInVoidFilter,
@@ -840,8 +840,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatFilters.skyChatFilter"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatFilters.skyChatFilter.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatFilters.skyChatFilter"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatFilters.skyChatFilter.tooltip")))
                                 .binding(
                                         defaults.chatFilters.skyChatFilter,
                                         () -> config.chatFilters.skyChatFilter,
@@ -855,12 +855,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildChatLoggerCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.chatLogger"))
+                .name(Component.translatable("text.sbutils.config.category.chatLogger"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.chatLogger"))
+                        .name(Component.translatable("text.sbutils.config.group.chatLogger"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatLogger.shopIncoming"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatLogger.shopIncoming.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatLogger.shopIncoming"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatLogger.shopIncoming.tooltip")))
                                 .binding(
                                         defaults.chatLogger.shopIncoming,
                                         () -> config.chatLogger.shopIncoming,
@@ -869,8 +869,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatLogger.shopOutgoing"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatLogger.shopOutgoing.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatLogger.shopOutgoing"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatLogger.shopOutgoing.tooltip")))
                                 .binding(
                                         defaults.chatLogger.shopOutgoing,
                                         () -> config.chatLogger.shopOutgoing,
@@ -879,8 +879,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatLogger.msgIncoming"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatLogger.msgIncoming.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatLogger.msgIncoming"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatLogger.msgIncoming.tooltip")))
                                 .binding(
                                         defaults.chatLogger.msgIncoming,
                                         () -> config.chatLogger.msgIncoming,
@@ -889,8 +889,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatLogger.msgOutgoing"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatLogger.msgOutgoing.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatLogger.msgOutgoing"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatLogger.msgOutgoing.tooltip")))
                                 .binding(
                                         defaults.chatLogger.msgOutgoing,
                                         () -> config.chatLogger.msgOutgoing,
@@ -899,8 +899,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatLogger.visits"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatLogger.visits.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatLogger.visits"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatLogger.visits.tooltip")))
                                 .binding(
                                         defaults.chatLogger.visits,
                                         () -> config.chatLogger.visits,
@@ -909,8 +909,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.chatLogger.dp"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.chatLogger.dp.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.chatLogger.dp"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.chatLogger.dp.tooltip")))
                                 .binding(
                                         defaults.chatLogger.dp,
                                         () -> config.chatLogger.dp,
@@ -924,12 +924,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildEnchantAllCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.enchantAll"))
+                .name(Component.translatable("text.sbutils.config.category.enchantAll"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.enchantAll"))
+                        .name(Component.translatable("text.sbutils.config.group.enchantAll"))
                         .option(Option.<ModConfig.EnchantMode>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.enchantAll.mode"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.enchantAll.mode.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.enchantAll.mode"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.enchantAll.mode.tooltip")))
                                 .binding(
                                         defaults.enchantAll.mode,
                                         () -> config.enchantAll.mode,
@@ -938,8 +938,8 @@ public class ConfigGui {
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.EnchantMode.class))
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.enchantAll.delay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.enchantAll.delay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.enchantAll.delay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.enchantAll.delay.tooltip")))
                                 .binding(
                                         defaults.enchantAll.delay,
                                         () -> config.enchantAll.delay,
@@ -948,8 +948,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Integer>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.enchantAll.cooldownFrequency"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.enchantAll.cooldownFrequency.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.enchantAll.cooldownFrequency"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.enchantAll.cooldownFrequency.tooltip")))
                                 .binding(
                                         defaults.enchantAll.cooldownFrequency,
                                         () -> config.enchantAll.cooldownFrequency,
@@ -958,8 +958,8 @@ public class ConfigGui {
                                 .controller(IntegerFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.enchantAll.cooldownTime"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.enchantAll.cooldownTime.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.enchantAll.cooldownTime"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.enchantAll.cooldownTime.tooltip")))
                                 .binding(
                                         defaults.enchantAll.cooldownTime,
                                         () -> config.enchantAll.cooldownTime,
@@ -968,8 +968,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.enchantAll.excludeFrost"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.enchantAll.excludeFrost.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.enchantAll.excludeFrost"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.enchantAll.excludeFrost.tooltip")))
                                 .binding(
                                         defaults.enchantAll.excludeFrost,
                                         () -> config.enchantAll.excludeFrost,
@@ -983,12 +983,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildEventNotifierCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.eventNotifier"))
+                .name(Component.translatable("text.sbutils.config.category.eventNotifier"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.eventNotifier"))
+                        .name(Component.translatable("text.sbutils.config.group.eventNotifier"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.eventNotifier.llamaSound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.eventNotifier.showLlamaTitle.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.eventNotifier.llamaSound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.eventNotifier.showLlamaTitle.tooltip")))
                                 .binding(
                                         defaults.eventNotifier.showLlamaTitle,
                                         () -> config.eventNotifier.showLlamaTitle,
@@ -997,8 +997,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.eventNotifier.playLlamaSound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.eventNotifier.playLlamaSound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.eventNotifier.playLlamaSound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.eventNotifier.playLlamaSound.tooltip")))
                                 .binding(
                                         defaults.eventNotifier.playLlamaSound,
                                         () -> config.eventNotifier.playLlamaSound,
@@ -1007,8 +1007,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.NotifSound>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.eventNotifier.llamaSound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.eventNotifier.llamaSound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.eventNotifier.llamaSound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.eventNotifier.llamaSound.tooltip")))
                                 .binding(
                                         defaults.eventNotifier.llamaSound,
                                         () -> config.eventNotifier.llamaSound,
@@ -1017,8 +1017,8 @@ public class ConfigGui {
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.NotifSound.class))
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.eventNotifier.showTraderTitle"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.eventNotifier.showTraderTitle.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.eventNotifier.showTraderTitle"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.eventNotifier.showTraderTitle.tooltip")))
                                 .binding(
                                         defaults.eventNotifier.showTraderTitle,
                                         () -> config.eventNotifier.showTraderTitle,
@@ -1027,8 +1027,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.eventNotifier.playTraderSound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.eventNotifier.playTraderSound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.eventNotifier.playTraderSound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.eventNotifier.playTraderSound.tooltip")))
                                 .binding(
                                         defaults.eventNotifier.playTraderSound,
                                         () -> config.eventNotifier.playTraderSound,
@@ -1037,8 +1037,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.NotifSound>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.eventNotifier.traderSound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.eventNotifier.traderSound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.eventNotifier.traderSound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.eventNotifier.traderSound.tooltip")))
                                 .binding(
                                         defaults.eventNotifier.traderSound,
                                         () -> config.eventNotifier.traderSound,
@@ -1052,12 +1052,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildJoinCommandsCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.joinCommands"))
+                .name(Component.translatable("text.sbutils.config.category.joinCommands"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.joinCommands"))
+                        .name(Component.translatable("text.sbutils.config.group.joinCommands"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.joinCommands.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.joinCommands.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.joinCommands.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.joinCommands.enabled.tooltip")))
                                 .binding(
                                         defaults.joinCommands.enabled,
                                         () -> config.joinCommands.enabled,
@@ -1066,8 +1066,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.joinCommands.initialDelay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.joinCommands.initialDelay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.joinCommands.initialDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.joinCommands.initialDelay.tooltip")))
                                 .binding(
                                         defaults.joinCommands.initialDelay,
                                         () -> config.joinCommands.initialDelay,
@@ -1076,8 +1076,8 @@ public class ConfigGui {
                                 .controller(DoubleFieldControllerBuilder::create)
                                 .build())
                         .option(Option.<Double>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.joinCommands.delay"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.joinCommands.delay.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.joinCommands.delay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.joinCommands.delay.tooltip")))
                                 .binding(
                                         defaults.joinCommands.delay,
                                         () -> config.joinCommands.delay,
@@ -1087,8 +1087,8 @@ public class ConfigGui {
                                 .build())
                         .build())
                 .group(ListOption.<ModConfig.JoinCommandsConfig.JoinCommandsEntry>createBuilder()
-                        .name(Text.translatable("text.sbutils.config.option.joinCommands.commands"))
-                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.joinCommands.commands.tooltip")))
+                        .name(Component.translatable("text.sbutils.config.option.joinCommands.commands"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.joinCommands.commands.tooltip")))
                         .insertEntriesAtEnd(true)
                         .binding(
                                 defaults.joinCommands.commands,
@@ -1103,12 +1103,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildMentionsCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.mentions"))
+                .name(Component.translatable("text.sbutils.config.category.mentions"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.mentions"))
+                        .name(Component.translatable("text.sbutils.config.group.mentions"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.enabled.tooltip")))
                                 .binding(
                                         defaults.mentions.enabled,
                                         () -> config.mentions.enabled,
@@ -1117,8 +1117,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.playSound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.playSound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.playSound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.playSound.tooltip")))
                                 .binding(
                                         defaults.mentions.playSound,
                                         () -> config.mentions.playSound,
@@ -1127,8 +1127,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.NotifSound>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.sound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.sound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.sound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.sound.tooltip")))
                                 .binding(
                                         defaults.mentions.sound,
                                         () -> config.mentions.sound,
@@ -1137,8 +1137,8 @@ public class ConfigGui {
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.NotifSound.class))
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.highlight"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.highlight.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.highlight"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.highlight.tooltip")))
                                 .binding(
                                         defaults.mentions.highlight,
                                         () -> config.mentions.highlight,
@@ -1147,8 +1147,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Color>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.highlightColor"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.highlightColor.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.highlightColor"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.highlightColor.tooltip")))
                                 .binding(
                                         defaults.mentions.highlightColor,
                                         () -> config.mentions.highlightColor,
@@ -1157,8 +1157,8 @@ public class ConfigGui {
                                 .controller(ColorControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.excludeServerMsgs"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.excludeServerMsgs.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.excludeServerMsgs"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.excludeServerMsgs.tooltip")))
                                 .binding(
                                         defaults.mentions.excludeServerMsgs,
                                         () -> config.mentions.excludeServerMsgs,
@@ -1167,8 +1167,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.excludeSelfMsgs"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.excludeSelfMsgs.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.excludeSelfMsgs"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.excludeSelfMsgs.tooltip")))
                                 .binding(
                                         defaults.mentions.excludeSelfMsgs,
                                         () -> config.mentions.excludeSelfMsgs,
@@ -1177,8 +1177,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.excludeSender"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.excludeSender.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.excludeSender"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.excludeSender.tooltip")))
                                 .binding(
                                         defaults.mentions.excludeSender,
                                         () -> config.mentions.excludeSender,
@@ -1187,8 +1187,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.mentions.currentAccount"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.currentAccount.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.mentions.currentAccount"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.currentAccount.tooltip")))
                                 .binding(
                                         defaults.mentions.currentAccount,
                                         () -> config.mentions.currentAccount,
@@ -1198,8 +1198,8 @@ public class ConfigGui {
                                 .build())
                         .build())
                 .group(ListOption.<String>createBuilder()
-                        .name(Text.translatable("text.sbutils.config.option.mentions.aliases"))
-                        .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.mentions.aliases.tooltip")))
+                        .name(Component.translatable("text.sbutils.config.option.mentions.aliases"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.mentions.aliases.tooltip")))
                         .binding(
                                 defaults.mentions.aliases,
                                 () -> config.mentions.aliases,
@@ -1213,12 +1213,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildNoGMTCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.noGmt"))
+                .name(Component.translatable("text.sbutils.config.category.noGmt"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.noGmt"))
+                        .name(Component.translatable("text.sbutils.config.group.noGmt"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.noGmt.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.noGmt.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.noGmt.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.noGmt.enabled.tooltip")))
                                 .binding(
                                         defaults.noGmt.enabled,
                                         () -> config.noGmt.enabled,
@@ -1227,8 +1227,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<String>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.noGmt.timeZone"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.noGmt.timeZone.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.noGmt.timeZone"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.noGmt.timeZone.tooltip")))
                                 .binding(
                                         defaults.noGmt.timeZone,
                                         () -> config.noGmt.timeZone,
@@ -1237,8 +1237,8 @@ public class ConfigGui {
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.noGmt.showTimeZone"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.noGmt.showTimeZone.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.noGmt.showTimeZone"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.noGmt.showTimeZone.tooltip")))
                                 .binding(
                                         defaults.noGmt.showTimeZone,
                                         () -> config.noGmt.showTimeZone,
@@ -1252,12 +1252,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildStaffDetectorCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.staffDetector"))
+                .name(Component.translatable("text.sbutils.config.category.staffDetector"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.staffDetector"))
+                        .name(Component.translatable("text.sbutils.config.group.staffDetector"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.staffDetector.detectJoin"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.staffDetector.detectJoin.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.staffDetector.detectJoin"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.staffDetector.detectJoin.tooltip")))
                                 .binding(
                                         defaults.staffDetector.detectJoin,
                                         () -> config.staffDetector.detectJoin,
@@ -1266,8 +1266,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.staffDetector.detectLeave"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.staffDetector.detectLeave.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.staffDetector.detectLeave"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.staffDetector.detectLeave.tooltip")))
                                 .binding(
                                         defaults.staffDetector.detectLeave,
                                         () -> config.staffDetector.detectLeave,
@@ -1276,8 +1276,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.staffDetector.playSound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.staffDetector.playSound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.staffDetector.playSound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.staffDetector.playSound.tooltip")))
                                 .binding(
                                         defaults.staffDetector.playSound,
                                         () -> config.staffDetector.playSound,
@@ -1286,8 +1286,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<ModConfig.NotifSound>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.staffDetector.sound"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.staffDetector.sound.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.staffDetector.sound"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.staffDetector.sound.tooltip")))
                                 .binding(
                                         defaults.staffDetector.sound,
                                         () -> config.staffDetector.sound,
@@ -1301,12 +1301,12 @@ public class ConfigGui {
 
     private static ConfigCategory buildToolSaverCategory(ModConfig defaults, ModConfig config) {
         return ConfigCategory.createBuilder()
-                .name(Text.translatable("text.sbutils.config.category.toolSaver"))
+                .name(Component.translatable("text.sbutils.config.category.toolSaver"))
                 .group(OptionGroup.createBuilder()
-                        .name(Text.translatable("text.sbutils.config.group.toolSaver"))
+                        .name(Component.translatable("text.sbutils.config.group.toolSaver"))
                         .option(Option.<Boolean>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.toolSaver.enabled"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.toolSaver.enabled.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.toolSaver.enabled"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.toolSaver.enabled.tooltip")))
                                 .binding(
                                         defaults.toolSaver.enabled,
                                         () -> config.toolSaver.enabled,
@@ -1315,8 +1315,8 @@ public class ConfigGui {
                                 .controller(TickBoxControllerBuilder::create)
                                 .build())
                         .option(Option.<Integer>createBuilder()
-                                .name(Text.translatable("text.sbutils.config.option.toolSaver.durability"))
-                                .description(OptionDescription.of(Text.translatable("text.sbutils.config.option.toolSaver.durability.tooltip")))
+                                .name(Component.translatable("text.sbutils.config.option.toolSaver.durability"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.toolSaver.durability.tooltip")))
                                 .binding(
                                         defaults.toolSaver.durability,
                                         () -> config.toolSaver.durability,

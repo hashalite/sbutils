@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -38,7 +38,7 @@ public class StaffDetector {
                 .redirect(staffDetectorNode));
     }
 
-    public static void onPlayerJoin(PlayerListEntry player) {
+    public static void onPlayerJoin(PlayerInfo player) {
         if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player)) {
             return;
         }
@@ -49,7 +49,7 @@ public class StaffDetector {
         }
     }
 
-    public static void onPlayerLeave(PlayerListEntry player) {
+    public static void onPlayerLeave(PlayerInfo player) {
         if (!ModConfig.HANDLER.instance().staffDetector.detectLeave || !isStaff(player)) {
             return;
         }
@@ -79,7 +79,7 @@ public class StaffDetector {
         checkForNoStaff = false;
     }
 
-    private static boolean isStaff(PlayerListEntry player) {
+    private static boolean isStaff(PlayerInfo player) {
         if (player == null) {
             return false;
         }
@@ -89,17 +89,17 @@ public class StaffDetector {
             return true;
         }
 
-        String displayName = MC.inGameHud.getPlayerListHud().getPlayerName(player).getString();
+        String displayName = MC.gui.getTabList().getNameForDisplay(player).getString();
 
         return RegexFilters.staffFilter.matcher(displayName).matches();
     }
 
     public static boolean staffOnline() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return false;
         }
 
-        for (PlayerListEntry playerListEntry : MC.getNetworkHandler().getListedPlayerListEntries()) {
+        for (PlayerInfo playerListEntry : MC.getConnection().getListedOnlinePlayers()) {
             if (isStaff(playerListEntry)) {
                 return true;
             }

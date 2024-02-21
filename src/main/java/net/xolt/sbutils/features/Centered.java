@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.Messenger;
@@ -37,7 +37,7 @@ public class Centered {
         if (MC.player == null) {
             return;
         }
-        BlockPos pos = MC.player.getBlockPos();
+        BlockPos pos = MC.player.blockPosition();
         if (isCentered(pos, 149)) {
             int[] extraSpace = findExtraSpace(pos, 149);
             Messenger.printMapArtSuitability(149, extraSpace);

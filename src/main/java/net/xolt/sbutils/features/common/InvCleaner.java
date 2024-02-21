@@ -1,10 +1,10 @@
 package net.xolt.sbutils.features.common;
 
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.xolt.sbutils.mixins.GenericContainerScreenAccessor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.xolt.sbutils.mixins.ContainerScreenAccessor;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.Messenger;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +30,7 @@ public class InvCleaner {
         if (!cleaning || MC.player == null)
             return;
 
-        Screen screen = MC.currentScreen;
+        Screen screen = MC.screen;
 
         if (!openedDisposal && !isDisposalScreen(screen)) {
             openDisposal();
@@ -53,16 +53,16 @@ public class InvCleaner {
     }
 
     private static void openDisposal() {
-        if (MC.getNetworkHandler() == null)
+        if (MC.getConnection() == null)
             return;
-        MC.getNetworkHandler().sendChatCommand("disposal");
+        MC.getConnection().sendCommand("disposal");
     }
 
     private static boolean isDisposalScreen(Screen screen) {
         if (screen == null)
             return false;
-        return screen instanceof GenericContainerScreen
-                && ((GenericContainerScreenAccessor)screen).getRows() == 4
+        return screen instanceof ContainerScreen
+                && ((ContainerScreenAccessor)screen).getContainerRows() == 4
                 && screen.getTitle().getString().equals("Disposal");
     }
 
@@ -70,7 +70,7 @@ public class InvCleaner {
         if (MC.player == null || itemsToClean == null)
             return false;
         for (int i = 0; i < 36; i++) {
-            if (itemsToClean.test(MC.player.getInventory().getStack(i)))
+            if (itemsToClean.test(MC.player.getInventory().getItem(i)))
                 return true;
         }
         return false;
@@ -80,14 +80,14 @@ public class InvCleaner {
         if (MC.player == null)
             return;
         for (int i = 0; i < 36; i++) {
-            if (!itemsToClean.test(MC.player.getInventory().getStack(i)))
+            if (!itemsToClean.test(MC.player.getInventory().getItem(i)))
                 continue;
-            InvUtils.quickMove(i, MC.player.currentScreenHandler);
+            InvUtils.quickMove(i, MC.player.containerMenu);
             lastClick = System.currentTimeMillis();
             stacksCleaned++;
             return;
         }
-        MC.player.closeHandledScreen();
+        MC.player.closeContainer();
         // Callback needs to happen before reset() because stacksCleaned is set to 0 by reset()
         if (callback != null)
             callback.accept(stacksCleaned > 0);

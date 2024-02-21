@@ -1,6 +1,6 @@
 package net.xolt.sbutils.mixins;
 
-import net.minecraft.network.ClientConnection;
+import net.minecraft.network.Connection;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
 import net.xolt.sbutils.features.common.ServerDetector;
@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ClientConnection.class)
-public class ClientConnectionMixin {
+@Mixin(Connection.class)
+public class ConnectionMixin {
 
     @Inject(method = "handleDisconnection", at = @At("HEAD"))
     private void onHandleDisconnection(CallbackInfo ci) {

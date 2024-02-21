@@ -4,21 +4,21 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.passive.MooshroomEntity;
-import net.minecraft.entity.passive.SheepEntity;
-import net.minecraft.entity.passive.SnowGolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.TntMinecartEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.MushroomCow;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.SnowGolem;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.MinecartTNT;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -49,18 +49,18 @@ public class ToolSaver {
                 .redirect(toolSaverNode));
     }
 
-    public static boolean shouldCancelBlockInteract(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult) {
+    public static boolean shouldCancelBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
         if (!ModConfig.HANDLER.instance().toolSaver.enabled) {
             return false;
         }
 
-        ItemStack item = player.getStackInHand(hand);
+        ItemStack item = player.getItemInHand(hand);
         if (!hasLowDurability(item)) {
             return false;
         }
 
-        ItemUsageContext itemUsageContext = new ItemUsageContext(player, hand, hitResult);
-        if (item.isDamageable() && item.getItem().useOnBlock(itemUsageContext) != ActionResult.PASS) {
+        UseOnContext itemUsageContext = new UseOnContext(player, hand, hitResult);
+        if (item.isDamageableItem() && item.getItem().useOn(itemUsageContext) != InteractionResult.PASS) {
             notifyBlocked();
             return true;
         }
@@ -68,24 +68,24 @@ public class ToolSaver {
         return false;
     }
 
-    public static boolean shouldCancelEntityInteract(PlayerEntity player, Entity entity, Hand hand) {
+    public static boolean shouldCancelEntityInteract(Player player, Entity entity, InteractionHand hand) {
         if (!ModConfig.HANDLER.instance().toolSaver.enabled) {
             return false;
         }
 
-        ItemStack item = player.getStackInHand(hand);
+        ItemStack item = player.getItemInHand(hand);
         if (!hasLowDurability(item)) {
             return false;
         }
 
         if (item.getItem().equals(Items.SHEARS) &&
-                (entity instanceof SheepEntity || entity instanceof MooshroomEntity || entity instanceof SnowGolemEntity)) {
+                (entity instanceof Sheep || entity instanceof MushroomCow || entity instanceof SnowGolem)) {
             notifyBlocked();
             return true;
         }
 
         if (item.getItem().equals(Items.FLINT_AND_STEEL) &&
-                (entity instanceof CreeperEntity || entity instanceof TntMinecartEntity)) {
+                (entity instanceof Creeper || entity instanceof MinecartTNT)) {
             notifyBlocked();
             return true;
         }
@@ -98,7 +98,7 @@ public class ToolSaver {
             return false;
         }
 
-        ItemStack holding = MC.player.getMainHandStack();
+        ItemStack holding = MC.player.getMainHandItem();
 
         if (hasLowDurability(holding)) {
             notifyBlocked();
@@ -109,16 +109,16 @@ public class ToolSaver {
     }
 
     private static boolean hasLowDurability(ItemStack item) {
-        if (item.isEmpty() || !item.isDamageable()) {
+        if (item.isEmpty() || !item.isDamageableItem()) {
             return false;
         }
 
-        return item.getMaxDamage() - item.getDamage() <= ModConfig.HANDLER.instance().toolSaver.durability;
+        return item.getMaxDamage() - item.getDamageValue() <= ModConfig.HANDLER.instance().toolSaver.durability;
     }
 
     private static void notifyBlocked() {
         if (System.currentTimeMillis() - lastMessageSentAt >= 5000) {
-            Messenger.printMessage("message.sbutils.toolSaver.actionBlocked", Formatting.RED);
+            Messenger.printMessage("message.sbutils.toolSaver.actionBlocked", ChatFormatting.RED);
             lastMessageSentAt = System.currentTimeMillis();
         }
     }

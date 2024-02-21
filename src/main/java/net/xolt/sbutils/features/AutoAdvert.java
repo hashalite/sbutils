@@ -7,11 +7,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
@@ -95,7 +95,7 @@ public class AutoAdvert {
 
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoAdvert.adList"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoAdvert.adList"));
             return;
         }
 
@@ -116,7 +116,7 @@ public class AutoAdvert {
 
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoAdvert.adList"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoAdvert.adList"));
             return;
         }
 
@@ -137,7 +137,7 @@ public class AutoAdvert {
 
         int adjustedIndex = index - 1;
         if (adjustedIndex < 0 || adjustedIndex >= adverts.size()) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoAdvert.adList"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoAdvert.adList"));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -155,11 +155,11 @@ public class AutoAdvert {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoAdvert.enabled || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoAdvert.enabled || MC.getConnection() == null) {
             return;
         }
 
-        if (MC.currentScreen instanceof DownloadingTerrainScreen) {
+        if (MC.screen instanceof ReceivingLevelScreen) {
             joinedAt = System.currentTimeMillis();
         }
 
@@ -239,12 +239,12 @@ public class AutoAdvert {
         return new ArrayList<>(Arrays.asList(adListString.split("[\\r\\n]+")));
     }
 
-    private static List<MutableText> formatAds(List<String> ads) {
+    private static List<MutableComponent> formatAds(List<String> ads) {
         return ads.stream().map(AutoAdvert::formatAd).toList();
     }
 
-    private static MutableText formatAd(String input) {
-        MutableText text = Text.literal("");
+    private static MutableComponent formatAd(String input) {
+        MutableComponent text = Component.literal("");
         StringBuilder buffer = new StringBuilder();
         Style currentStyle = Style.EMPTY;
 
@@ -259,15 +259,15 @@ public class AutoAdvert {
             Style nextStyle = currentStyle;
             if (i + 1 < input.length() && RegexFilters.colorCodeFilter.matcher(input.substring(i, i + 2)).matches()) {
                 if (!buffer.isEmpty()) {
-                    text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+                    text = text.append(Component.literal(buffer.toString()).setStyle(currentStyle.applyFormats()));
                     buffer = new StringBuilder();
                 }
                 char nextChar = input.charAt(i + 1);
-                nextStyle = nextStyle.withColor(Formatting.byCode(nextChar));
+                nextStyle = nextStyle.withColor(ChatFormatting.getByCode(nextChar));
                 i++;
             } else if (i + 13 < input.length() && RegexFilters.rgbFilter.matcher(input.substring(i, i + 14)).matches()) {
                 if (!buffer.isEmpty()) {
-                    text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+                    text = text.append(Component.literal(buffer.toString()).setStyle(currentStyle.applyFormats()));
                     buffer = new StringBuilder();
                 }
                 String rgb = input.substring(i + 3, i + 14).replaceAll("&", "");
@@ -280,7 +280,7 @@ public class AutoAdvert {
             }
 
             if (!buffer.isEmpty()) {
-                text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+                text = text.append(Component.literal(buffer.toString()).setStyle(currentStyle.applyFormats()));
                 buffer = new StringBuilder();
             }
 
@@ -288,11 +288,11 @@ public class AutoAdvert {
         }
 
         if (!buffer.isEmpty()) {
-            text = text.append(Text.literal(buffer.toString()).setStyle(currentStyle.withFormatting()));
+            text = text.append(Component.literal(buffer.toString()).setStyle(currentStyle.applyFormats()));
         }
 
         if (input.startsWith("//")) {
-            text = Text.literal(text.getString().substring(2)).formatted(Formatting.GRAY).formatted(Formatting.STRIKETHROUGH);
+            text = Component.literal(text.getString().substring(2)).withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.STRIKETHROUGH);
         }
 
         return text;
@@ -338,11 +338,11 @@ public class AutoAdvert {
     }
 
     private static void sendAd() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
 
-        MC.getNetworkHandler().sendChatMessage(prevAdList.get(adIndex));
+        MC.getConnection().sendChat(prevAdList.get(adIndex));
     }
 
     private static int delayLeft() {

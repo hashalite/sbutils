@@ -8,8 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.argument.AutoCommandEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig.AutoCommandConfig.AutoCommandEntry;
@@ -59,7 +58,7 @@ public class AutoCommand {
         List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoCommand.commands"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoCommand.commands"));
             return Command.SINGLE_SUCCESS;
         }
         AutoCommandEntry command = autoCommands.get(adjustedIndex);
@@ -73,7 +72,7 @@ public class AutoCommand {
         List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoCommand.commands"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoCommand.commands"));
             return Command.SINGLE_SUCCESS;
         }
         AutoCommandEntry command = autoCommands.get(adjustedIndex);
@@ -88,7 +87,7 @@ public class AutoCommand {
         List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.autoCommand.commands"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoCommand.commands"));
             return Command.SINGLE_SUCCESS;
         }
         AutoCommandEntry command = autoCommands.get(adjustedIndex);
@@ -112,7 +111,7 @@ public class AutoCommand {
     }
 
     private static void sendCommands() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
 
@@ -147,12 +146,12 @@ public class AutoCommand {
     }
 
     private static void sendCommand(String command) {
-        if (command == null || MC.getNetworkHandler() == null) {
+        if (command == null || MC.getConnection() == null) {
             return;
         }
         if (command.startsWith("/")) {
             command = command.substring(1);
         }
-        MC.getNetworkHandler().sendChatCommand(command);
+        MC.getConnection().sendCommand(command);
     }
 }

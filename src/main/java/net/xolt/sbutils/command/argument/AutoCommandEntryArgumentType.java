@@ -6,7 +6,6 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.text.Text;
 import net.xolt.sbutils.config.ModConfig;
 
 public class AutoCommandEntryArgumentType implements ArgumentType<ModConfig.AutoCommandConfig.AutoCommandEntry> {

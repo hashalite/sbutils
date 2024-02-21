@@ -4,9 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.ServerDetector;
@@ -49,7 +49,7 @@ public class AutoRaffle {
             reset();
         }
 
-        if (!enabled || MC.getNetworkHandler() == null) {
+        if (!enabled || MC.getConnection() == null) {
             return;
         }
 
@@ -64,7 +64,7 @@ public class AutoRaffle {
         }
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if (ModConfig.HANDLER.instance().autoRaffle.enabled && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
             reset();
         }
@@ -93,7 +93,7 @@ public class AutoRaffle {
     }
 
     private static void buySkyblockTickets() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
 
@@ -111,18 +111,18 @@ public class AutoRaffle {
 
         int buyAmount = Math.min(numTickets, grassCount);
         Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
-        MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
+        MC.getConnection().sendCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
     }
 
     private static void buyEconomyTickets() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
 
         int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.ecoTickets, 1), 5);
         Messenger.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
-        MC.getNetworkHandler().sendChatCommand("raffle buy " + buyAmount);
+        MC.getConnection().sendCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
     }
 
@@ -132,8 +132,8 @@ public class AutoRaffle {
         }
 
         int counter = 0;
-        for (int i = 0; i < MC.player.getInventory().size(); i++) {
-            ItemStack itemStack = MC.player.getInventory().getStack(i);
+        for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
+            ItemStack itemStack = MC.player.getInventory().getItem(i);
             if (!(itemStack.getItem().equals(Items.GRASS_BLOCK))) {
                 continue;
             }

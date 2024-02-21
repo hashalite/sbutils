@@ -4,8 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -41,7 +40,7 @@ public class EventNotifier {
                 .redirect(eventNotifierNode));
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if (!enabled()) {
             return;
         }
@@ -61,7 +60,7 @@ public class EventNotifier {
         }
 
         if (ModConfig.HANDLER.instance().eventNotifier.showLlamaTitle) {
-            Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Text.translatable("message.sbutils.eventNotifier.vpLlama"));
+            Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Component.translatable("message.sbutils.eventNotifier.vpLlama"));
         }
     }
 
@@ -71,7 +70,7 @@ public class EventNotifier {
         }
 
         if (ModConfig.HANDLER.instance().eventNotifier.showTraderTitle) {
-            Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Text.translatable("message.sbutils.eventNotifier.wanderingTrader"));
+            Messenger.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Component.translatable("message.sbutils.eventNotifier.wanderingTrader"));
         }
     }
 

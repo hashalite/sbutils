@@ -8,8 +8,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.argument.JoinCommandsEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig;
@@ -60,7 +60,7 @@ public class JoinCommands {
         List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.HANDLER.instance().joinCommands.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= joinCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.joinCommands.commands"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.joinCommands.commands"));
             return Command.SINGLE_SUCCESS;
         }
         ModConfig.JoinCommandsConfig.JoinCommandsEntry command = joinCommands.get(adjustedIndex);
@@ -75,7 +75,7 @@ public class JoinCommands {
         List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.HANDLER.instance().joinCommands.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= joinCommands.size() || adjustedIndex < 0) {
-            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable("text.sbutils.config.option.joinCommands.commands"));
+            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.joinCommands.commands"));
             return Command.SINGLE_SUCCESS;
         }
         ModConfig.JoinCommandsConfig.JoinCommandsEntry command = joinCommands.get(adjustedIndex);
@@ -111,7 +111,7 @@ public class JoinCommands {
         joinedAt = System.currentTimeMillis();
     }
 
-    private static List<String> getJoinCommands(PlayerEntity player) {
+    private static List<String> getJoinCommands(Player player) {
         String playerName = player.getName().getString().toLowerCase();
         return ModConfig.HANDLER.instance().joinCommands.commands.stream().filter((command) -> {
             List<String> accounts = command.getAccounts();
@@ -120,7 +120,7 @@ public class JoinCommands {
     }
 
     private static void sendJoinCommand() {
-        if (MC.getNetworkHandler() == null)
+        if (MC.getConnection() == null)
             return;
 
         String command = commandQueue.poll();
@@ -131,7 +131,7 @@ public class JoinCommands {
         if (command.startsWith("/"))
             command = command.substring(1);
 
-        MC.getNetworkHandler().sendChatCommand(command);
+        MC.getConnection().sendCommand(command);
         lastCommandSentAt = System.currentTimeMillis();
     }
 

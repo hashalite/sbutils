@@ -7,8 +7,8 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 import net.xolt.sbutils.command.argument.GenericEnumArgumentType;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.util.Messenger;
@@ -64,11 +64,11 @@ public class CommandHelper {
         return genericList(command, argument, setting, maxSize, allowDupes, indexed, StringArgumentType.greedyString(), StringArgumentType::getString, get, set);
     }
 
-    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
+    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
         return enumList(command, argument, setting, -1, false, false, type, get, set);
     }
 
-    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
+    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
         return genericList(command, argument, setting, maxSize, allowDupes, indexed, GenericEnumArgumentType.genericEnum(type), (context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type), get, set);
     }
 
@@ -82,19 +82,19 @@ public class CommandHelper {
         Consumer<T> add = (value) -> {
             ArrayList<T> list = new ArrayList<>(get.get());
             if (maxSize > -1 && list.size() >= maxSize) {
-                Messenger.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Text.translatable(OPTION_KEY + setting));
+                Messenger.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Component.translatable(OPTION_KEY + setting));
                 return;
             }
 
             if (!allowDupes && list.contains(value)) {
-                Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Text.translatable(OPTION_KEY + setting));
+                Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Component.translatable(OPTION_KEY + setting));
                 return;
             }
 
             list.add(value);
             set.accept(list);
             ModConfig.HANDLER.save();
-            Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Text.translatable(OPTION_KEY + setting));
+            Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(OPTION_KEY + setting));
             Messenger.printListSetting(OPTION_KEY + setting, list, indexed);
         };
 
@@ -104,33 +104,33 @@ public class CommandHelper {
                         ArrayList<T> list = new ArrayList<>(get.get());
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
-                            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable(OPTION_KEY + setting));
+                            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(OPTION_KEY + setting));
                             return;
                         }
 
                         T removed = list.remove(adjustedIndex);
                         set.accept(list);
                         ModConfig.HANDLER.save();
-                        Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Text.translatable(OPTION_KEY + setting));
+                        Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Component.translatable(OPTION_KEY + setting));
                         Messenger.printListSetting(OPTION_KEY + setting, list, true);
                     },
                     (index, value) -> {
                         ArrayList<T> list = new ArrayList<>(get.get());
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
-                            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Text.translatable(OPTION_KEY + setting));
+                            Messenger.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(OPTION_KEY + setting));
                             return;
                         }
 
                         if (!allowDupes && list.contains(value)) {
-                            Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Text.translatable(OPTION_KEY + setting));
+                            Messenger.printWithPlaceholders("message.sbutils.listDupeError", value, Component.translatable(OPTION_KEY + setting));
                             return;
                         }
 
                         list.add(index, value);
                         set.accept(list);
                         ModConfig.HANDLER.save();
-                        Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Text.translatable(OPTION_KEY + setting));
+                        Messenger.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(OPTION_KEY + setting));
                         Messenger.printListSetting(OPTION_KEY + setting, list, true);
                     }
             );
@@ -142,10 +142,10 @@ public class CommandHelper {
                     set.accept(list);
                     ModConfig.HANDLER.save();
                     if (result) {
-                        Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", value, Text.translatable(OPTION_KEY + setting));
+                        Messenger.printWithPlaceholders("message.sbutils.listDelSuccess", value, Component.translatable(OPTION_KEY + setting));
                         Messenger.printListSetting(OPTION_KEY + setting, list);
                     } else {
-                        Messenger.printWithPlaceholders("message.sbutils.listDelFail", value, Text.translatable(OPTION_KEY + setting));
+                        Messenger.printWithPlaceholders("message.sbutils.listDelFail", value, Component.translatable(OPTION_KEY + setting));
                     }
                 }
         );
@@ -206,7 +206,7 @@ public class CommandHelper {
         return getterSetter(command, argument, setting, get, set, IntegerArgumentType.integer(), IntegerArgumentType::getInteger);
     }
 
-    public static <T extends Enum<T> & StringIdentifiable> LiteralArgumentBuilder<FabricClientCommandSource> genericEnum(String command, String argument, String setting, Class<T> type, Supplier<T> get, Consumer<T> set) {
+    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> genericEnum(String command, String argument, String setting, Class<T> type, Supplier<T> get, Consumer<T> set) {
         return getterSetter(command, argument, setting, get, set, GenericEnumArgumentType.genericEnum(type), ((context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type)));
     }
 

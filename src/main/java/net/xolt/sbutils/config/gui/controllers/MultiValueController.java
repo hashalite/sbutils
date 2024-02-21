@@ -7,9 +7,6 @@ import dev.isxander.yacl3.api.utils.Dimension;
 import dev.isxander.yacl3.gui.AbstractWidget;
 import dev.isxander.yacl3.gui.YACLScreen;
 import dev.isxander.yacl3.gui.controllers.ControllerWidget;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -17,6 +14,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public abstract class MultiValueController<T> implements Controller<T> {
     private final Option<T> option;
@@ -33,7 +33,7 @@ public abstract class MultiValueController<T> implements Controller<T> {
 
     protected static <T> Controller<T> dummyController(@Nullable String name, Function<Option<T>, ControllerBuilder<T>> controller, T def, Supplier<T> get, Consumer<T> set) {
         return Option.<T>createBuilder()
-                .name(name != null ? Text.translatable(name) : Text.literal(""))
+                .name(name != null ? Component.translatable(name) : Component.literal(""))
                 .binding(
                         def,
                         get,
@@ -49,9 +49,9 @@ public abstract class MultiValueController<T> implements Controller<T> {
     }
 
     @Override
-    public Text formatValue() {
-        List<Text> formatted = controllers.stream().map(Controller::formatValue).toList();
-        MutableText result = formatted.get(0).copy();
+    public Component formatValue() {
+        List<Component> formatted = controllers.stream().map(Controller::formatValue).toList();
+        MutableComponent result = formatted.get(0).copy();
         for (int i = 1; i < formatted.size(); i++) {
             result.append(" | ").append(formatted.get(i));
         }
@@ -173,7 +173,7 @@ public abstract class MultiValueController<T> implements Controller<T> {
         }
 
         @Override
-        public void render(DrawContext graphics, int mouseX, int mouseY, float delta) {
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
             elements.forEach((element) -> element.render(graphics, mouseX, mouseY, delta));
         }
     }

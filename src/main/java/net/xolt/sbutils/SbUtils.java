@@ -1,15 +1,15 @@
 package net.xolt.sbutils;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.commands.CommandBuildContext;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.gui.ConfigGui;
 import net.xolt.sbutils.features.*;
@@ -24,17 +24,17 @@ import java.util.List;
 public class SbUtils implements ClientModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("sbutils");
-    public static final MinecraftClient MC = MinecraftClient.getInstance();
+    public static final Minecraft MC = Minecraft.getInstance();
     public static final List<String> commands = new ArrayList<>();
 
-    public static KeyBinding configKey;
-    public static KeyBinding islandKey;
-    public static KeyBinding ehomeKey;
-    public static KeyBinding jumpKey;
-    public static KeyBinding backKey;
-    public static KeyBinding craftKey;
-    public static KeyBinding echestKey;
-    public static KeyBinding trashKey;
+    public static KeyMapping configKey;
+    public static KeyMapping islandKey;
+    public static KeyMapping ehomeKey;
+    public static KeyMapping jumpKey;
+    public static KeyMapping backKey;
+    public static KeyMapping craftKey;
+    public static KeyMapping echestKey;
+    public static KeyMapping trashKey;
 
     @Override
     public void onInitializeClient() {
@@ -52,7 +52,7 @@ public class SbUtils implements ClientModInitializer {
         AutoKit.init();
     }
 
-    private static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+    private static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         EnchantAll.registerCommand(dispatcher);
         AutoAdvert.registerCommand(dispatcher);
         Convert.registerCommand(dispatcher);
@@ -81,50 +81,50 @@ public class SbUtils implements ClientModInitializer {
     }
 
     private static void registerKeybindings() {
-        configKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_BACKSLASH, "category.sbutils.sbutils"));
-        islandKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.island", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        ehomeKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.ehome", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        jumpKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.jump", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        backKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.back", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        craftKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.craft", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        echestKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.echest", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        trashKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.sbutils.trash", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        configKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.config", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_BACKSLASH, "category.sbutils.sbutils"));
+        islandKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.island", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        ehomeKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.ehome", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        jumpKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.jump", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        backKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.back", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        craftKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.craft", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        echestKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.echest", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        trashKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.trash", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (configKey.wasPressed()) {
-                MC.setScreen(ConfigGui.getConfigScreen(MC.currentScreen));
+            while (configKey.consumeClick()) {
+                MC.setScreen(ConfigGui.getConfigScreen(MC.screen));
             }
 
-            if (MC.getNetworkHandler() == null) {
+            if (MC.getConnection() == null) {
                 return;
             }
 
-            while (islandKey.wasPressed()) {
-                MC.getNetworkHandler().sendChatCommand("is");
+            while (islandKey.consumeClick()) {
+                MC.getConnection().sendCommand("is");
             }
 
-            while (ehomeKey.wasPressed()) {
-                MC.getNetworkHandler().sendChatCommand("ehome");
+            while (ehomeKey.consumeClick()) {
+                MC.getConnection().sendCommand("ehome");
             }
 
-            while (jumpKey.wasPressed()) {
-                MC.getNetworkHandler().sendChatCommand("jump");
+            while (jumpKey.consumeClick()) {
+                MC.getConnection().sendCommand("jump");
             }
 
-            while (backKey.wasPressed()) {
-                MC.getNetworkHandler().sendChatCommand("back");
+            while (backKey.consumeClick()) {
+                MC.getConnection().sendCommand("back");
             }
 
-            while (craftKey.wasPressed()) {
-                MC.getNetworkHandler().sendChatCommand("wb");
+            while (craftKey.consumeClick()) {
+                MC.getConnection().sendCommand("wb");
             }
 
-            while (echestKey.wasPressed()) {
-                MC.getNetworkHandler().sendChatCommand("ec");
+            while (echestKey.consumeClick()) {
+                MC.getConnection().sendCommand("ec");
             }
 
-            while (trashKey.wasPressed()) {
-                MC.getNetworkHandler().sendChatCommand("trash");
+            while (trashKey.consumeClick()) {
+                MC.getConnection().sendCommand("trash");
             }
         });
     }

@@ -1,46 +1,45 @@
 package net.xolt.sbutils.util;
 
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class InvUtils {
 
-    public static void swapToHotbar(int sourceIndex, int hotbarIndex, ScreenHandler screenHandler) {
-        if (MC.interactionManager == null || MC.player == null || sourceIndex == hotbarIndex) {
+    public static void swapToHotbar(int sourceIndex, int hotbarIndex, AbstractContainerMenu screenHandler) {
+        if (MC.gameMode == null || MC.player == null || sourceIndex == hotbarIndex) {
             return;
         }
 
-        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(sourceIndex, screenHandler), hotbarIndex, SlotActionType.SWAP, MC.player);
+        MC.gameMode.handleInventoryMouseClick(MC.player.containerMenu.containerId, indexToInventorySlot(sourceIndex, screenHandler), hotbarIndex, ClickType.SWAP, MC.player);
     }
 
-    public static void quickMove(int index, ScreenHandler screenHandler) {
-        if (MC.interactionManager == null || MC.player == null) {
+    public static void quickMove(int index, AbstractContainerMenu screenHandler) {
+        if (MC.gameMode == null || MC.player == null) {
             return;
         }
 
-        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, indexToInventorySlot(index, screenHandler), 0, SlotActionType.QUICK_MOVE, MC.player);
+        MC.gameMode.handleInventoryMouseClick(MC.player.containerMenu.containerId, indexToInventorySlot(index, screenHandler), 0, ClickType.QUICK_MOVE, MC.player);
     }
 
     public static int findEmptyHotbarSlot() {
         if (MC.player == null) {
             return -1;
         }
-        int emptySlot = MC.player.getInventory().getEmptySlot();
+        int emptySlot = MC.player.getInventory().getFreeSlot();
         return emptySlot < 9 ? emptySlot : -1;
     }
 
     // Converts an index in the player's inventory to a slot id for the provided screen handler
-    private static int indexToInventorySlot(int index, ScreenHandler screenHandler) {
+    private static int indexToInventorySlot(int index, AbstractContainerMenu screenHandler) {
         if (screenHandler == null || index < 0 || index > 40) {
             return -1;
         }
@@ -82,34 +81,34 @@ public class InvUtils {
     }
 
     // Returns true if the offhand and armor slots are accessible from the current screen
-    private static boolean isPlayerScreen(ScreenHandler screenHandler) {
-        return screenHandler instanceof PlayerScreenHandler || screenHandler instanceof CreativeInventoryScreen.CreativeScreenHandler;
+    private static boolean isPlayerScreen(AbstractContainerMenu screenHandler) {
+        return screenHandler instanceof InventoryMenu || screenHandler instanceof CreativeModeInventoryScreen.ItemPickerMenu;
     }
 
-    public static boolean canSwapSlot(int slotIndex, ScreenHandler screenHandler) {
+    public static boolean canSwapSlot(int slotIndex, AbstractContainerMenu screenHandler) {
         return !(slotIndex >= 36 && slotIndex <= 40 && !isPlayerScreen(screenHandler));
     }
 
-    public static boolean doesKitFit(PlayerInventory inventory, List<ItemStack> kit) {
+    public static boolean doesKitFit(Inventory inventory, List<ItemStack> kit) {
         List<ItemStack> invItems = new ArrayList<>();
         for (int i = 0; i < 36; i++) {
-            if (inventory.getStack(i).getItem() == Items.AIR)
+            if (inventory.getItem(i).getItem() == Items.AIR)
                 continue;
-            invItems.add(inventory.getStack(i).copy());
+            invItems.add(inventory.getItem(i).copy());
         }
 
         for (ItemStack stack : kit) {
             int count = stack.getCount();
             for (ItemStack invStack : invItems) {
-                if (!invStack.getItem().equals(stack.getItem()) || invStack.getCount() == invStack.getMaxCount())
+                if (!invStack.getItem().equals(stack.getItem()) || invStack.getCount() == invStack.getMaxStackSize())
                     continue;
-                if (invStack.getMaxCount() - invStack.getCount() >= stack.getCount()) {
+                if (invStack.getMaxStackSize() - invStack.getCount() >= stack.getCount()) {
                     invStack.setCount(invStack.getCount() + stack.getCount());
                     count = 0;
                     break;
                 } else {
-                    int space = invStack.getMaxCount() - invStack.getCount();
-                    invStack.setCount(invStack.getMaxCount());
+                    int space = invStack.getMaxStackSize() - invStack.getCount();
+                    invStack.setCount(invStack.getMaxStackSize());
                     count = count - space;
                     break;
                 }

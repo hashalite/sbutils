@@ -4,15 +4,17 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.*;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.argument.ColorArgumentType;
 import net.xolt.sbutils.command.CommandHelper;
-import net.xolt.sbutils.util.Messenger;
 import net.xolt.sbutils.util.RegexFilters;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -46,7 +48,7 @@ public class Mentions {
                 .redirect(mentionsNode));
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if (!ModConfig.HANDLER.instance().mentions.enabled || !ModConfig.HANDLER.instance().mentions.playSound || !isValidMessage(message)) {
             return;
         }
@@ -56,12 +58,12 @@ public class Mentions {
         }
     }
 
-    public static Text modifyMessage(Text message) {
+    public static Component modifyMessage(Component message) {
         if (MC.player == null) {
             return message;
         }
 
-        Text newMessage = message;
+        Component newMessage = message;
 
         Matcher playerMsgMatcher = RegexFilters.playerMsgFilter.matcher(message.getString());
         int prefixLen = ModConfig.HANDLER.instance().mentions.excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
@@ -79,7 +81,7 @@ public class Mentions {
         return newMessage;
     }
 
-    public static boolean mentioned(Text message) {
+    public static boolean mentioned(Component message) {
         if (MC.player == null) {
             return false;
         }
@@ -106,7 +108,7 @@ public class Mentions {
         return false;
     }
 
-    public static boolean isValidMessage(Text message) {
+    public static boolean isValidMessage(Component message) {
         if (ModConfig.HANDLER.instance().mentions.excludeServerMsgs &&
                 !RegexFilters.playerMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.incomingMsgFilter.matcher(message.getString()).matches() &&
@@ -134,17 +136,17 @@ public class Mentions {
         return true;
     }
 
-    private static Text highlight(Text text, String target, int prefixLen) {
+    private static Component highlight(Component text, String target, int prefixLen) {
         int prefixRemaining = prefixLen;
-        MutableText highlighted;
+        MutableComponent highlighted;
         if (prefixRemaining > 0) {
-            highlighted = MutableText.of(text.getContent()).setStyle(text.getStyle());
+            highlighted = MutableComponent.create(text.getContents()).setStyle(text.getStyle());
             prefixRemaining -= highlighted.getString().length();
         } else {
-            highlighted = highlight(text.getContent(), text.getStyle(), target);
+            highlighted = highlight(text.getContents(), text.getStyle(), target);
         }
 
-        for (Text sibling : text.getSiblings()) {
+        for (Component sibling : text.getSiblings()) {
             if (prefixRemaining > 0) {
                 highlighted.append(sibling);
                 prefixRemaining -= sibling.getString().length();
@@ -155,7 +157,7 @@ public class Mentions {
         return highlighted;
     }
 
-    private static MutableText highlight(TextContent content, Style oldStyle, String target) {
+    private static MutableComponent highlight(ComponentContents content, Style oldStyle, String target) {
         StringBuilder sb = new StringBuilder();
         content.visit(string -> {
             sb.append(string);
@@ -166,18 +168,18 @@ public class Mentions {
 
         String lowerTarget = target.toLowerCase();
         if (!lowerText.contains(lowerTarget)) {
-            return Text.literal(stringText).setStyle(oldStyle);
+            return Component.literal(stringText).setStyle(oldStyle);
         }
 
         int index = 0;
         String format = "";
-        MutableText result = Text.literal("");
+        MutableComponent result = Component.literal("");
         while (lowerText.indexOf(lowerTarget, index) != -1) {
             int beginningIndex = lowerText.indexOf(lowerTarget, index);
             int endIndex = beginningIndex + lowerTarget.length();
             String preText = format + stringText.substring(index, beginningIndex);
-            result.append(Text.literal(preText).setStyle(oldStyle));
-            result.append(Text.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.instance().mentions.highlightColor.getRGB())));
+            result.append(Component.literal(preText).setStyle(oldStyle));
+            result.append(Component.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.instance().mentions.highlightColor.getRGB())));
             int formatSignIndex = preText.lastIndexOf("\u00a7");
             if (formatSignIndex != -1 && formatSignIndex + 2 <= preText.length()) {
                 format = preText.substring(formatSignIndex, formatSignIndex + 2);
@@ -186,7 +188,7 @@ public class Mentions {
         }
 
         if (index < stringText.length()) {
-            result.append(Text.literal(format + stringText.substring(index)).setStyle(oldStyle));
+            result.append(Component.literal(format + stringText.substring(index)).setStyle(oldStyle));
         }
 
         return result;

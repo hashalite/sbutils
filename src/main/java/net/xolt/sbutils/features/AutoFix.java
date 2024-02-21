@@ -4,9 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -130,7 +130,7 @@ public class AutoFix {
         }
 
         if (!fixing) {
-            ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
+            AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
             if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)) {
                 fixing = true;
 
@@ -138,14 +138,14 @@ public class AutoFix {
                     return;
                 }
 
-                prevSelectedSlot = MC.player.getInventory().selectedSlot;
+                prevSelectedSlot = MC.player.getInventory().selected;
 
                 if (itemPrevSlot < 9) {
-                    MC.player.getInventory().selectedSlot = itemPrevSlot;
+                    MC.player.getInventory().selected = itemPrevSlot;
                     selectedSlot = itemPrevSlot;
                 } else {
-                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selectedSlot, currentScreenHandler);
-                    selectedSlot = MC.player.getInventory().selectedSlot;
+                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selected, currentScreenHandler);
+                    selectedSlot = MC.player.getInventory().selected;
                 }
 
                 lastActionPerformedAt = System.currentTimeMillis();
@@ -153,7 +153,7 @@ public class AutoFix {
             return;
         }
 
-        if (MC.player.getInventory().selectedSlot != findMostDamaged()) {
+        if (MC.player.getInventory().selected != findMostDamaged()) {
             reset();
             return;
         }
@@ -169,7 +169,7 @@ public class AutoFix {
         waitingForResponse = true;
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if (!waitingForResponse) {
             return;
         }
@@ -205,50 +205,50 @@ public class AutoFix {
 
         int result = -1;
         int mostDamage = 0;
-        for (int i = 0; i < MC.player.getInventory().size(); i++) {
+        for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
             if (i >= 36 && i <= 39) {
                 // Skip armor slots
                 continue;
             }
 
-            ItemStack itemStack = MC.player.getInventory().getStack(i);
+            ItemStack itemStack = MC.player.getInventory().getItem(i);
 
-            if (!itemStack.isDamageable()) {
+            if (!itemStack.isDamageableItem()) {
                 continue;
             }
 
             double maxDamage = itemStack.getMaxDamage();
 
-            if (ModConfig.HANDLER.instance().autoFix.percent > -1 && (maxDamage - (double)itemStack.getDamage()) / maxDamage > ModConfig.HANDLER.instance().autoFix.percent) {
+            if (ModConfig.HANDLER.instance().autoFix.percent > -1 && (maxDamage - (double)itemStack.getDamageValue()) / maxDamage > ModConfig.HANDLER.instance().autoFix.percent) {
                 continue;
             }
 
-            if (itemStack.getDamage() > mostDamage) {
+            if (itemStack.getDamageValue() > mostDamage) {
                 result = i;
-                mostDamage = itemStack.getDamage();
+                mostDamage = itemStack.getDamageValue();
             }
         }
         return result;
     }
 
     private static void sendFixCommand() {
-        if (MC.getNetworkHandler() == null) {
+        if (MC.getConnection() == null) {
             return;
         }
         String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
-        MC.getNetworkHandler().sendChatCommand(command);
+        MC.getConnection().sendCommand(command);
     }
 
     private static void returnAndSwapBack() {
         if (MC.player == null)
             return;
 
-        ScreenHandler currentScreenHandler = MC.player.currentScreenHandler;
+        AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
         if (itemPrevSlot != -1 || !InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
             return;
 
         InvUtils.swapToHotbar(itemPrevSlot, selectedSlot, currentScreenHandler);
-        MC.player.getInventory().selectedSlot = prevSelectedSlot;
+        MC.player.getInventory().selected = prevSelectedSlot;
     }
 
     private static int delay() {

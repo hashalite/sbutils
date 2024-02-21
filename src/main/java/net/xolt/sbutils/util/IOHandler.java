@@ -4,9 +4,8 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
-import net.minecraft.util.Util;
-
+import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.TypeDescriptor;
@@ -82,22 +81,22 @@ public class IOHandler {
     }
 
     public static void openModDirectory() {
-        Util.getOperatingSystem().open(modDirectory);
+        Util.getPlatform().openFile(modDirectory);
     }
 
-    public static void logTransaction(Text message,long messageReceivedAt) {
+    public static void logTransaction(Component message,long messageReceivedAt) {
         logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), transactionLogFile);
     }
 
-    public static void logMessage(Text message,long messageReceivedAt) {
+    public static void logMessage(Component message,long messageReceivedAt) {
         logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), messageLogFile);
     }
 
-    public static void logVisit(Text message,long messageReceivedAt) {
+    public static void logVisit(Component message,long messageReceivedAt) {
         logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), visitLogFile);
     }
 
-    public static void logDpWinner(Text message, long messageReceivedAt) {
+    public static void logDpWinner(Component message, long messageReceivedAt) {
         logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), dpLogFile);
     }
 

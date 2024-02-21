@@ -4,10 +4,10 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.item.SignItem;
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
-import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
+import net.minecraft.world.item.SignItem;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -38,30 +38,30 @@ public class AutoPrivate {
     }
 
     public static void onInteractBlock() {
-        if (MC.player == null || MC.getNetworkHandler() == null)
+        if (MC.player == null || MC.getConnection() == null)
             return;
-        if (!ModConfig.HANDLER.instance().autoPrivate.enabled || !(MC.player.getMainHandStack().getItem() instanceof SignItem))
+        if (!ModConfig.HANDLER.instance().autoPrivate.enabled || !(MC.player.getMainHandItem().getItem() instanceof SignItem))
             return;
-        MC.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+        MC.getConnection().send(new ServerboundPlayerCommandPacket(MC.player, ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY));
         sneaked = true;
     }
 
     public static void afterInteractBlock() {
-        if (!sneaked || MC.getNetworkHandler() == null || MC.player == null)
+        if (!sneaked || MC.getConnection() == null || MC.player == null)
             return;
-        MC.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+        MC.getConnection().send(new ServerboundPlayerCommandPacket(MC.player, ServerboundPlayerCommandPacket.Action.RELEASE_SHIFT_KEY));
         sneaked = false;
     }
 
-    public static boolean onSignEditorOpen(SignEditorOpenS2CPacket packet) {
-        if (!ModConfig.HANDLER.instance().autoPrivate.enabled || !packet.isFront()) {
+    public static boolean onSignEditorOpen(ClientboundOpenSignEditorPacket packet) {
+        if (!ModConfig.HANDLER.instance().autoPrivate.enabled || !packet.isFrontText()) {
             return false;
         }
         return updateSign(packet);
     }
 
-    private static boolean updateSign(SignEditorOpenS2CPacket packet) {
-        if (MC.getNetworkHandler() == null || MC.player == null) {
+    private static boolean updateSign(ClientboundOpenSignEditorPacket packet) {
+        if (MC.getConnection() == null || MC.player == null) {
             return false;
         }
 
@@ -72,7 +72,7 @@ public class AutoPrivate {
             lines[i] = names.get(i);
         }
 
-        MC.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(packet.getPos(), true, "[private]", MC.player.getName().getString(), lines[0], lines[1]));
+        MC.getConnection().send(new ServerboundSignUpdatePacket(packet.getPos(), true, "[private]", MC.player.getName().getString(), lines[0], lines[1]));
         return true;
     }
 }

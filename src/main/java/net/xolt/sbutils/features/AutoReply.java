@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -44,7 +44,7 @@ public class AutoReply {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoReply.enabled || MC.getNetworkHandler() == null) {
+        if (!ModConfig.HANDLER.instance().autoReply.enabled || MC.getConnection() == null) {
             return;
         }
 
@@ -53,7 +53,7 @@ public class AutoReply {
         }
     }
 
-    public static void processMessage(Text message) {
+    public static void processMessage(Component message) {
         if (!ModConfig.HANDLER.instance().autoReply.enabled) {
             return;
         }
@@ -69,11 +69,11 @@ public class AutoReply {
     }
 
     private static void sendMessage() {
-        if (MC.getNetworkHandler() == null || msgQueue == null || msgQueue.size() == 0) {
+        if (MC.getConnection() == null || msgQueue == null || msgQueue.size() == 0) {
             return;
         }
 
-        MC.getNetworkHandler().sendChatCommand(msgQueue.poll());
+        MC.getConnection().sendCommand(msgQueue.poll());
         lastMsgSentAt = System.currentTimeMillis();
     }
 }

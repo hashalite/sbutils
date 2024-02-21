@@ -4,8 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.Messenger;
@@ -38,14 +38,14 @@ public class DeathCoords {
             return;
         }
 
-        Optional<GlobalPos> lastDeathPosOptional = MC.player.getLastDeathPos();
+        Optional<GlobalPos> lastDeathPosOptional = MC.player.getLastDeathLocation();
         if (lastDeathPosOptional.isEmpty()) {
             Messenger.printMessage("message.sbutils.deathCoords.noDeaths");
             return;
         }
 
         GlobalPos lastDeathGlobalPos = lastDeathPosOptional.get();
-        BlockPos lastDeathPos = lastDeathGlobalPos.getPos();
-        Messenger.printWithPlaceholders("message.sbutils.deathCoords.deathCoords", lastDeathGlobalPos.getDimension().getValue().toShortTranslationKey(), lastDeathPos.getX(), lastDeathPos.getY(), lastDeathPos.getZ());
+        BlockPos lastDeathPos = lastDeathGlobalPos.pos();
+        Messenger.printWithPlaceholders("message.sbutils.deathCoords.deathCoords", lastDeathGlobalPos.dimension().location().toShortLanguageKey(), lastDeathPos.getX(), lastDeathPos.getY(), lastDeathPos.getZ());
     }
 }

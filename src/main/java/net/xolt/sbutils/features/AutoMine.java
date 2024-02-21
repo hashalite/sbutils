@@ -6,8 +6,8 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.PickaxeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PickaxeItem;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.argument.TimeArgumentType;
@@ -58,19 +58,19 @@ public class AutoMine {
         if (disableAt != -1 && System.currentTimeMillis() >= disableAt) {
             ModConfig.HANDLER.instance().autoMine.enabled = false;
             ModConfig.HANDLER.save();
-            MC.options.attackKey.setPressed(false);
+            MC.options.keyAttack.setDown(false);
             Messenger.printChangedSetting("text.sbutils.config.category.autoMine", false);
             disableAt = -1;
             return;
         }
 
-        ItemStack holding = MC.player.getInventory().getMainHandStack();
+        ItemStack holding = MC.player.getInventory().getSelected();
         int minDurability = getMinDurability();
 
-        if (ModConfig.HANDLER.instance().autoMine.autoSwitch && !AutoFix.fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamage() <= minDurability) {
+        if (ModConfig.HANDLER.instance().autoMine.autoSwitch && !AutoFix.fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamageValue() <= minDurability) {
             int newPickaxeSlot = findNewPickaxe();
             if (newPickaxeSlot != -1) {
-                InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selectedSlot, MC.player.currentScreenHandler);
+                InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selected, MC.player.containerMenu);
             } else if (!ModConfig.HANDLER.instance().autoFix.enabled) {
                 ModConfig.HANDLER.instance().autoMine.enabled = false;
                 ModConfig.HANDLER.save();
@@ -80,12 +80,12 @@ public class AutoMine {
         }
 
         if (!shouldMine()) {
-            MC.options.attackKey.setPressed(false);
+            MC.options.keyAttack.setDown(false);
             return;
         }
 
-        if (MC.currentScreen == null) {
-            MC.options.attackKey.setPressed(true);
+        if (MC.screen == null) {
+            MC.options.keyAttack.setDown(true);
         }
     }
 
@@ -96,13 +96,13 @@ public class AutoMine {
 
         int minDurability = Math.max(ModConfig.HANDLER.instance().autoMine.switchDurability, ModConfig.HANDLER.instance().toolSaver.enabled ? ModConfig.HANDLER.instance().toolSaver.durability : 0);
 
-        for (int i = 0; i < MC.player.getInventory().size(); i++) {
-            ItemStack itemStack = MC.player.getInventory().getStack(i);
+        for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
+            ItemStack itemStack = MC.player.getInventory().getItem(i);
             if (!(itemStack.getItem() instanceof PickaxeItem)) {
                 continue;
             }
 
-            if (itemStack.getMaxDamage() - itemStack.getDamage() > minDurability) {
+            if (itemStack.getMaxDamage() - itemStack.getDamageValue() > minDurability) {
                 return i;
             }
         }

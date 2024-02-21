@@ -4,24 +4,24 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.common.InvCleaner;
@@ -69,13 +69,13 @@ public class AutoCrate {
 
         BlockPos cratePos = findCrate();
 
-        if (cratePos == null || !cratePos.isWithinDistance(MC.player.getPos(), ModConfig.HANDLER.instance().autoCrate.distance)) {
+        if (cratePos == null || !cratePos.closerToCenterThan(MC.player.position(), ModConfig.HANDLER.instance().autoCrate.distance)) {
             Messenger.printMessage("message.sbutils.autoCrate.crateTooFar");
             disable();
             return;
         }
 
-        if (MC.player.getInventory().getEmptySlot() == -1) {
+        if (MC.player.getInventory().getFreeSlot() == -1) {
             if (ModConfig.HANDLER.instance().autoCrate.cleaner) {
                 // cleaning must be set before clean() is called, in case callback is called immediately
                 cleaning = true;
@@ -87,7 +87,7 @@ public class AutoCrate {
             return;
         }
 
-        if (!isItemKey(MC.player.getInventory().getMainHandStack()) && !moveKeysToHand()) {
+        if (!isItemKey(MC.player.getInventory().getSelected()) && !moveKeysToHand()) {
             Messenger.printMessage("message.sbutils.autoCrate.finished");
             disable();
             return;
@@ -115,7 +115,7 @@ public class AutoCrate {
     }
 
     public static void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !(MC.currentScreen instanceof GenericContainerScreen) || cleaning) {
+        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !(MC.screen instanceof ContainerScreen) || cleaning) {
             return;
         }
 
@@ -127,16 +127,16 @@ public class AutoCrate {
     }
 
     private static List<Item> getItemsToClean() {
-        return ModConfig.HANDLER.instance().autoCrate.itemsToClean.stream().map((item) -> Registries.ITEM.get(new Identifier(item))).toList();
+        return ModConfig.HANDLER.instance().autoCrate.itemsToClean.stream().map((item) -> BuiltInRegistries.ITEM.get(new ResourceLocation(item))).toList();
     }
 
     private static boolean moveKeysToHand() {
-        ClientPlayerEntity player = MC.player;
+        LocalPlayer player = MC.player;
         if (player == null) {
             return false;
         }
 
-        if (isItemKey(player.getInventory().getMainHandStack())) {
+        if (isItemKey(player.getInventory().getSelected())) {
             return true;
         }
 
@@ -147,25 +147,25 @@ public class AutoCrate {
 
         // If there is a key in the hotbar, swap to it
         if (keySlot < 9) {
-            player.getInventory().selectedSlot = keySlot;
+            player.getInventory().selected = keySlot;
             return true;
         }
 
-        if (!player.getInventory().getMainHandStack().isEmpty()) {
+        if (!player.getInventory().getSelected().isEmpty()) {
             int emptySlot = InvUtils.findEmptyHotbarSlot();
             if (emptySlot != -1) {
-                player.getInventory().selectedSlot = emptySlot;
+                player.getInventory().selected = emptySlot;
             }
         }
 
-        InvUtils.swapToHotbar(keySlot, player.getInventory().selectedSlot, player.currentScreenHandler);
+        InvUtils.swapToHotbar(keySlot, player.getInventory().selected, player.containerMenu);
 
         return true;
     }
 
     private static int findKeys() {
-        for (int i = 0; i < MC.player.getInventory().size(); i++) {
-            ItemStack item = MC.player.getInventory().getStack(i);
+        for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
+            ItemStack item = MC.player.getInventory().getItem(i);
             if (isItemKey(item)) {
                 return i;
             }
@@ -174,10 +174,10 @@ public class AutoCrate {
     }
 
     private static BlockPos findCrate() {
-        Iterable<Entity> entities = MC.world.getEntities();
+        Iterable<Entity> entities = MC.level.entitiesForRendering();
 
         for (Entity entity : entities) {
-            if (entity instanceof ArmorStandEntity && getCrateFilter().matcher(entity.getDisplayName().getString()).matches()) {
+            if (entity instanceof ArmorStand && getCrateFilter().matcher(entity.getDisplayName().getString()).matches()) {
                 return new BlockPos((int)Math.floor(entity.getX()), (int)Math.round(entity.getY()) - 1, (int)Math.floor(entity.getZ()));
             }
         }
@@ -185,21 +185,21 @@ public class AutoCrate {
     }
 
     private static boolean isItemKey(ItemStack itemStack) {
-        if (!itemStack.getItem().equals(Items.TRIPWIRE_HOOK) || !itemStack.hasNbt()) {
+        if (!itemStack.getItem().equals(Items.TRIPWIRE_HOOK) || !itemStack.hasTag()) {
             return false;
         }
 
-        NbtCompound itemNbt = itemStack.getNbt();
-        NbtCompound displayNbt;
-        if (itemNbt.contains(ItemStack.DISPLAY_KEY, NbtElement.COMPOUND_TYPE)) {
-            displayNbt = itemNbt.getCompound(ItemStack.DISPLAY_KEY);
+        CompoundTag itemNbt = itemStack.getTag();
+        CompoundTag displayNbt;
+        if (itemNbt.contains(ItemStack.TAG_DISPLAY, Tag.TAG_COMPOUND)) {
+            displayNbt = itemNbt.getCompound(ItemStack.TAG_DISPLAY);
         } else {
             return false;
         }
 
-        NbtList lore;
-        if (displayNbt.contains(ItemStack.LORE_KEY, NbtElement.LIST_TYPE)) {
-            lore = displayNbt.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        ListTag lore;
+        if (displayNbt.contains(ItemStack.TAG_LORE, Tag.TAG_LIST)) {
+            lore = displayNbt.getList(ItemStack.TAG_LORE, Tag.TAG_STRING);
         } else {
             return false;
         }
@@ -208,17 +208,17 @@ public class AutoCrate {
             return false;
         }
 
-        MutableText loreText = Text.Serialization.fromJson(lore.getString(0));
+        MutableComponent loreText = Component.Serializer.fromJson(lore.getString(0));
 
         return loreText != null && getKeyFilter().matcher(loreText.getString()).matches();
     }
 
     private static boolean useKey(BlockPos cratePos) {
-        if (cratePos == null || MC.interactionManager == null || MC.getNetworkHandler() == null) {
+        if (cratePos == null || MC.gameMode == null || MC.getConnection() == null) {
             return false;
         }
 
-        MC.interactionManager.interactBlock(MC.player, Hand.MAIN_HAND, new BlockHitResult(cratePos.toCenterPos(), Direction.UP, cratePos, false));
+        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(cratePos.getCenter(), Direction.UP, cratePos, false));
         return true;
     }
 
