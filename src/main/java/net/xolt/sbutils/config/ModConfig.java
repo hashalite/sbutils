@@ -17,8 +17,9 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.xolt.sbutils.features.AutoCommand;
-import net.xolt.sbutils.util.Messenger;
+import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.feature.features.AutoCommand;
+import net.xolt.sbutils.util.ChatUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -85,16 +86,16 @@ public class ModConfig {
             }
 
             @Override public MutableComponent format() {
-                Long cmdLastSentAt = AutoCommand.getCmdsLastSentAt().get(this);
+                Long cmdLastSentAt = SbUtils.FEATURES.get(AutoCommand.class).getCmdLastSentAt(this);
                 MutableComponent delayLeftText;
                 if (!ModConfig.HANDLER.instance().autoCommand.enabled || !enabled || cmdLastSentAt == null) {
                     delayLeftText = Component.literal("N/A");
                 } else {
                     long delayLeftMillis = (long)(delay * 1000.0) - (System.currentTimeMillis() - cmdLastSentAt);
                     double delayLeft = (double)Math.max(delayLeftMillis, 0) / 1000.0;
-                    delayLeftText = Component.literal(Messenger.formatTime(delayLeft));
+                    delayLeftText = Component.literal(ChatUtils.formatTime(delayLeft));
                 }
-                return Messenger.insertPlaceholders("message.sbutils.autoCommand.commandEntry", command, Messenger.formatTime(delay), enabled, delayLeftText);
+                return ChatUtils.insertPlaceholders("message.sbutils.autoCommand.commandEntry", command, ChatUtils.formatTime(delay), enabled, delayLeftText);
             }
 
             @Override public String toString() {
@@ -221,6 +222,12 @@ public class ModConfig {
         @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
     }
 
+    @SerialEntry public InvCleanerConfig invCleaner = new InvCleanerConfig();
+    public static class InvCleanerConfig {
+        @SerialEntry public double clickDelay = 0.05;
+        @SerialEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
+    }
+
     @SerialEntry public JoinCommandsConfig joinCommands = new JoinCommandsConfig();
     public static class JoinCommandsConfig {
         @SerialEntry public boolean enabled = false;
@@ -244,7 +251,7 @@ public class ModConfig {
             }
 
             @Override public MutableComponent format() {
-                return Messenger.insertPlaceholders("message.sbutils.joinCommands.commandEntry", command, formatAccounts());
+                return ChatUtils.insertPlaceholders("message.sbutils.joinCommands.commandEntry", command, formatAccounts());
             }
 
             public List<String> getAccounts() {

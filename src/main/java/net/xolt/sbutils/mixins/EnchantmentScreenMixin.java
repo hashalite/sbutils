@@ -7,8 +7,9 @@ import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.EnchantmentMenu;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.features.AutoSilk;
+import net.xolt.sbutils.feature.features.AutoSilk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,7 +37,8 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
             case TOP_LEFT, BOTTOM_LEFT -> (this.width - this.imageWidth) / 2;
             case TOP_RIGHT, BOTTOM_RIGHT -> ((this.width + this.imageWidth) / 2) - AutoSilk.BUTTON_WIDTH;
         };
-        AutoSilk.autoSilkButton = CycleButton.booleanBuilder(Component.translatable("message.sbutils.enabled"), Component.translatable("message.sbutils.disabled"))
+
+        SbUtils.FEATURES.get(AutoSilk.class).autoSilkButton = CycleButton.booleanBuilder(Component.translatable("message.sbutils.enabled"), Component.translatable("message.sbutils.disabled"))
                 .withInitialValue(ModConfig.HANDLER.instance().autoSilk.enabled)
                 .create(x, y, 100, 20, Component.translatable("text.sbutils.config.category.autoSilk"), (button, value) -> {
                     ModConfig.HANDLER.instance().autoSilk.enabled = value;
@@ -48,15 +50,17 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
 
     @Inject(method = "mouseClicked", at = @At("TAIL"))
     private void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (ModConfig.HANDLER.instance().autoSilk.showButton && AutoSilk.autoSilkButton != null) {
-            AutoSilk.autoSilkButton.mouseClicked(mouseX, mouseY, button);
+        CycleButton<Boolean> autoSilkButton = SbUtils.FEATURES.get(AutoSilk.class).autoSilkButton;
+        if (ModConfig.HANDLER.instance().autoSilk.showButton && autoSilkButton != null) {
+            autoSilkButton.mouseClicked(mouseX, mouseY, button);
         }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
     private void onRender(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (ModConfig.HANDLER.instance().autoSilk.showButton && AutoSilk.autoSilkButton != null) {
-            AutoSilk.autoSilkButton.render(context, mouseX, mouseY, delta);
+        CycleButton<Boolean> autoSilkButton = SbUtils.FEATURES.get(AutoSilk.class).autoSilkButton;
+        if (ModConfig.HANDLER.instance().autoSilk.showButton && autoSilkButton != null) {
+            autoSilkButton.render(context, mouseX, mouseY, delta);
         }
     }
 

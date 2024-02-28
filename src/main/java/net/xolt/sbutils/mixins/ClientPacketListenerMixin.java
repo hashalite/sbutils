@@ -12,8 +12,8 @@ import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundTabListPacket;
-import net.xolt.sbutils.features.*;
-import net.xolt.sbutils.features.common.ServerDetector;
+import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.feature.features.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,27 +29,27 @@ public abstract class ClientPacketListenerMixin {
 
     @Inject(method = "handleLogin", at = @At("TAIL"))
     private void onGameJoin(ClientboundLoginPacket packet, CallbackInfo ci) {
-        ServerDetector.onJoinGame();
-        AutoAdvert.onJoinGame();
-        JoinCommands.onJoinGame();
-        AutoRaffle.onJoinGame();
-        AutoKit.onJoinGame();
-        AutoFix.onJoinGame();
+        SbUtils.SERVER_DETECTOR.onJoinGame();
+        SbUtils.FEATURES.get(AutoAdvert.class).onJoinGame();
+        SbUtils.FEATURES.get(JoinCommands.class).onJoinGame();
+        SbUtils.FEATURES.get(AutoRaffle.class).onJoinGame();
+        SbUtils.FEATURES.get(AutoKit.class).onJoinGame();
+        SbUtils.FEATURES.get(AutoFix.class).onJoinGame();
     }
 
     @Inject(method = "handleContainerClose", at = @At("HEAD"))
     private void onCloseScreen(ClientboundContainerClosePacket packet, CallbackInfo ci) {
-        AutoCrate.onServerCloseScreen();
+        SbUtils.FEATURES.get(AutoCrate.class).onServerCloseScreen();
     }
 
     @Inject(method = "handlePlayerInfoRemove", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void onPlayerRemove(ClientboundPlayerInfoRemovePacket packet, CallbackInfo ci, Iterator var2, UUID uUID, PlayerInfo playerListEntry) {
-        StaffDetector.onPlayerLeave(playerListEntry);
+    private void onPlayerRemove(ClientboundPlayerInfoRemovePacket packet, CallbackInfo ci, Iterator<UUID> var2, UUID uUID, PlayerInfo playerListEntry) {
+        SbUtils.FEATURES.get(StaffDetector.class).onPlayerLeave(playerListEntry);
     }
 
     @Inject(method = "handlePlayerInfoRemove", at = @At("TAIL"))
     private void onPlayerRemoveTail(ClientboundPlayerInfoRemovePacket packet, CallbackInfo ci) {
-        StaffDetector.afterPlayerLeave();
+        SbUtils.FEATURES.get(StaffDetector.class).afterPlayerLeave();
     }
 
     @Inject(method = "applyPlayerInfoUpdate", at = @At("HEAD"))
@@ -61,7 +61,7 @@ public abstract class ClientPacketListenerMixin {
         if (receivedEntry.listed()) {
             StaffDetector.onPlayerJoin(currentEntry);
         } else {
-            StaffDetector.onPlayerLeave(currentEntry);
+            SbUtils.FEATURES.get(StaffDetector.class).onPlayerLeave(currentEntry);
         }
     }
 
@@ -72,13 +72,13 @@ public abstract class ClientPacketListenerMixin {
         }
 
         if (!receivedEntry.listed()) {
-            StaffDetector.afterPlayerLeave();
+            SbUtils.FEATURES.get(StaffDetector.class).afterPlayerLeave();
         }
     }
 
     @Inject(method = "handleTabListCustomisation", at = @At("HEAD"))
     private void onPlayerListHeader(ClientboundTabListPacket packet, CallbackInfo ci) {
-        ServerDetector.onPlayerListHeader(packet.getHeader().getString());
+        SbUtils.SERVER_DETECTOR.onPlayerListHeader(packet.getHeader().getString());
     }
 
     @Inject(method = "handleOpenSignEditor", at = @At("HEAD"), cancellable = true)
@@ -91,20 +91,20 @@ public abstract class ClientPacketListenerMixin {
     @Inject(method = "handleContainerSetData", at = @At("HEAD"))
     private void onScreenHandlerPropertyUpdate(ClientboundContainerSetDataPacket packet, CallbackInfo ci) {
         if (MC.screen instanceof EnchantmentScreen && ((EnchantmentScreen) MC.screen).getMenu().containerId == packet.getContainerId()) {
-            AutoSilk.onEnchantUpdate();
+            SbUtils.FEATURES.get(AutoSilk.class).onEnchantUpdate();
         }
     }
 
     @Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
     private void onScreenHandlerSlotUpdate(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
-        AutoFix.onUpdateInventory();
-        AutoKit.onUpdateInventory();
-        AutoRaffle.onUpdateInventory();
-        AutoSilk.onUpdateInvSlot(packet);
+        SbUtils.FEATURES.get(AutoFix.class).onUpdateInventory();
+        SbUtils.FEATURES.get(AutoKit.class).onUpdateInventory();
+        SbUtils.FEATURES.get(AutoRaffle.class).onUpdateInventory();
+        SbUtils.FEATURES.get(AutoSilk.class).onUpdateInvSlot(packet);
     }
 
     @Inject(method = "handleCommands", at = @At("TAIL"))
     private void afterCommandTree(ClientboundCommandsPacket packet, CallbackInfo ci) {
-        ServerDetector.afterCommandTree();
+        SbUtils.SERVER_DETECTOR.afterCommandTree();
     }
 }

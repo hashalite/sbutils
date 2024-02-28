@@ -1,0 +1,157 @@
+package net.xolt.sbutils.feature.features;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.feature.Feature;
+import net.xolt.sbutils.mixins.ContainerScreenAccessor;
+import net.xolt.sbutils.util.InvUtils;
+import net.xolt.sbutils.util.ChatUtils;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
+import static net.xolt.sbutils.SbUtils.MC;
+
+public class InvCleaner extends Feature {
+
+    private static final String COMMAND = "invclean";
+    private static final String ALIAS = "ic";
+
+    private boolean cleaning;
+    private boolean openedDisposal;
+    private Predicate<ItemStack> itemsToClean;
+    private Consumer<Boolean> callback;
+    private long lastClick;
+    private int stacksCleaned;
+
+    @Override public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+        final LiteralCommandNode<FabricClientCommandSource> centeredNode = dispatcher.register(
+                CommandHelper.runnable(COMMAND, () -> clean(ModConfig.HANDLER.instance().invCleaner.itemsToClean, null))
+                        .then(CommandHelper.stringList("items", "item", "invCleaner.itemsToClean", false, () -> ModConfig.HANDLER.instance().invCleaner.itemsToClean, (value) -> ModConfig.HANDLER.instance().invCleaner.itemsToClean = value))
+                        .then(CommandHelper.doubl("clickDelay", "seconds", "invCleaner.clickDelay", () -> ModConfig.HANDLER.instance().invCleaner.clickDelay, (value) -> ModConfig.HANDLER.instance().invCleaner.clickDelay = value))
+        );
+
+        dispatcher.register(ClientCommandManager.literal(ALIAS)
+                .executes(context ->
+                        dispatcher.execute(COMMAND, context.getSource())
+                )
+                .redirect(centeredNode));
+    }
+
+    public void tick() {
+        if (!cleaning || MC.player == null)
+            return;
+
+        Screen screen = MC.screen;
+
+        if (!openedDisposal && !isDisposalScreen(screen)) {
+            openDisposal();
+            openedDisposal = true;
+            return;
+        }
+
+        if (isDisposalScreen(screen) && openedDisposal) {
+            openedDisposal = false;
+        }
+
+        if (openedDisposal)
+            return;
+
+        if (System.currentTimeMillis() - lastClick < ModConfig.HANDLER.instance().invCleaner.clickDelay * 1000) {
+            return;
+        }
+
+        doClean();
+    }
+
+    private void doClean() {
+        if (MC.player == null)
+            return;
+        for (int i = 0; i < 36; i++) {
+            if (!itemsToClean.test(MC.player.getInventory().getItem(i)))
+                continue;
+            InvUtils.quickMove(i, MC.player.containerMenu);
+            lastClick = System.currentTimeMillis();
+            stacksCleaned++;
+            return;
+        }
+        MC.player.closeContainer();
+        // Callback needs to happen before reset() because stacksCleaned is set to 0 by reset()
+        if (callback != null)
+            callback.accept(stacksCleaned > 0);
+        reset();
+    }
+
+    public void clean(List<String> toClean, @Nullable Consumer<Boolean> cleanCallback) {
+        cleanPredicate((stack) -> itemsFromStrings(toClean).contains(stack.getItem()), cleanCallback);
+    }
+
+    public void cleanItems(List<Item> toClean, @Nullable Consumer<Boolean> cleanCallback) {
+        cleanPredicate((stack) -> toClean.contains(stack.getItem()), cleanCallback);
+    }
+
+    public void cleanPredicate(Predicate<ItemStack> toClean, @Nullable Consumer<Boolean> cleanCallback) {
+        if (toClean == null || cleaning || !hasGarbage(toClean)) {
+            if (cleanCallback != null)
+                cleanCallback.accept(false);
+            else
+                ChatUtils.printMessage("message.sbutils.invCleaner.cleanFailed");
+            return;
+        }
+        reset();
+        cleaning = true;
+        itemsToClean = toClean;
+        callback = cleanCallback;
+        ChatUtils.printMessage("message.sbutils.invCleaner.cleaning");
+    }
+
+    private void reset() {
+        cleaning = false;
+        openedDisposal = false;
+        itemsToClean = null;
+        callback = null;
+        lastClick = 0;
+        stacksCleaned = 0;
+    }
+
+    private static void openDisposal() {
+        if (MC.getConnection() == null)
+            return;
+        MC.getConnection().sendCommand("disposal");
+    }
+
+    private static boolean isDisposalScreen(Screen screen) {
+        if (screen == null)
+            return false;
+        return screen instanceof ContainerScreen
+                && ((ContainerScreenAccessor)screen).getContainerRows() == 4
+                && screen.getTitle().getString().equals("Disposal");
+    }
+
+    private static boolean hasGarbage(Predicate<ItemStack> itemsToClean) {
+        if (MC.player == null || itemsToClean == null)
+            return false;
+        for (int i = 0; i < 36; i++) {
+            if (itemsToClean.test(MC.player.getInventory().getItem(i)))
+                return true;
+        }
+        return false;
+    }
+
+    private static List<Item> itemsFromStrings(List<String> strings) {
+        return strings.stream().map((item) -> BuiltInRegistries.ITEM.get(new ResourceLocation(item))).toList();
+    }
+}

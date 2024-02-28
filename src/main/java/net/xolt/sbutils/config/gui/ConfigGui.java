@@ -5,43 +5,48 @@ import dev.isxander.yacl3.api.controller.*;
 import dev.isxander.yacl3.gui.controllers.slider.IntegerSliderController;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.gui.controllers.AutoCommandEntryController;
 import net.xolt.sbutils.config.gui.controllers.JoinCommandsEntryController;
-import net.xolt.sbutils.features.AutoFix;
-import net.xolt.sbutils.features.AutoKit;
+import net.xolt.sbutils.feature.features.AutoFix;
+import net.xolt.sbutils.feature.features.AutoKit;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 public class ConfigGui {
 
     public static Screen getConfigScreen(Screen parent) {
         return YetAnotherConfigLib.create(ModConfig.HANDLER, (defaults, config, builder) -> builder
                         .title(Component.translatable("text.sbutils.config.title"))
-                        .category(buildSbutilsCategory(defaults, config))
-                        .category(buildAntiPlaceCategory(defaults, config))
-                        .category(buildAutoAdvertCategory(defaults, config))
-                        .category(buildAutoCommandCategory(defaults, config))
-                        .category(buildAutoCrateCategory(defaults, config))
-                        .category(buildAutoFixCategory(defaults, config))
-                        .category(buildAutoKitCategory(defaults, config))
-                        .category(buildAutoMineCategory(defaults, config))
-                        .category(buildAutoPrivateCategory(defaults, config))
-                        .category(buildAutoRaffleCategory(defaults, config))
-                        .category(buildAutoReplyCategory(defaults, config))
-                        .category(buildAutoSilkCategory(defaults, config))
-                        .category(buildChatAppendCategory(defaults, config))
-                        .category(buildChatFiltersCategory(defaults, config))
-                        .category(buildChatLoggerCategory(defaults, config))
-                        .category(buildEnchantAllCategory(defaults, config))
-                        .category(buildEventNotifierCategory(defaults, config))
-                        .category(buildJoinCommandsCategory(defaults, config))
-                        .category(buildMentionsCategory(defaults, config))
-                        .category(buildNoGMTCategory(defaults, config))
-                        .category(buildStaffDetectorCategory(defaults, config))
-                        .category(buildToolSaverCategory(defaults, config))
+                        .categories(List.of(
+                                buildSbutilsCategory(defaults, config),
+                                buildAntiPlaceCategory(defaults, config),
+                                buildAutoAdvertCategory(defaults, config),
+                                buildAutoCommandCategory(defaults, config),
+                                buildAutoCrateCategory(defaults, config),
+                                buildAutoFixCategory(defaults, config),
+                                buildAutoKitCategory(defaults, config),
+                                buildAutoMineCategory(defaults, config),
+                                buildAutoPrivateCategory(defaults, config),
+                                buildAutoRaffleCategory(defaults, config),
+                                buildAutoReplyCategory(defaults, config),
+                                buildAutoSilkCategory(defaults, config),
+                                buildChatAppendCategory(defaults, config),
+                                buildChatFiltersCategory(defaults, config),
+                                buildChatLoggerCategory(defaults, config),
+                                buildEnchantAllCategory(defaults, config),
+                                buildEventNotifierCategory(defaults, config),
+                                buildInvCleanerCategory(defaults, config),
+                                buildJoinCommandsCategory(defaults, config),
+                                buildMentionsCategory(defaults, config),
+                                buildNoGMTCategory(defaults, config),
+                                buildStaffDetectorCategory(defaults, config),
+                                buildToolSaverCategory(defaults, config)
+                        ))
                         .save(ModConfig.HANDLER::save))
                         .generateScreen(parent);
     }
@@ -369,7 +374,7 @@ public class ConfigGui {
                                         (value) -> config.autoFix.percent = value
                                 )
                                 .controller(DoubleFieldControllerBuilder::create)
-                                .listener(((doubleOption, aDouble) -> AutoFix.onChangeMaxFixPercent()))
+                                .listener(((doubleOption, aDouble) -> SbUtils.FEATURES.get(AutoFix.class).onChangeMaxFixPercent()))
                                 .build())
                         .option(Option.<Double>createBuilder()
                                 .name(Component.translatable("text.sbutils.config.option.autoFix.delay"))
@@ -462,7 +467,7 @@ public class ConfigGui {
                         )
                         .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.Kit.class))
                         .initial(ModConfig.Kit.SKYTITAN)
-                        .listener(((listOption, kits) -> AutoKit.onKitListChanged()))
+                        .listener(((listOption, kits) -> SbUtils.FEATURES.get(AutoKit.class).onKitListChanged()))
                         .build())
                 .build();
     }
@@ -1046,6 +1051,36 @@ public class ConfigGui {
                                 )
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.NotifSound.class))
                                 .build())
+                        .build())
+                .build();
+    }
+
+    private static ConfigCategory buildInvCleanerCategory(ModConfig defaults, ModConfig config) {
+        return ConfigCategory.createBuilder()
+                .name(Component.translatable("text.sbutils.config.category.invCleaner"))
+                .group(OptionGroup.createBuilder()
+                        .name(Component.translatable("text.sbutils.config.group.invCleaner"))
+                        .option(Option.<Double>createBuilder()
+                                .name(Component.translatable("text.sbutils.config.option.invCleaner.clickDelay"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.invCleaner.clickDelay.tooltip")))
+                                .binding(
+                                        defaults.invCleaner.clickDelay,
+                                        () -> config.invCleaner.clickDelay,
+                                        (value) -> config.invCleaner.clickDelay = value
+                                )
+                                .controller(DoubleFieldControllerBuilder::create)
+                                .build())
+                        .build())
+                .group(ListOption.<String>createBuilder()
+                        .name(Component.translatable("text.sbutils.config.option.invCleaner.itemsToClean"))
+                        .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.invCleaner.itemsToClean.tooltip")))
+                        .binding(
+                                defaults.invCleaner.itemsToClean,
+                                () -> config.invCleaner.itemsToClean,
+                                (value) -> config.invCleaner.itemsToClean = value
+                        )
+                        .controller(StringControllerBuilder::create)
+                        .initial("")
                         .build())
                 .build();
     }

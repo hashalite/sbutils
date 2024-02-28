@@ -20,7 +20,8 @@
   "message.sbutils.colorArgumentType.invalidColorFormat": "Invalid color format \"%s\"",
 
   "message.sbutils.invCleaner.cleaning": "Cleaning your inventory...",
-  "message.sbutils.invCleaner.cleanFailed": "Disabling %s because your inventory is full, and couldn't to be cleaned.",
+  "message.sbutils.invCleaner.cleanFailed": "Couldn't clean your inventory.",
+  "message.sbutils.invCleaner.cleanFailedCritical": "Disabling %s because your inventory is full, and couldn't to be cleaned.",
 
   "message.sbutils.autoAdvert.infoWithMinutes": "Sending advert %s in %s minutes and %s seconds.",
   "message.sbutils.autoAdvert.infoJustSeconds": "Sending advert %s in %s seconds.",
@@ -200,7 +201,7 @@
   "text.sbutils.config.option.autoCommand.enabled": "Auto Command Enabled",
   "text.sbutils.config.option.autoCommand.enabled.tooltip": "Repeatedly executes a command with a set delay.",
   "text.sbutils.config.option.autoCommand.minDelay": "Minimum Command Delay",
-  "text.sbutils.config.option.autoCommand.minDelay.tooltip": "The minimum delay between commands if there are multiple in the list.",
+  "text.sbutils.config.option.autoCommand.minDelay.tooltip": "The minimum delay between commands if there are multiple in the list. (Seconds)",
   "text.sbutils.config.option.autoCommand.commands": "Auto Command List",
   "text.sbutils.config.option.autoCommand.commands.tooltip": "The commands to execute.",
   "text.sbutils.config.option.autoCommand.commands.command": "Command",
@@ -224,7 +225,7 @@
   "text.sbutils.config.option.autoCrate.itemsToClean" : "Items to Clean",
   "text.sbutils.config.option.autoCrate.itemsToClean.tooltip" : "A list of items to clean from your inventory.",
   "text.sbutils.config.option.autoCrate.delay": "Crate Delay",
-  "text.sbutils.config.option.autoCrate.delay.tooltip": "After the current crate finishes, how long to wait before opening the next.",
+  "text.sbutils.config.option.autoCrate.delay.tooltip": "After the current crate finishes, how long to wait before opening the next. (Seconds)",
   "text.sbutils.config.option.autoCrate.distance": "Crate Distance",
   "text.sbutils.config.option.autoCrate.distance.tooltip": "The maximum distance from the crate.",
 
@@ -241,9 +242,9 @@
   "text.sbutils.config.option.autoFix.percent": "Max Fix Percent",
   "text.sbutils.config.option.autoFix.percent.tooltip": "The maximum durability percentage an item can have and be fixed.",
   "text.sbutils.config.option.autoFix.delay": "Fix Delay",
-  "text.sbutils.config.option.autoFix.delay.tooltip": "The delay between fixes.",
+  "text.sbutils.config.option.autoFix.delay.tooltip": "The delay between fixes. (Seconds)",
   "text.sbutils.config.option.autoFix.retryDelay": "Fix Retry Delay",
-  "text.sbutils.config.option.autoFix.retryDelay.tooltip": "How long to wait for a response before sending the fix command again.",
+  "text.sbutils.config.option.autoFix.retryDelay.tooltip": "How long to wait for a response before sending the fix command again. (Seconds)",
   "text.sbutils.config.option.autoFix.maxRetries": "Max Fix Retries",
   "text.sbutils.config.option.autoFix.maxRetries.tooltip": "The maximum amount of times to retry the fix command if the server isn't responding.",
 
@@ -254,11 +255,11 @@
   "text.sbutils.config.option.autoKit.enabled": "Auto Kit Enabled",
   "text.sbutils.config.option.autoKit.enabled.tooltip": "Claims your kits automatically.",
   "text.sbutils.config.option.autoKit.commandDelay": "Kit Command Delay",
-  "text.sbutils.config.option.autoKit.commandDelay.tooltip": "If multiple kits are to be claimed at the same time, the delay between each command.",
+  "text.sbutils.config.option.autoKit.commandDelay.tooltip": "If multiple kits are to be claimed at the same time, the delay between each command. (Seconds)",
   "text.sbutils.config.option.autoKit.claimDelay": "Kit Claim Delay",
-  "text.sbutils.config.option.autoKit.claimDelay.tooltip": "The amount of additional delay after the predicted kit reset time, to account for inaccuracies. Only applies to non 24-hour kits.",
+  "text.sbutils.config.option.autoKit.claimDelay.tooltip": "The amount of additional delay after the predicted kit reset time, to account for inaccuracies. Only applies to non 24-hour kits. (Seconds)",
   "text.sbutils.config.option.autoKit.systemDelay": "System Delay",
-  "text.sbutils.config.option.autoKit.systemDelay.tooltip": "Delay used to account for system time desync when claiming 24-hour kits. Changing this is not recommended.",
+  "text.sbutils.config.option.autoKit.systemDelay.tooltip": "Delay used to account for system time desync when claiming 24-hour kits. Changing this is not recommended. (Seconds)",
   "text.sbutils.config.option.autoKit.kits": "Auto Kit List",
   "text.sbutils.config.option.autoKit.kits.tooltip": "The kits to claim automatically.",
 
@@ -315,7 +316,7 @@
   "text.sbutils.config.option.autoSilk.cleaner": "Book Cleaner",
   "text.sbutils.config.option.autoSilk.cleaner.tooltip": "Cleans books without Silk Touch from your inventory when it becomes full.",
   "text.sbutils.config.option.autoSilk.delay": "Auto Silk Delay",
-  "text.sbutils.config.option.autoSilk.delay.tooltip": "The delay between each enchanting action.",
+  "text.sbutils.config.option.autoSilk.delay.tooltip": "The delay between each enchanting action. (Seconds)",
   "text.sbutils.config.option.autoSilk.showButton": "Show Button",
   "text.sbutils.config.option.autoSilk.showButton.tooltip": "Adds a button to the enchantment screen for toggling Auto Silk.",
   "text.sbutils.config.option.autoSilk.buttonPos": "Button Position",
@@ -413,15 +414,24 @@
   "text.sbutils.config.option.eventNotifier.traderSound.tooltip": "The sound played when a wandering trader appears at spawn.",
 
 
+  "text.sbutils.config.category.invCleaner": "Inv Cleaner",
+
+  "text.sbutils.config.group.invCleaner": "Inv Cleaner Settings",
+  "text.sbutils.config.option.invCleaner.itemsToClean": "Items to Clean",
+  "text.sbutils.config.option.invCleaner.itemsToClean.tooltip": "A list of items to clean from your inventory.",
+  "text.sbutils.config.option.invCleaner.clickDelay": "Click Delay",
+  "text.sbutils.config.option.invCleaner.clickDelay.tooltip": "The delay between clicks when moving items into the disposal. (Seconds)",
+
+
   "text.sbutils.config.category.joinCommands": "Join Commands",
 
   "text.sbutils.config.group.joinCommands": "Join Command Settings",
   "text.sbutils.config.option.joinCommands.enabled": "Join Commands Enabled",
   "text.sbutils.config.option.joinCommands.enabled.tooltip": "Whether to send join commands.",
   "text.sbutils.config.option.joinCommands.initialDelay": "Initial Delay",
-  "text.sbutils.config.option.joinCommands.initialDelay.tooltip": "The delay between joining the server and sending the commands.",
+  "text.sbutils.config.option.joinCommands.initialDelay.tooltip": "The delay between joining the server and sending the commands. (Seconds)",
   "text.sbutils.config.option.joinCommands.delay": "Delay",
-  "text.sbutils.config.option.joinCommands.delay.tooltip": "The delay between each command.",
+  "text.sbutils.config.option.joinCommands.delay.tooltip": "The delay between each command. (Seconds)",
   "text.sbutils.config.option.joinCommands.commands": "Join Command List",
   "text.sbutils.config.option.joinCommands.commands.tooltip": "A list of commands to execute upon joining. The accounts field allows you to specify a comma-separated list of accounts that should execute the command. If it's left blank, the command will be executed by all accounts.",
   "text.sbutils.config.option.joinCommands.commands.command": "Command",

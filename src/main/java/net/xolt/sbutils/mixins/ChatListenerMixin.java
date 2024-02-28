@@ -5,7 +5,8 @@ import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
-import net.xolt.sbutils.features.*;
+import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.feature.features.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -52,12 +53,12 @@ public class ChatListenerMixin {
 
     private static void preFilterMessage(Component message) {
         ChatLogger.processMessage(message);
-        AutoFix.processMessage(message);
-        AutoRaffle.processMessage(message);
-        AutoReply.processMessage(message);
-        EnchantAll.processMessage(message);
+        SbUtils.FEATURES.get(AutoFix.class).processMessage(message);
+        SbUtils.FEATURES.get(AutoRaffle.class).processMessage(message);
+        SbUtils.FEATURES.get(AutoReply.class).processMessage(message);
+        SbUtils.FEATURES.get(EnchantAll.class).processMessage(message);
         EventNotifier.processMessage(message);
-        AutoKit.processMessage(message);
+        SbUtils.FEATURES.get(AutoKit.class).processMessage(message);
     }
 
     private static void postFilterMessage(Component message) {

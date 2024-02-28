@@ -1,8 +1,8 @@
 package net.xolt.sbutils.mixins;
 
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.features.Mentions;
-import net.xolt.sbutils.features.NoGMT;
+import net.xolt.sbutils.feature.features.Mentions;
+import net.xolt.sbutils.feature.features.NoGMT;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;

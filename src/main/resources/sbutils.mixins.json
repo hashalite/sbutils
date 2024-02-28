@@ -10,7 +10,6 @@
     "MultiPlayerGameModeMixin",
     "ClientPacketListenerMixin",
     "CommandNodeAccessor",
-    "ClientboundCommandsPacketMixin",
     "EnchantmentScreenMixin",
     "GameRendererMixin",
     "ContainerScreenAccessor",

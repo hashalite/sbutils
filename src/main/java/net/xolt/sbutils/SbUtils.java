@@ -12,20 +12,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.gui.ConfigGui;
-import net.xolt.sbutils.features.*;
+import net.xolt.sbutils.feature.*;
+import net.xolt.sbutils.feature.features.*;
+import net.xolt.sbutils.systems.ServerDetector;
 import net.xolt.sbutils.util.IOHandler;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SbUtils implements ClientModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("sbutils");
     public static final Minecraft MC = Minecraft.getInstance();
-    public static final List<String> commands = new ArrayList<>();
+    public static final Features FEATURES = new Features();
+    public static final ServerDetector SERVER_DETECTOR = new ServerDetector();
 
     public static KeyMapping configKey;
     public static KeyMapping islandKey;
@@ -45,39 +47,42 @@ public class SbUtils implements ClientModInitializer {
 
         ModConfig.HANDLER.load();
 
-        EnchantAll.init();
-        AutoSilk.init();
-        AutoFix.init();
-        AutoReply.init();
-        AutoKit.init();
+        initializeFeatures();
+    }
+
+    private static void initializeFeatures() {
+        FEATURES.add(
+                new AntiPlace(),
+                new AutoAdvert(),
+                new AutoCommand(),
+                new AutoCrate(),
+                new AutoFix(),
+                new AutoKit(),
+                new AutoMine(),
+                new AutoPrivate(),
+                new AutoRaffle(),
+                new AutoReply(),
+                new AutoSilk(),
+                new Centered(),
+                new ChatAppend(),
+                new ChatFilters(),
+                new ChatLogger(),
+                new Convert(),
+                new DeathCoords(),
+                new EnchantAll(),
+                new EventNotifier(),
+                new InvCleaner(),
+                new JoinCommands(),
+                new Mentions(),
+                new NoGMT(),
+                new OpenFolder(),
+                new StaffDetector(),
+                new ToolSaver()
+        );
     }
 
     private static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        EnchantAll.registerCommand(dispatcher);
-        AutoAdvert.registerCommand(dispatcher);
-        Convert.registerCommand(dispatcher);
-        OpenFolder.registerCommand(dispatcher);
-        AutoPrivate.registerCommand(dispatcher);
-        StaffDetector.registerCommand(dispatcher);
-        ChatFilters.registerCommand(dispatcher);
-        ChatLogger.registerCommand(dispatcher);
-        JoinCommands.registerCommand(dispatcher);
-        AutoCrate.registerCommand(dispatcher);
-        AutoSilk.registerCommand(dispatcher);
-        Mentions.registerCommand(dispatcher);
-        ToolSaver.registerCommand(dispatcher);
-        AutoMine.registerCommand(dispatcher);
-        AutoFix.registerCommand(dispatcher);
-        AutoRaffle.registerCommand(dispatcher);
-        ChatAppend.registerCommand(dispatcher);
-        AutoReply.registerCommand(dispatcher);
-        AutoCommand.registerCommand(dispatcher);
-        AntiPlace.registerCommand(dispatcher);
-        Centered.registerCommand(dispatcher);
-        DeathCoords.registerCommand(dispatcher);
-        EventNotifier.registerCommand(dispatcher);
-        NoGMT.registerCommand(dispatcher);
-        AutoKit.registerCommand(dispatcher);
+        FEATURES.getAll().forEach((feature) -> feature.registerCommands(dispatcher, registryAccess));
     }
 
     private static void registerKeybindings() {

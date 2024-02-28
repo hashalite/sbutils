@@ -4,8 +4,9 @@ import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
-import net.xolt.sbutils.features.AutoFix;
-import net.xolt.sbutils.features.ChatAppend;
+import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.feature.features.AutoFix;
+import net.xolt.sbutils.feature.features.ChatAppend;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +19,7 @@ public class ClientCommonPacketListenerImplMixin {
     @Inject(method = "send", at = @At("HEAD"))
     private void onSendPacket(Packet<?> packet, CallbackInfo ci) {
         if (packet instanceof ServerboundContainerClickPacket) {
-            AutoFix.onUpdateInventory();
+            SbUtils.FEATURES.get(AutoFix.class).onUpdateInventory();
         }
     }
 

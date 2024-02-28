@@ -4,7 +4,7 @@ import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.config.ModConfig;
-import net.xolt.sbutils.features.NoGMT;
+import net.xolt.sbutils.feature.features.NoGMT;
 import net.xolt.sbutils.util.RegexFilters;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
