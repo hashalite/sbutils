@@ -15,6 +15,7 @@ public class ConnectionMixin {
     @Inject(method = "handleDisconnection", at = @At("HEAD"))
     private void onHandleDisconnection(CallbackInfo ci) {
         SbUtils.SERVER_DETECTOR.onDisconnect();
+        SbUtils.TPS_ESTIMATOR.onDisconnect();
         SbUtils.FEATURES.get(EnchantAll.class).onDisconnect();
         SbUtils.FEATURES.get(JoinCommands.class).onDisconnect();
         SbUtils.FEATURES.get(AutoSilk.class).onDisconnect();

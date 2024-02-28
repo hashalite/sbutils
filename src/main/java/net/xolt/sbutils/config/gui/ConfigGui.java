@@ -942,6 +942,16 @@ public class ConfigGui {
                                 )
                                 .controller(option -> EnumControllerBuilder.create(option).enumClass(ModConfig.EnchantMode.class))
                                 .build())
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Component.translatable("text.sbutils.config.option.enchantAll.tpsSync"))
+                                .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.enchantAll.tpsSync.tooltip")))
+                                .binding(
+                                        defaults.enchantAll.tpsSync,
+                                        () -> config.enchantAll.tpsSync,
+                                        (value) -> config.enchantAll.tpsSync = value
+                                )
+                                .controller(TickBoxControllerBuilder::create)
+                                .build())
                         .option(Option.<Double>createBuilder()
                                 .name(Component.translatable("text.sbutils.config.option.enchantAll.delay"))
                                 .description(OptionDescription.of(Component.translatable("text.sbutils.config.option.enchantAll.delay.tooltip")))

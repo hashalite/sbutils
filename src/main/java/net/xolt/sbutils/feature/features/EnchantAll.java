@@ -66,6 +66,7 @@ public class EnchantAll extends Feature {
                     .then(CommandHelper.integer("cooldownFrequency", "frequency", "enchantAll.cooldownFrequency", () -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency = value))
                     .then(CommandHelper.doubl("cooldownTime", "seconds", "enchantAll.cooldownTime", () -> ModConfig.HANDLER.instance().enchantAll.cooldownTime, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownTime = value))
                     .then(CommandHelper.bool("excludeFrost", "enchantAll.excludeFrost", () -> ModConfig.HANDLER.instance().enchantAll.excludeFrost, (value) -> ModConfig.HANDLER.instance().enchantAll.excludeFrost = value))
+                    .then(CommandHelper.bool("tpsSync", "enchantAll.tpsSync", () -> ModConfig.HANDLER.instance().enchantAll.tpsSync, (value) -> ModConfig.HANDLER.instance().enchantAll.tpsSync = value))
         );
 
         final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(
@@ -74,6 +75,7 @@ public class EnchantAll extends Feature {
                         .then(CommandHelper.doubl("delay", "seconds", "enchantAll.delay", () -> ModConfig.HANDLER.instance().enchantAll.delay, (value) -> ModConfig.HANDLER.instance().enchantAll.delay = value))
                         .then(CommandHelper.integer("cooldownFrequency", "frequency", "enchantAll.cooldownFrequency", () -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency = value))
                         .then(CommandHelper.doubl("cooldownTime", "seconds", "enchantAll.cooldownTime", () -> ModConfig.HANDLER.instance().enchantAll.cooldownTime, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownTime = value))
+                        .then(CommandHelper.bool("tpsSync", "enchantAll.tpsSync", () -> ModConfig.HANDLER.instance().enchantAll.tpsSync, (value) -> ModConfig.HANDLER.instance().enchantAll.tpsSync = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ENCHANT_ALIAS)
@@ -272,11 +274,17 @@ public class EnchantAll extends Feature {
     }
 
     private int delayLeft() {
-        long delay = (long)(ModConfig.HANDLER.instance().enchantAll.delay * 1000.0);
+        long delay;
         if (cooldown) {
             delay = (long)(ModConfig.HANDLER.instance().enchantAll.cooldownTime * 1000.0);
         } else if (pause) {
             delay = 250L;
+        } else {
+            delay = (long)(ModConfig.HANDLER.instance().enchantAll.delay * 1000.0);
+        }
+
+        if (ModConfig.HANDLER.instance().enchantAll.tpsSync) {
+            delay = (int)((double)delay / (SbUtils.TPS_ESTIMATOR.getCappedTickRate() / 20.0));
         }
 
         return (int)Math.max(delay - (System.currentTimeMillis() - lastActionPerformedAt), 0L);
@@ -290,7 +298,7 @@ public class EnchantAll extends Feature {
         ItemStack hand = MC.player.getMainHandItem();
 
         return ((inventory && findEnchantableSlot(unenchanting) == -1) ||
-                (!inventory && getEnchantsForItem(hand, unenchanting).size() < 1)) &&
+                (!inventory && getEnchantsForItem(hand, unenchanting).isEmpty())) &&
                 !shouldRemoveFrost();
     }
 

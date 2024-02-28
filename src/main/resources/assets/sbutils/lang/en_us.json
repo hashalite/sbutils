@@ -387,6 +387,8 @@
   "text.sbutils.config.option.enchantAll.mode.tooltip": "Whether to use the built in /enchantall command, or send enchants individually.",
   "text.sbutils.config.option.enchantAll.mode.all": "All",
   "text.sbutils.config.option.enchantAll.mode.individual": "Individual",
+  "text.sbutils.config.option.enchantAll.tpsSync": "TPS Sync",
+  "text.sbutils.config.option.enchantAll.tpsSync.tooltip": "Attempts to sync delays to server TPS to avoid spam kicks during lag spikes.",
   "text.sbutils.config.option.enchantAll.delay": "Enchant Delay",
   "text.sbutils.config.option.enchantAll.delay.tooltip": "The delay between sending enchant commands. (Seconds)",
   "text.sbutils.config.option.enchantAll.cooldownFrequency": "Cooldown Frequency",

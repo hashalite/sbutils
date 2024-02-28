@@ -15,6 +15,7 @@ import net.xolt.sbutils.config.gui.ConfigGui;
 import net.xolt.sbutils.feature.*;
 import net.xolt.sbutils.feature.features.*;
 import net.xolt.sbutils.systems.ServerDetector;
+import net.xolt.sbutils.systems.TpsEstimator;
 import net.xolt.sbutils.util.IOHandler;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ public class SbUtils implements ClientModInitializer {
     public static final Minecraft MC = Minecraft.getInstance();
     public static final Features FEATURES = new Features();
     public static final ServerDetector SERVER_DETECTOR = new ServerDetector();
+    public static final TpsEstimator TPS_ESTIMATOR = new TpsEstimator();
 
     public static KeyMapping configKey;
     public static KeyMapping islandKey;

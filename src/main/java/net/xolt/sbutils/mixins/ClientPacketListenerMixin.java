@@ -3,15 +3,7 @@ package net.xolt.sbutils.mixins;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
-import net.minecraft.network.protocol.game.ClientboundContainerClosePacket;
-import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
-import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.network.protocol.game.ClientboundLoginPacket;
-import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.network.protocol.game.ClientboundTabListPacket;
+import net.minecraft.network.protocol.game.*;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.*;
 import org.spongepowered.asm.mixin.Mixin;
@@ -106,5 +98,10 @@ public abstract class ClientPacketListenerMixin {
     @Inject(method = "handleCommands", at = @At("TAIL"))
     private void afterCommandTree(ClientboundCommandsPacket packet, CallbackInfo ci) {
         SbUtils.SERVER_DETECTOR.afterCommandTree();
+    }
+
+    @Inject(method = "handleSetTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/util/thread/BlockableEventLoop;)V", shift = At.Shift.AFTER))
+    private void afterSetTime(ClientboundSetTimePacket packet, CallbackInfo ci) {
+        SbUtils.TPS_ESTIMATOR.onSetTime();
     }
 }

@@ -206,6 +206,7 @@ public class ModConfig {
     @SerialEntry public EnchantAllConfig enchantAll = new EnchantAllConfig();
     public static class EnchantAllConfig {
         @SerialEntry public EnchantMode mode = EnchantMode.ALL;
+        @SerialEntry public boolean tpsSync = true;
         @SerialEntry public double delay = 0.55;
         @SerialEntry public int cooldownFrequency = 12;
         @SerialEntry public double cooldownTime = 6.0;
