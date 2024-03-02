@@ -52,13 +52,10 @@ public class SbUtils implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         IOHandler.createAll();
-
+        ModConfig.HANDLER.load();
+        initializeFeatures();
         ClientCommandRegistrationCallback.EVENT.register(SbUtils::registerCommands);
         registerKeybindings();
-
-        ModConfig.HANDLER.load();
-
-        initializeFeatures();
     }
 
     private static void initializeFeatures() {
