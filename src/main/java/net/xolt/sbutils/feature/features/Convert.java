@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.objecthunter.exp4j.ExpressionBuilder;
-import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 
@@ -18,8 +18,6 @@ import java.util.Map;
 
 public class Convert extends Feature {
 
-    private static final String COMMAND = "convert";
-    private static final String ALIAS = "cv";
     private static final Map<String, Integer> units = new LinkedHashMap<>();
 
     static {
@@ -28,29 +26,28 @@ public class Convert extends Feature {
         units.put("s", 64);
     }
 
+    public Convert() {
+        super("convert", "convert", "cv");
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return null;
+    }
+
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        final LiteralCommandNode<FabricClientCommandSource> convertNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
+        final LiteralCommandNode<FabricClientCommandSource> convertNode = dispatcher.register(ClientCommandManager.literal(command)
                 .then(ClientCommandManager.argument("input", StringArgumentType.greedyString())
                         .executes(toStacks ->
                                 processCommand(StringArgumentType.getString(toStacks, "input"))
                         )));
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(convertNode));
+        registerAlias(dispatcher, convertNode);
     }
 
     public static int processCommand(String input) {
         Double parsed = parseInput(input);
-        if (parsed == null) {
-            return Command.SINGLE_SUCCESS;
-        }
-
         ChatUtils.printConversions(input, calculateItems(parsed), calculateStacks(parsed), calculateDcs(parsed), calculateStacksAndRemainder(parsed), calculateDcsAndRemainder(parsed));
-
         return Command.SINGLE_SUCCESS;
     }
 
@@ -88,9 +85,8 @@ public class Convert extends Feature {
     }
 
     private static Double parseInput(String input) {
-        for (String unit : units.keySet()) {
+        for (String unit : units.keySet())
             input = input.replaceAll("([0-9]+(.[0-9]+)?) *" + unit, "($1*" + units.get(unit) + ")");
-        }
 
         return new ExpressionBuilder(input)
                 .build()

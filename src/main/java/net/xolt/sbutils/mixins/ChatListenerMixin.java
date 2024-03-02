@@ -19,10 +19,9 @@ public class ChatListenerMixin {
     private void onChatMessage(PlayerChatMessage message, GameProfile sender, ChatType.Bound params, CallbackInfo ci) {
         Component text = params.decorate(message.decoratedContent());
         preFilterMessage(text);
-        if (ChatFilters.shouldFilter(text)) {
-            ci.cancel();
+        SbUtils.FEATURES.get(ChatFilters.class).onChatMessage(text, ci);
+        if (ci.isCancelled())
             return;
-        }
         postFilterMessage(text);
     }
 
@@ -30,10 +29,9 @@ public class ChatListenerMixin {
     private void onProfilelessMessage(Component content, ChatType.Bound params, CallbackInfo ci) {
         Component text = params.decorate(content);
         preFilterMessage(text);
-        if (ChatFilters.shouldFilter(text)) {
-            ci.cancel();
+        SbUtils.FEATURES.get(ChatFilters.class).onChatMessage(text, ci);
+        if (ci.isCancelled())
             return;
-        }
         postFilterMessage(text);
     }
 
@@ -44,15 +42,14 @@ public class ChatListenerMixin {
         }
 
         preFilterMessage(message);
-        if (ChatFilters.shouldFilter(message)) {
-            ci.cancel();
+        SbUtils.FEATURES.get(ChatFilters.class).onChatMessage(message, ci);
+        if (ci.isCancelled())
             return;
-        }
         postFilterMessage(message);
     }
 
     private static void preFilterMessage(Component message) {
-        ChatLogger.processMessage(message);
+        SbUtils.FEATURES.get(ChatLogger.class).processMessage(message);
         SbUtils.FEATURES.get(AutoFix.class).processMessage(message);
         SbUtils.FEATURES.get(AutoRaffle.class).processMessage(message);
         SbUtils.FEATURES.get(AutoReply.class).processMessage(message);

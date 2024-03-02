@@ -13,8 +13,12 @@ import net.minecraft.world.entity.player.Player;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.argument.JoinCommandsEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.ModConfig.JoinCommandsConfig.JoinCommandsEntry;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.ListOptionBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
+import net.xolt.sbutils.config.binding.constraints.ListConstraints;
 import net.xolt.sbutils.feature.Feature;
-import net.xolt.sbutils.systems.ServerDetector;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.ChatUtils;
 
@@ -23,23 +27,30 @@ import java.util.*;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class JoinCommands extends Feature {
-
-    private static final String COMMAND = "joincmds";
-    private static final String ALIAS = "jc";
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("joinCommands.enabled", Boolean.class, (config) -> config.joinCommands.enabled, (config, value) -> config.joinCommands.enabled = value);
+    private final OptionBinding<Double> initialDelay = new OptionBinding<>("joinCommands.initialDelay", Double.class, (config) -> config.joinCommands.initialDelay, (config, value) -> config.joinCommands.initialDelay = value);
+    private final OptionBinding<Double> delay = new OptionBinding<>("joinCommands.delay", Double.class, (config) -> config.joinCommands.delay, (config, value) -> config.joinCommands.delay = value);
+    private final ListOptionBinding<JoinCommandsEntry> commands = new ListOptionBinding<>("joinCommands.commands", new JoinCommandsEntry("", ""), JoinCommandsEntry.class, (config) -> config.joinCommands.commands, (config, value) -> config.joinCommands.commands = value, new ListConstraints<>(true, null, null));
 
     private long joinedAt;
     private long lastCommandSentAt;
     private Queue<String> commandQueue;
 
     public JoinCommands() {
+        super("joinCommands", "joincmds", "jc");
         commandQueue = new LinkedList<>();
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, initialDelay, delay, commands);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "joinCommands", () -> ModConfig.HANDLER.instance().joinCommands.enabled, (value) -> ModConfig.HANDLER.instance().joinCommands.enabled = value)
-                    .then(CommandHelper.genericList("commands", "command", "joinCommands.commands", -1, true, true, JoinCommandsEntryArgumentType.commandEntry(), JoinCommandsEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().joinCommands.commands, (value) -> ModConfig.HANDLER.instance().joinCommands.commands = value)
+                CommandHelper.toggle(command, this, enabled)
+                    .then(CommandHelper.genericList("commands", "command", commands, true, JoinCommandsEntryArgumentType.commandEntry(), JoinCommandsEntryArgumentType::getCommandEntry)
                             .then(ClientCommandManager.literal("set")
                                     .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
                                             .then(ClientCommandManager.literal("command")
@@ -48,15 +59,10 @@ public class JoinCommands extends Feature {
                                             .then(ClientCommandManager.literal("accounts")
                                                     .then(ClientCommandManager.argument("accounts", StringArgumentType.greedyString())
                                                             .executes(context -> onSetAccountsCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "accounts"))))))))
-                    .then(CommandHelper.doubl("delay", "seconds", "joinCommands.delay", () -> ModConfig.HANDLER.instance().joinCommands.delay, (value) -> ModConfig.HANDLER.instance().joinCommands.delay = value))
-                    .then(CommandHelper.doubl("initialDelay", "seconds", "joinCommands.initialDelay", () -> ModConfig.HANDLER.instance().joinCommands.initialDelay, (value) -> ModConfig.HANDLER.instance().joinCommands.initialDelay = value))
+                    .then(CommandHelper.doubl("delay", "seconds", delay))
+                    .then(CommandHelper.doubl("initialDelay", "seconds", initialDelay))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(joinCommandsNode));
+        registerAlias(dispatcher, joinCommandsNode);
     }
 
     private static int onSetCommandCommand(int index, String newCommand) {
@@ -89,9 +95,8 @@ public class JoinCommands extends Feature {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().joinCommands.enabled || !SbUtils.SERVER_DETECTOR.isOnSkyblock() || commandQueue.isEmpty()) {
+        if (!ModConfig.HANDLER.instance().joinCommands.enabled || !SbUtils.SERVER_DETECTOR.isOnSkyblock() || commandQueue.isEmpty())
             return;
-        }
 
         int delay = (int)((joinedAt > lastCommandSentAt ? ModConfig.HANDLER.instance().joinCommands.initialDelay : ModConfig.HANDLER.instance().joinCommands.delay) * 1000.0);
 
@@ -106,9 +111,8 @@ public class JoinCommands extends Feature {
     }
 
     public void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().joinCommands.enabled || ModConfig.HANDLER.instance().joinCommands.commands.isEmpty() || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().joinCommands.enabled || ModConfig.HANDLER.instance().joinCommands.commands.isEmpty() || MC.player == null)
             return;
-        }
 
         reset();
         commandQueue.addAll(getJoinCommands(MC.player));

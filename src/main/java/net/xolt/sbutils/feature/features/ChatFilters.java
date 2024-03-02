@@ -2,85 +2,96 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatFilter;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
 public class ChatFilters extends Feature {
-
-    private static final String COMMAND = "chatfilter";
-    private static final String ALIAS = "filter";
-
-    private static final List<ChatFilter> filters = List.of(
-            new ChatFilter("text.sbutils.config.option.chatFilters.tipsFilter", List.of(RegexFilters.tipsFilter), () -> ModConfig.HANDLER.instance().chatFilters.tipsFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.advancementsFilter", List.of(RegexFilters.advancementsFilter), () -> ModConfig.HANDLER.instance().chatFilters.advancementsFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.welcomeFilter", List.of(RegexFilters.welcomeFilter), () -> ModConfig.HANDLER.instance().chatFilters.welcomeFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.friendJoinFilter", List.of(RegexFilters.friendJoinFilter), () -> ModConfig.HANDLER.instance().chatFilters.friendJoinFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.motdFilter", List.of(RegexFilters.motdFilter), () -> ModConfig.HANDLER.instance().chatFilters.motdFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.voteFilter", List.of(RegexFilters.voteFilter), () -> ModConfig.HANDLER.instance().chatFilters.voteFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.voteRewardFilter", List.of(RegexFilters.voteRewardFilter), () -> ModConfig.HANDLER.instance().chatFilters.voteRewardFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.raffleFilter", List.of(RegexFilters.raffleFilter), () -> ModConfig.HANDLER.instance().chatFilters.raffleFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.cratesFilter", List.of(RegexFilters.cratesFilter), () -> ModConfig.HANDLER.instance().chatFilters.cratesFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.perishedInVoidFilter", List.of(RegexFilters.perishedInVoidFilter), () -> ModConfig.HANDLER.instance().chatFilters.perishedInVoidFilter),
-            new ChatFilter("text.sbutils.config.option.chatFilters.skyChatFilter", List.of(RegexFilters.skyChatFilter), () -> ModConfig.HANDLER.instance().chatFilters.skyChatFilter)
+    private final OptionBinding<Boolean> tipsFilter = new OptionBinding<>("chatFilters.tipsFilter", Boolean.class, (config) -> config.chatFilters.tipsFilter, (config, value) -> config.chatFilters.tipsFilter = value);
+    private final OptionBinding<Boolean> advancementsFilter = new OptionBinding<>("chatFilters.advancementsFilter", Boolean.class, (config) -> config.chatFilters.advancementsFilter, (config, value) -> config.chatFilters.advancementsFilter = value);
+    private final OptionBinding<Boolean> welcomeFilter = new OptionBinding<>("chatFilters.welcomeFilter", Boolean.class, (config) -> config.chatFilters.welcomeFilter, (config, value) -> config.chatFilters.welcomeFilter = value);
+    private final OptionBinding<Boolean> friendJoinFilter = new OptionBinding<>("chatFilters.friendJoinFilter", Boolean.class, (config) -> config.chatFilters.friendJoinFilter, (config, value) -> config.chatFilters.friendJoinFilter = value);
+    private final OptionBinding<Boolean> motdFilter = new OptionBinding<>("chatFilters.motdFilter", Boolean.class, (config) -> config.chatFilters.motdFilter, (config, value) -> config.chatFilters.motdFilter = value);
+    private final OptionBinding<Boolean> voteFilter = new OptionBinding<>("chatFilters.voteFilter", Boolean.class, (config) -> config.chatFilters.voteFilter, (config, value) -> config.chatFilters.voteFilter = value);
+    private final OptionBinding<Boolean> voteRewardFilter = new OptionBinding<>("chatFilters.voteRewardFilter", Boolean.class, (config) -> config.chatFilters.voteRewardFilter, (config, value) -> config.chatFilters.voteRewardFilter = value);
+    private final OptionBinding<Boolean> raffleFilter = new OptionBinding<>("chatFilters.raffleFilter", Boolean.class, (config) -> config.chatFilters.raffleFilter, (config, value) -> config.chatFilters.raffleFilter = value);
+    private final OptionBinding<Boolean> cratesFilter = new OptionBinding<>("chatFilters.cratesFilter", Boolean.class, (config) -> config.chatFilters.cratesFilter, (config, value) -> config.chatFilters.cratesFilter = value);
+    private final OptionBinding<Boolean> perishedInVoidFilter = new OptionBinding<>("chatFilters.perishedInVoidFilter", Boolean.class, (config) -> config.chatFilters.perishedInVoidFilter, (config, value) -> config.chatFilters.perishedInVoidFilter = value);
+    private final OptionBinding<Boolean> skyChatFilter = new OptionBinding<>("chatFilters.skyChatFilter", Boolean.class, (config) -> config.chatFilters.skyChatFilter, (config, value) -> config.chatFilters.skyChatFilter = value);
+    private final List<ChatFilter> filters = List.of(
+            new ChatFilter(tipsFilter, List.of(RegexFilters.tipsFilter)),
+            new ChatFilter(advancementsFilter, List.of(RegexFilters.advancementsFilter)),
+            new ChatFilter(welcomeFilter, List.of(RegexFilters.welcomeFilter)),
+            new ChatFilter(friendJoinFilter, List.of(RegexFilters.friendJoinFilter)),
+            new ChatFilter(motdFilter, List.of(RegexFilters.motdFilter)),
+            new ChatFilter(voteFilter, List.of(RegexFilters.voteFilter)),
+            new ChatFilter(voteRewardFilter, List.of(RegexFilters.voteRewardFilter)),
+            new ChatFilter(raffleFilter, List.of(RegexFilters.raffleFilter)),
+            new ChatFilter(cratesFilter, List.of(RegexFilters.cratesFilter)),
+            new ChatFilter(perishedInVoidFilter, List.of(RegexFilters.perishedInVoidFilter)),
+            new ChatFilter(skyChatFilter, List.of(RegexFilters.skyChatFilter))
     );
+
+    public ChatFilters() {
+        super("chatFilters", "chatfilter", "filter");
+    }
+
+    @Override public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(tipsFilter, advancementsFilter, welcomeFilter, friendJoinFilter, motdFilter, voteFilter, voteRewardFilter, raffleFilter, cratesFilter, perishedInVoidFilter, skyChatFilter);
+    }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> chatFilterNode = dispatcher.register(
-                CommandHelper.runnable(COMMAND, () -> ChatUtils.printEnabledFilters("message.sbutils.chatFilter.status", filters))
-                    .then(CommandHelper.bool("tips", "chatFilters.tipsFilter", () -> ModConfig.HANDLER.instance().chatFilters.tipsFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.tipsFilter = value))
-                    .then(CommandHelper.bool("advancements", "chatFilters.advancementsFilter", () -> ModConfig.HANDLER.instance().chatFilters.advancementsFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.advancementsFilter = value))
-                    .then(CommandHelper.bool("welcome", "chatFilters.welcomeFilter", () -> ModConfig.HANDLER.instance().chatFilters.welcomeFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.welcomeFilter = value))
-                    .then(CommandHelper.bool("friendJoin", "chatFilters.friendJoinFilter", () -> ModConfig.HANDLER.instance().chatFilters.friendJoinFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.friendJoinFilter = value))
-                    .then(CommandHelper.bool("motd", "chatFilters.motdFilter", () -> ModConfig.HANDLER.instance().chatFilters.motdFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.motdFilter = value))
-                    .then(CommandHelper.bool("vote", "chatFilters.voteFilter", () -> ModConfig.HANDLER.instance().chatFilters.voteFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.voteFilter = value))
-                    .then(CommandHelper.bool("voteReward", "chatFilters.voteRewardFilter", () -> ModConfig.HANDLER.instance().chatFilters.voteRewardFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.voteRewardFilter = value))
-                    .then(CommandHelper.bool("raffle", "chatFilters.raffleFilter", () -> ModConfig.HANDLER.instance().chatFilters.raffleFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.raffleFilter = value))
-                    .then(CommandHelper.bool("crates", "chatFilters.cratesFilter", () -> ModConfig.HANDLER.instance().chatFilters.cratesFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.cratesFilter = value))
-                    .then(CommandHelper.bool("perished", "chatFilters.perishedInVoidFilter", () -> ModConfig.HANDLER.instance().chatFilters.perishedInVoidFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.perishedInVoidFilter = value))
-                    .then(CommandHelper.bool("skyChat", "chatFilters.skyChatFilter", () -> ModConfig.HANDLER.instance().chatFilters.skyChatFilter, (value) -> ModConfig.HANDLER.instance().chatFilters.skyChatFilter = value))
+                CommandHelper.runnable(command, () -> ChatUtils.printEnabledFilters("message.sbutils.chatFilter.status", filters))
+                    .then(CommandHelper.bool("tips", tipsFilter))
+                    .then(CommandHelper.bool("advancements", advancementsFilter))
+                    .then(CommandHelper.bool("welcome", welcomeFilter))
+                    .then(CommandHelper.bool("friendJoin", friendJoinFilter))
+                    .then(CommandHelper.bool("motd", motdFilter))
+                    .then(CommandHelper.bool("vote", voteFilter))
+                    .then(CommandHelper.bool("voteReward", voteRewardFilter))
+                    .then(CommandHelper.bool("raffle", raffleFilter))
+                    .then(CommandHelper.bool("crates", cratesFilter))
+                    .then(CommandHelper.bool("perished", perishedInVoidFilter))
+                    .then(CommandHelper.bool("skyChat", skyChatFilter))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(chatFilterNode));
+        registerAlias(dispatcher, chatFilterNode);
     }
 
-    public static boolean shouldFilter(Component message) {
-        if (!anyFiltersEnabled()) {
-            return false;
+    public void onChatMessage(Component message, CallbackInfo ci) {
+        if (shouldFilter(message, filters)) {
+            ci.cancel();
         }
+    }
+
+    public static boolean shouldFilter(Component message, List<ChatFilter> filters) {
+        if (!anyFiltersEnabled(filters))
+            return false;
 
         String stringMessage = message.getString();
 
-        for (ChatFilter filter : filters) {
-            if (filter.matches(stringMessage) && filter.isEnabled()) {
+        for (ChatFilter filter : filters)
+            if (filter.matches(stringMessage) && filter.isEnabled())
                 return true;
-            }
-        }
-
         return false;
     }
 
-    private static boolean anyFiltersEnabled() {
-        for (ChatFilter filter : filters) {
-            if (filter.isEnabled()) {
+    private static boolean anyFiltersEnabled(List<ChatFilter> filters) {
+        for (ChatFilter filter : filters)
+            if (filter.isEnabled())
                 return true;
-            }
-        }
         return false;
     }
 }

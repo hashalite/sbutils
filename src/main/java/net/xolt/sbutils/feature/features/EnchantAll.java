@@ -6,12 +6,9 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.LastSeenMessagesTracker;
-import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
-import net.minecraft.util.Crypt;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.AirItem;
 import net.minecraft.world.item.Item;
@@ -22,12 +19,13 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +33,12 @@ import java.util.Map;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class EnchantAll extends Feature {
-
-    private static final String ENCHANT_COMMAND = "enchall";
-    private static final String ENCHANT_ALIAS = "eall";
-    private static final String UNENCHANT_COMMAND = "unenchall";
-    private static final String UNENCHANT_ALIAS = "ueall";
+    private final OptionBinding<ModConfig.EnchantMode> mode = new OptionBinding<>("enchantAll.mode", ModConfig.EnchantMode.class, (config) -> config.enchantAll.mode, (config, value) -> config.enchantAll.mode = value);
+    protected final OptionBinding<Boolean> tpsSync = new OptionBinding<>("enchantAll.tpsSync", Boolean.class, (config) -> config.enchantAll.tpsSync, (config, value) -> config.enchantAll.tpsSync = value);
+    protected final OptionBinding<Double> delay = new OptionBinding<>("enchantAll.delay", Double.class, (config) -> config.enchantAll.delay, (config, value) -> config.enchantAll.delay = value);
+    protected final OptionBinding<Integer> cooldownFrequency = new OptionBinding<>("enchantAll.cooldownFrequency", Integer.class, (config) -> config.enchantAll.cooldownFrequency, (config, value) -> config.enchantAll.cooldownFrequency = value);
+    protected final OptionBinding<Double> cooldownTime = new OptionBinding<>("enchantAll.cooldownTime", Double.class, (config) -> config.enchantAll.cooldownTime, (config, value) -> config.enchantAll.cooldownTime = value);
+    private final OptionBinding<Boolean> excludeFrost = new OptionBinding<>("enchantAll.excludeFrost", Boolean.class, (config) -> config.enchantAll.excludeFrost, (config, value) -> config.enchantAll.excludeFrost = value);
 
     private boolean enchanting;
     private boolean unenchanting;
@@ -54,47 +53,37 @@ public class EnchantAll extends Feature {
     private long lastActionPerformedAt;
 
     public EnchantAll() {
+        this("enchantAll", "enchall", "eall");
+    }
+
+    protected EnchantAll(String path, String command, String commandAlias) {
+        super(path, command, commandAlias);
         reset();
     }
 
-    public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(
-                CommandHelper.runnable(ENCHANT_COMMAND, () -> onEnchantAllCommand(false, false))
-                    .then(CommandHelper.runnable("inv", () -> onEnchantAllCommand(false, true)))
-                    .then(CommandHelper.genericEnum("mode", "mode", "enchantAll.mode", ModConfig.EnchantMode.class, () -> ModConfig.HANDLER.instance().enchantAll.mode, (value) -> ModConfig.HANDLER.instance().enchantAll.mode = value))
-                    .then(CommandHelper.doubl("delay", "seconds", "enchantAll.delay", () -> ModConfig.HANDLER.instance().enchantAll.delay, (value) -> ModConfig.HANDLER.instance().enchantAll.delay = value))
-                    .then(CommandHelper.integer("cooldownFrequency", "frequency", "enchantAll.cooldownFrequency", () -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency = value))
-                    .then(CommandHelper.doubl("cooldownTime", "seconds", "enchantAll.cooldownTime", () -> ModConfig.HANDLER.instance().enchantAll.cooldownTime, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownTime = value))
-                    .then(CommandHelper.bool("excludeFrost", "enchantAll.excludeFrost", () -> ModConfig.HANDLER.instance().enchantAll.excludeFrost, (value) -> ModConfig.HANDLER.instance().enchantAll.excludeFrost = value))
-                    .then(CommandHelper.bool("tpsSync", "enchantAll.tpsSync", () -> ModConfig.HANDLER.instance().enchantAll.tpsSync, (value) -> ModConfig.HANDLER.instance().enchantAll.tpsSync = value))
-        );
-
-        final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(
-                CommandHelper.runnable(UNENCHANT_COMMAND, () -> onEnchantAllCommand(true, false))
-                        .then(CommandHelper.runnable("inv", () -> onEnchantAllCommand(true, true)))
-                        .then(CommandHelper.doubl("delay", "seconds", "enchantAll.delay", () -> ModConfig.HANDLER.instance().enchantAll.delay, (value) -> ModConfig.HANDLER.instance().enchantAll.delay = value))
-                        .then(CommandHelper.integer("cooldownFrequency", "frequency", "enchantAll.cooldownFrequency", () -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownFrequency = value))
-                        .then(CommandHelper.doubl("cooldownTime", "seconds", "enchantAll.cooldownTime", () -> ModConfig.HANDLER.instance().enchantAll.cooldownTime, (value) -> ModConfig.HANDLER.instance().enchantAll.cooldownTime = value))
-                        .then(CommandHelper.bool("tpsSync", "enchantAll.tpsSync", () -> ModConfig.HANDLER.instance().enchantAll.tpsSync, (value) -> ModConfig.HANDLER.instance().enchantAll.tpsSync = value))
-        );
-
-        dispatcher.register(ClientCommandManager.literal(ENCHANT_ALIAS)
-                .executes(context ->
-                        dispatcher.execute(ENCHANT_COMMAND, context.getSource())
-                )
-                .redirect(enchantAllNode));
-
-        dispatcher.register(ClientCommandManager.literal(UNENCHANT_ALIAS)
-                .executes(context ->
-                        dispatcher.execute(UNENCHANT_COMMAND, context.getSource())
-                )
-                .redirect(unenchantAllNode));
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(mode, tpsSync, delay, cooldownFrequency, cooldownTime, excludeFrost);
     }
 
-    private void onEnchantAllCommand(boolean unenchant, boolean inv) {
-        if (MC.player == null) {
+    @Override
+    public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+        final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(
+                CommandHelper.runnable(command, () -> onEnchantAllCommand(false, false))
+                    .then(CommandHelper.runnable("inv", () -> onEnchantAllCommand(false, true)))
+                    .then(CommandHelper.genericEnum("mode", "mode", mode))
+                    .then(CommandHelper.doubl("delay", "seconds", delay))
+                    .then(CommandHelper.integer("cooldownFrequency", "frequency", cooldownFrequency))
+                    .then(CommandHelper.doubl("cooldownTime", "seconds", cooldownTime))
+                    .then(CommandHelper.bool("excludeFrost", excludeFrost))
+                    .then(CommandHelper.bool("tpsSync", tpsSync))
+        );
+        registerAlias(dispatcher, enchantAllNode);
+    }
+
+    protected void onEnchantAllCommand(boolean unenchant, boolean inv) {
+        if (MC.player == null)
             return;
-        }
 
         if (enchanting || unenchanting) {
             ChatUtils.printMessage("message.sbutils.enchantAll.pleaseWait", ChatFormatting.RED);
@@ -107,16 +96,15 @@ public class EnchantAll extends Feature {
         inventory = inv;
 
         if (done()) {
-            if (inv) {
+            if (inv)
                 ChatUtils.printMessage("message.sbutils.enchantAll.noEnchantableItems", ChatFormatting.RED);
-            } else {
+            else
                 ChatUtils.printMessage("message.sbutils.enchantAll.itemNotEnchantable", ChatFormatting.RED);
-            }
             reset();
             return;
         }
 
-        if (inv && !(MC.player.getMainHandItem().getItem() instanceof AirItem) && getEnchantsForItem(MC.player.getMainHandItem(), unenchant).size() < 1) {
+        if (inv && !(MC.player.getMainHandItem().getItem() instanceof AirItem) && getEnchantsForItem(MC.player.getMainHandItem(), unenchant).isEmpty()) {
             int enchantableSlot = findEnchantableSlot(unenchant);
             if (enchantableSlot < 8) {
                 MC.player.getInventory().selected = prevSelectedSlot = enchantableSlot;
@@ -129,9 +117,8 @@ public class EnchantAll extends Feature {
     }
 
     public void tick() {
-        if ((!enchanting && !unenchanting) || awaitingResponse || MC.player == null) {
+        if ((!enchanting && !unenchanting) || awaitingResponse || MC.player == null)
             return;
-        }
 
         if (noPermission) {
             if (ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL && enchanting) {
@@ -167,9 +154,8 @@ public class EnchantAll extends Feature {
             commandCount = 0;
         }
 
-        if (delayLeft() > 0) {
+        if (delayLeft() > 0)
             return;
-        }
 
         if (pause || cooldown) {
             pause = false;
@@ -177,11 +163,10 @@ public class EnchantAll extends Feature {
             return;
         }
 
-        if (inventory) {
+        if (inventory)
             doEnchantInv(unenchanting);
-        } else {
+        else
             doEnchant(unenchanting);
-        }
     }
 
     public void onDisconnect() {
@@ -189,9 +174,8 @@ public class EnchantAll extends Feature {
     }
 
     public void processMessage(Component message) {
-        if ((!enchanting && !unenchanting) || !awaitingResponse) {
+        if ((!enchanting && !unenchanting) || !awaitingResponse)
             return;
-        }
 
         String messageString = message.getString();
         if (RegexFilters.enchantSingleSuccess.matcher(messageString).matches() ||
@@ -212,9 +196,8 @@ public class EnchantAll extends Feature {
     }
 
     private void doEnchantInv(boolean unenchant) {
-        if (MC.player == null) {
+        if (MC.player == null)
             return;
-        }
 
         ItemStack hand = MC.player.getMainHandItem();
         List<Enchantment> enchants = getEnchantsForItem(hand, unenchant);
@@ -234,9 +217,8 @@ public class EnchantAll extends Feature {
                     InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selected, currentScreenHandler);
                     itemPrevSlot = -1;
                 }
-                if (!InvUtils.canSwapSlot(enchantableSlot, currentScreenHandler)) {
+                if (!InvUtils.canSwapSlot(enchantableSlot, currentScreenHandler))
                     return;
-                }
                 InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selected, currentScreenHandler);
                 itemPrevSlot = enchantableSlot;
                 pause = true;
@@ -249,15 +231,13 @@ public class EnchantAll extends Feature {
     }
 
     private void doEnchant(boolean unenchant) {
-        if (MC.player == null) {
+        if (MC.player == null)
             return;
-        }
 
         ItemStack hand = MC.player.getMainHandItem();
 
-        if (!hand.getItem().isEnchantable(hand)) {
+        if (!hand.getItem().isEnchantable(hand))
             return;
-        }
 
         List<Enchantment> enchants = getEnchantsForItem(MC.player.getMainHandItem(), unenchant);
 
@@ -275,25 +255,22 @@ public class EnchantAll extends Feature {
 
     private int delayLeft() {
         long delay;
-        if (cooldown) {
+        if (cooldown)
             delay = (long)(ModConfig.HANDLER.instance().enchantAll.cooldownTime * 1000.0);
-        } else if (pause) {
+        else if (pause)
             delay = 250L;
-        } else {
+        else
             delay = (long)(ModConfig.HANDLER.instance().enchantAll.delay * 1000.0);
-        }
 
-        if (ModConfig.HANDLER.instance().enchantAll.tpsSync) {
+        if (ModConfig.HANDLER.instance().enchantAll.tpsSync)
             delay = (int)((double)delay / (SbUtils.TPS_ESTIMATOR.getCappedTickRate() / 20.0));
-        }
 
         return (int)Math.max(delay - (System.currentTimeMillis() - lastActionPerformedAt), 0L);
     }
 
     private boolean done() {
-        if (MC.player == null) {
+        if (MC.player == null)
             return true;
-        }
 
         ItemStack hand = MC.player.getMainHandItem();
 
@@ -329,26 +306,23 @@ public class EnchantAll extends Feature {
     }
 
     private static void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
-        if (MC.getConnection() == null) {
+        ResourceLocation enchant = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
+        if (enchant == null || MC.getConnection() == null)
             return;
-        }
-
-        String enchantName = BuiltInRegistries.ENCHANTMENT.getKey(enchantment).getPath().replaceAll("_", "");
+        String enchantName = enchant.getPath().replaceAll("_", "");
         MC.getConnection().sendCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()));
     }
 
     private static void sendEnchantAllCommand() {
-        if (MC.getConnection() == null) {
+        if (MC.getConnection() == null)
             return;
-        }
 
         MC.getConnection().sendCommand("enchantall");
     }
 
     private static int findEnchantableSlot(boolean unenchant) {
-        if (MC.player == null) {
+        if (MC.player == null)
             return -1;
-        }
 
         for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
             if (i >= 36 && i <= 39) {
@@ -367,23 +341,20 @@ public class EnchantAll extends Feature {
     private static List<Enchantment> getEnchantsForItem(ItemStack itemStack, boolean unenchant) {
         Item item = itemStack.getItem();
 
-        if (!itemStack.getItem().isEnchantable(itemStack)) {
+        if (!itemStack.getItem().isEnchantable(itemStack))
             return new ArrayList<>();
-        }
 
         Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.deserializeEnchantments(itemStack.getEnchantmentTags());
         List<Enchantment> enchantments = new ArrayList<>();
         if (!unenchant) {
             for (Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
-                if (enchantment.canEnchant(new ItemStack(item))) {
+                if (enchantment.canEnchant(new ItemStack(item)))
                     enchantments.add(enchantment);
-                }
             }
 
             for (Enchantment enchantment : itemsEnchants.keySet()) {
-                if (enchantment.getMaxLevel() == itemsEnchants.get(enchantment)) {
+                if (enchantment.getMaxLevel() == itemsEnchants.get(enchantment))
                     enchantments.remove(enchantment);
-                }
             }
 
         } else {
@@ -394,17 +365,15 @@ public class EnchantAll extends Feature {
         enchantments.remove(Enchantments.BINDING_CURSE);
         enchantments.remove(Enchantments.VANISHING_CURSE);
 
-        if (ModConfig.HANDLER.instance().enchantAll.excludeFrost && !unenchant) {
+        if (ModConfig.HANDLER.instance().enchantAll.excludeFrost && !unenchant)
             enchantments.remove(Enchantments.FROST_WALKER);
-        }
 
         return enchantments;
     }
 
     private static boolean shouldRemoveFrost() {
-        if (MC.player == null) {
+        if (MC.player == null)
             return false;
-        }
 
         return ModConfig.HANDLER.instance().enchantAll.excludeFrost &&
                 EnchantmentHelper.deserializeEnchantments(MC.player.getMainHandItem().getEnchantmentTags()).containsKey(Enchantments.FROST_WALKER);

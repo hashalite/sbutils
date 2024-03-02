@@ -9,6 +9,9 @@ import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.ListOptionBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.systems.ServerDetector;
 import net.xolt.sbutils.util.*;
@@ -19,18 +22,23 @@ import java.util.regex.Matcher;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoKit extends Feature {
-    private static final String COMMAND = "autokit";
-    private static final String ALIAS = "ak";
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoKit.enabled", Boolean.class, (config) -> config.autoKit.enabled, (config, value) -> config.autoKit.enabled = value);
+    private final OptionBinding<Double> commandDelay = new OptionBinding<>("autoKit.commandDelay", Double.class, (config) -> config.autoKit.commandDelay, (config, value) -> config.autoKit.commandDelay = value);
+    private final OptionBinding<Double> claimDelay = new OptionBinding<>("autoKit.claimDelay", Double.class, (config) -> config.autoKit.claimDelay, (config, value) -> config.autoKit.claimDelay = value);
+    private final OptionBinding<Double> systemDelay = new OptionBinding<>("autoKit.systemDelay", Double.class, (config) -> config.autoKit.systemDelay, (config, value) -> config.autoKit.systemDelay = value);
+    private final ListOptionBinding<ModConfig.Kit> kits = new ListOptionBinding<>("autoKit.kits", ModConfig.Kit.SKYTITAN, ModConfig.Kit.class, (config) -> config.autoKit.kits, (config, value) -> config.autoKit.kits = value);
     private final PriorityQueue<KitQueueEntry> kitQueue;
     private final List<KitQueueEntry> invFullList;
+    private final Map<String, Map<String, Long>> kitData;
 
-    private boolean enabled;
-    private Map<String, Map<String, Long>> kitData;
     private boolean awaitingResponse;
     private long lastCommandSentAt;
     private long joinedAt;
 
     public AutoKit() {
+        super("autoKit", "autokit", "ak");
+        enabled.addListener(this::onToggle);
+        kits.addListener(this::onKitListChanged);
         kitQueue = new PriorityQueue<>(KitQueueEntry.KIT_QUEUE_ENTRY_COMPARATOR);
         invFullList = new ArrayList<>();
         kitData = IOHandler.readAutoKitData();
@@ -39,33 +47,25 @@ public class AutoKit extends Feature {
     }
 
     @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, commandDelay, claimDelay, systemDelay, kits);
+    }
+
+    @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoKitNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "autoKit", () -> ModConfig.HANDLER.instance().autoKit.enabled, (value) -> ModConfig.HANDLER.instance().autoKit.enabled = value)
-                        .then(CommandHelper.doubl("commandDelay", "seconds", "autoKit.commandDelay", () -> ModConfig.HANDLER.instance().autoKit.commandDelay, (value) -> ModConfig.HANDLER.instance().autoKit.commandDelay = value, 0))
-                        .then(CommandHelper.doubl("claimDelay", "seconds", "autoKit.claimDelay", () -> ModConfig.HANDLER.instance().autoKit.claimDelay, (value) -> ModConfig.HANDLER.instance().autoKit.claimDelay = value, 0))
-                        .then(CommandHelper.doubl("systemDelay", "seconds", "autoKit.systemDelay", () -> ModConfig.HANDLER.instance().autoKit.systemDelay, (value) -> ModConfig.HANDLER.instance().autoKit.systemDelay = value, 0))
-                        .then(CommandHelper.enumList("kits", "kit", "autoKit.kits", ModConfig.Kit.class, () -> ModConfig.HANDLER.instance().autoKit.kits, (value) -> ModConfig.HANDLER.instance().autoKit.kits = value))
+                CommandHelper.toggle(command, this, enabled)
+                        .then(CommandHelper.doubl("commandDelay", "seconds", commandDelay))
+                        .then(CommandHelper.doubl("claimDelay", "seconds", claimDelay))
+                        .then(CommandHelper.doubl("systemDelay", "seconds", systemDelay))
+                        .then(CommandHelper.enumList("kits", "kit", kits))
                         .then(CommandHelper.runnable("info", () -> ChatUtils.printAutoKitInfo(kitQueue, invFullList)))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(autoKitNode));
+        registerAlias(dispatcher, autoKitNode);
     }
 
     public void tick() {
-        if (enabled != ModConfig.HANDLER.instance().autoKit.enabled) {
-            enabled = ModConfig.HANDLER.instance().autoKit.enabled;
-            reset();
-            if (enabled && SbUtils.SERVER_DETECTOR.getCurrentServer() == ServerDetector.SbServer.SKYBLOCK) {
-                queueKits();
-            }
-        }
-
-        if (!enabled || awaitingResponse || SbUtils.SERVER_DETECTOR.getCurrentServer() != ServerDetector.SbServer.SKYBLOCK || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoKit.enabled || awaitingResponse || SbUtils.SERVER_DETECTOR.getCurrentServer() != ServerDetector.SbServer.SKYBLOCK || MC.player == null) {
             return;
         }
 
@@ -96,8 +96,20 @@ public class AutoKit extends Feature {
         invFullList.add(kit);
     }
 
+    private void onToggle(Boolean oldValue, Boolean newValue) {
+        reset();
+        if (newValue && SbUtils.SERVER_DETECTOR.getCurrentServer() == ServerDetector.SbServer.SKYBLOCK)
+            queueKits();
+    }
+
+    private void onKitListChanged(List<ModConfig.Kit> oldValue, List<ModConfig.Kit> newValue) {
+        reset();
+        if (ModConfig.HANDLER.instance().autoKit.enabled)
+            queueKits();
+    }
+
     public void onUpdateInventory() {
-        if (!enabled || invFullList.isEmpty() || MC.player == null)
+        if (!ModConfig.HANDLER.instance().autoKit.enabled || invFullList.isEmpty() || MC.player == null)
             return;
         List<KitQueueEntry> kitsWithSpace = invFullList.stream().filter((kit) -> InvUtils.doesKitFit(MC.player.getInventory(), kit.kit.getItems())).toList();
         kitQueue.addAll(kitsWithSpace);
@@ -105,9 +117,8 @@ public class AutoKit extends Feature {
     }
 
     public void onJoinGame() {
-        if (!enabled) {
+        if (!ModConfig.HANDLER.instance().autoKit.enabled)
             return;
-        }
 
         joinedAt = System.currentTimeMillis();
     }
@@ -124,7 +135,7 @@ public class AutoKit extends Feature {
     }
 
     public void processMessage(Component message) {
-        if (!enabled || !awaitingResponse || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoKit.enabled || !awaitingResponse || MC.player == null) {
             return;
         }
 
@@ -185,12 +196,6 @@ public class AutoKit extends Feature {
         MC.getConnection().sendCommand("kit " + kit.getSerializedName());
         lastCommandSentAt = System.currentTimeMillis();
         awaitingResponse = true;
-    }
-
-    public void onKitListChanged() {
-        reset();
-        if (enabled)
-            queueKits();
     }
 
     private void queueKits() {

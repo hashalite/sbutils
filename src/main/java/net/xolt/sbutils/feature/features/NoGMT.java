@@ -15,9 +15,10 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.BookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.WritableBookItem;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -32,24 +33,30 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 
 public class NoGMT extends Feature {
-
     private static final DateTimeFormatter EMAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
     private static final DateTimeFormatter MAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
-    private static final String COMMAND = "nogmt";
-    private static final String ALIAS = "ng";
+
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("noGmt.enabled", Boolean.class, (config) -> config.noGmt.enabled, (config, value) -> config.noGmt.enabled = value);
+    private final OptionBinding<String> timeZone = new OptionBinding<>("noGmt.timeZone", String.class, (config) -> config.noGmt.timeZone, (config, value) -> config.noGmt.timeZone = value);
+    private final OptionBinding<Boolean> showTimeZone = new OptionBinding<>("noGmt.showTimeZone", Boolean.class, (config) -> config.noGmt.showTimeZone, (config, value) -> config.noGmt.showTimeZone = value);
+
+    public NoGMT() {
+        super("noGmt", "nogmt", "ng");
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, timeZone, showTimeZone);
+    }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> noGMTNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "noGmt", () -> ModConfig.HANDLER.instance().noGmt.enabled, (value) -> ModConfig.HANDLER.instance().noGmt.enabled = value)
-                        .then(CommandHelper.string("timeZone", "zone", "noGmt.timeZone", () -> ModConfig.HANDLER.instance().noGmt.timeZone, (value) -> ModConfig.HANDLER.instance().noGmt.timeZone = value))
-                        .then(CommandHelper.bool("showTimeZone", "noGmt.showTimeZone", () -> ModConfig.HANDLER.instance().noGmt.showTimeZone, (value) -> ModConfig.HANDLER.instance().noGmt.showTimeZone = value))
+                CommandHelper.toggle(command, this, enabled)
+                        .then(CommandHelper.string("timeZone", "zone", timeZone))
+                        .then(CommandHelper.bool("showTimeZone", showTimeZone))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource()))
-                .redirect(noGMTNode));
+        registerAlias(dispatcher, noGMTNode);
     }
 
     public static Component modifyMessage(Component message) {
@@ -107,9 +114,8 @@ public class NoGMT extends Feature {
 
         ZonedDateTime gmtTime = LocalDateTime.parse(target, format).atZone(ZoneId.of("GMT"));
         String newTimeStr = format.format(gmtTime.withZoneSameInstant(localZone));
-        if (ModConfig.HANDLER.instance().noGmt.showTimeZone) {
+        if (ModConfig.HANDLER.instance().noGmt.showTimeZone)
             newTimeStr += " (" + localZone.getDisplayName(TextStyle.SHORT, Locale.getDefault()) + ")";
-        }
         return replaceText(text, target, newTimeStr);
     }
 
@@ -128,9 +134,8 @@ public class NoGMT extends Feature {
             newMessage = Component.literal(stringText).setStyle(message.getStyle());
         }
 
-        for (Component text : message.getSiblings()) {
+        for (Component text : message.getSiblings())
             newMessage.append(replaceText(text, target, replacement));
-        }
 
         return newMessage;
     }

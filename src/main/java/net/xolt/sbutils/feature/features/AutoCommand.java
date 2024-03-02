@@ -10,11 +10,15 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.argument.AutoCommandEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig.AutoCommandConfig.AutoCommandEntry;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.ListOptionBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
+import net.xolt.sbutils.config.binding.constraints.ListConstraints;
+import net.xolt.sbutils.config.binding.constraints.StringConstraints;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 
@@ -23,25 +27,29 @@ import java.util.*;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoCommand extends Feature {
-
-    private static final String COMMAND = "autocmd";
-    private static final String ALIAS = "acmd";
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoCommand.enabled", Boolean.class, (config) -> config.autoCommand.enabled, (config, value) -> config.autoCommand.enabled = value);
+    private final OptionBinding<Double> minDelay = new OptionBinding<>("autoCommand.minDelay", Double.class, (config) -> config.autoCommand.minDelay, (config, value) -> config.autoCommand.minDelay = value);
+    private final ListOptionBinding<AutoCommandEntry> commands = new ListOptionBinding<>("autoCommand.commands", new AutoCommandEntry("", 1.0, false), AutoCommandEntry.class, (config) -> config.autoCommand.commands, (config, value) -> config.autoCommand.commands = value, new ListConstraints<>(true, null, null));
     private final Map<AutoCommandEntry, Long> cmdsLastSentAt;
     private final Queue<AutoCommandEntry> cmdQueue;
-
-    private static long lastCommandSentAt;
+    private long lastCommandSentAt;
 
     public AutoCommand() {
+        super("autoCommand", "autocmd", "acmd");
         cmdsLastSentAt = new HashMap<>();
         cmdQueue = new LinkedList<>();
+    }
+
+    @Override public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, minDelay, commands);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoCommandNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "autoCommand", () -> ModConfig.HANDLER.instance().autoCommand.enabled, (value) -> ModConfig.HANDLER.instance().autoCommand.enabled = value)
-                        .then(CommandHelper.doubl("minDelay", "seconds", "autoCommand.minDelay", () -> ModConfig.HANDLER.instance().autoCommand.minDelay, (value) -> ModConfig.HANDLER.instance().autoCommand.minDelay = value))
-                        .then(CommandHelper.genericList("commands", "command", "autoCommand.commands", -1, true, true, AutoCommandEntryArgumentType.commandEntry(), AutoCommandEntryArgumentType::getCommandEntry, () -> ModConfig.HANDLER.instance().autoCommand.commands, (value) -> ModConfig.HANDLER.instance().autoCommand.commands = value)
+                CommandHelper.toggle(command, this, enabled)
+                        .then(CommandHelper.doubl("minDelay", "seconds", minDelay))
+                        .then(CommandHelper.genericList("commands", "command", commands, true, AutoCommandEntryArgumentType.commandEntry(), AutoCommandEntryArgumentType::getCommandEntry)
                                 .then(ClientCommandManager.literal("toggle")
                                         .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
                                                 .executes(context -> onToggleCommand(IntegerArgumentType.getInteger(context, "index")))))
@@ -53,12 +61,7 @@ public class AutoCommand extends Feature {
                                                         .then(ClientCommandManager.literal("command")
                                                                 .then(ClientCommandManager.argument("command", StringArgumentType.greedyString())
                                                                         .executes(context -> onSetCommandCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "command")))))))));
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(autoCommandNode));
+        registerAlias(dispatcher, autoCommandNode);
     }
 
     private static int onToggleCommand(int index) {
@@ -106,28 +109,24 @@ public class AutoCommand extends Feature {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoCommand.enabled) {
+        if (!ModConfig.HANDLER.instance().autoCommand.enabled)
             return;
-        }
 
-        if (System.currentTimeMillis() - lastCommandSentAt < ModConfig.HANDLER.instance().autoCommand.minDelay * 1000) {
+        if (System.currentTimeMillis() - lastCommandSentAt < ModConfig.HANDLER.instance().autoCommand.minDelay * 1000)
             return;
-        }
 
         sendCommands();
     }
 
     private void sendCommands() {
-        if (MC.getConnection() == null) {
+        if (MC.getConnection() == null)
             return;
-        }
 
         for (AutoCommandEntry command : ModConfig.HANDLER.instance().autoCommand.commands) {
-            if (command.enabled && !cmdQueue.contains(command)) {
+            if (command.enabled && !cmdQueue.contains(command))
                 cmdQueue.offer(command);
-            } else if (!command.enabled) {
+            else if (!command.enabled)
                 cmdQueue.remove(command);
-            }
         }
 
         if (!cmdQueue.isEmpty()) {
@@ -153,12 +152,10 @@ public class AutoCommand extends Feature {
     }
 
     private static void sendCommand(String command) {
-        if (command == null || MC.getConnection() == null) {
+        if (command == null || MC.getConnection() == null)
             return;
-        }
-        if (command.startsWith("/")) {
+        if (command.startsWith("/"))
             command = command.substring(1);
-        }
         MC.getConnection().sendCommand(command);
     }
 }

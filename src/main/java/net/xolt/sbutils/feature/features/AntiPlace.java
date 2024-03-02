@@ -12,9 +12,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -24,24 +25,27 @@ import java.util.List;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AntiPlace extends Feature {
-
-    private static final String COMMAND = "antiplace";
-    private static final String ALIAS = "noplace";
+    private final OptionBinding<Boolean> heads = new OptionBinding<>("antiPlace.heads", Boolean.class, (config) -> config.antiPlace.heads, (config, value) -> config.antiPlace.heads = value);
+    private final OptionBinding<Boolean> grass = new OptionBinding<>("antiPlace.grass", Boolean.class, (config) -> config.antiPlace.grass, (config, value) -> config.antiPlace.grass = value);
 
     private long lastMessageSentAt;
 
+    public AntiPlace() {
+        super("antiPlace", "antiplace", "noplace");
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(heads, grass);
+    }
+
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        final LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(CommandHelper.bool("heads", "antiPlace.heads", () -> ModConfig.HANDLER.instance().antiPlace.heads, (value) -> ModConfig.HANDLER.instance().antiPlace.heads = value))
-                .then(CommandHelper.bool("grass", "antiPlace.grass", () -> ModConfig.HANDLER.instance().antiPlace.grass, (value) -> ModConfig.HANDLER.instance().antiPlace.grass = value))
+        final LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal(command)
+                .then(CommandHelper.bool("heads", heads))
+                .then(CommandHelper.bool("grass", grass))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(antiPlaceNode));
+        registerAlias(dispatcher, antiPlaceNode);
     }
 
     private void notifyBlocked(String message) {
@@ -59,14 +63,12 @@ public class AntiPlace extends Feature {
     }
 
     private static boolean shouldCancelBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
-        if (MC.level == null) {
+        if (MC.level == null)
             return false;
-        }
 
         InteractionResult actionResult = MC.level.getBlockState(hitResult.getBlockPos()).use(MC.level, player, hand, hitResult);
-        if ((actionResult == InteractionResult.CONSUME || actionResult == InteractionResult.SUCCESS) && !player.isShiftKeyDown()) {
+        if ((actionResult == InteractionResult.CONSUME || actionResult == InteractionResult.SUCCESS) && !player.isShiftKeyDown())
             return false;
-        }
 
         ItemStack held = player.getItemInHand(hand);
         if (ModConfig.HANDLER.instance().antiPlace.heads && isNamedHead(held))

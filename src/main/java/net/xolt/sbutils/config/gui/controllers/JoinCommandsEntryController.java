@@ -11,7 +11,7 @@ import java.util.List;
 public class JoinCommandsEntryController extends MultiValueController<ModConfig.JoinCommandsConfig.JoinCommandsEntry> {
 
     public JoinCommandsEntryController(Option<ModConfig.JoinCommandsConfig.JoinCommandsEntry> option) {
-        super(option, List.of(2, 1), List.of(
+        super(option, List.of(3, 2), List.of(
                 dummyController("text.sbutils.config.option.joinCommands.commands.command", StringControllerBuilder::create,
                         "",
                         () -> option.pendingValue().command,

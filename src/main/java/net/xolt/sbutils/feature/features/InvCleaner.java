@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
@@ -13,6 +12,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.ListOptionBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
+import net.xolt.sbutils.config.binding.constraints.ListConstraints;
+import net.xolt.sbutils.config.binding.constraints.StringConstraints;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.mixins.ContainerScreenAccessor;
 import net.xolt.sbutils.util.InvUtils;
@@ -26,29 +30,33 @@ import java.util.function.Predicate;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class InvCleaner extends Feature {
-
-    private static final String COMMAND = "invclean";
-    private static final String ALIAS = "ic";
+    private final OptionBinding<Double> clickDelay = new OptionBinding<>("invCleaner.clickDelay", Double.class, (config) -> config.invCleaner.clickDelay, (config, value) -> config.invCleaner.clickDelay = value);
+    private final ListOptionBinding<String> itemsToClean = new ListOptionBinding<>("invCleaner.itemsToClean", "", String.class, (config) -> config.invCleaner.itemsToClean, (config, value) -> config.invCleaner.itemsToClean = value, new ListConstraints<>(null, null, new StringConstraints(false)));
 
     private boolean cleaning;
     private boolean openedDisposal;
-    private Predicate<ItemStack> itemsToClean;
+    private Predicate<ItemStack> garbageFilter;
     private Consumer<Boolean> callback;
     private long lastClick;
     private int stacksCleaned;
 
-    @Override public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        final LiteralCommandNode<FabricClientCommandSource> centeredNode = dispatcher.register(
-                CommandHelper.runnable(COMMAND, () -> clean(ModConfig.HANDLER.instance().invCleaner.itemsToClean, null))
-                        .then(CommandHelper.stringList("items", "item", "invCleaner.itemsToClean", false, () -> ModConfig.HANDLER.instance().invCleaner.itemsToClean, (value) -> ModConfig.HANDLER.instance().invCleaner.itemsToClean = value))
-                        .then(CommandHelper.doubl("clickDelay", "seconds", "invCleaner.clickDelay", () -> ModConfig.HANDLER.instance().invCleaner.clickDelay, (value) -> ModConfig.HANDLER.instance().invCleaner.clickDelay = value))
-        );
+    public InvCleaner() {
+        super("invCleaner", "invcleaner", "ic");
+    }
 
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(centeredNode));
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(clickDelay, itemsToClean);
+    }
+
+    @Override
+    public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+        final LiteralCommandNode<FabricClientCommandSource> invCleanerNode = dispatcher.register(
+                CommandHelper.runnable(command, () -> clean(ModConfig.HANDLER.instance().invCleaner.itemsToClean, null))
+                        .then(CommandHelper.stringList("items", "item", itemsToClean))
+                        .then(CommandHelper.doubl("clickDelay", "seconds", clickDelay))
+        );
+        registerAlias(dispatcher, invCleanerNode);
     }
 
     public void tick() {
@@ -70,9 +78,8 @@ public class InvCleaner extends Feature {
         if (openedDisposal)
             return;
 
-        if (System.currentTimeMillis() - lastClick < ModConfig.HANDLER.instance().invCleaner.clickDelay * 1000) {
+        if (System.currentTimeMillis() - lastClick < ModConfig.HANDLER.instance().invCleaner.clickDelay * 1000)
             return;
-        }
 
         doClean();
     }
@@ -81,7 +88,7 @@ public class InvCleaner extends Feature {
         if (MC.player == null)
             return;
         for (int i = 0; i < 36; i++) {
-            if (!itemsToClean.test(MC.player.getInventory().getItem(i)))
+            if (!garbageFilter.test(MC.player.getInventory().getItem(i)))
                 continue;
             InvUtils.quickMove(i, MC.player.containerMenu);
             lastClick = System.currentTimeMillis();
@@ -113,7 +120,7 @@ public class InvCleaner extends Feature {
         }
         reset();
         cleaning = true;
-        itemsToClean = toClean;
+        garbageFilter = toClean;
         callback = cleanCallback;
         ChatUtils.printMessage("message.sbutils.invCleaner.cleaning");
     }
@@ -121,7 +128,7 @@ public class InvCleaner extends Feature {
     private void reset() {
         cleaning = false;
         openedDisposal = false;
-        itemsToClean = null;
+        garbageFilter = null;
         callback = null;
         lastClick = 0;
         stacksCleaned = 0;

@@ -1,17 +1,28 @@
 package net.xolt.sbutils.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 import net.xolt.sbutils.command.argument.GenericEnumArgumentType;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.Constraints;
+import net.xolt.sbutils.config.binding.ListOptionBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
+import net.xolt.sbutils.config.binding.constraints.ListConstraints;
+import net.xolt.sbutils.config.binding.constraints.NumberConstraints;
+import net.xolt.sbutils.config.binding.constraints.StringConstraints;
+import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +32,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class CommandHelper {
-
     private static final String OPTION_KEY = "text.sbutils.config.option.";
-    private static final String CATEGORY_KEY = "text.sbutils.config.category.";
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> runnable(String command, Runnable runnable) {
         return ClientCommandManager.literal(command)
@@ -33,146 +42,166 @@ public class CommandHelper {
                 });
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> toggle(String command, String category, Supplier<Boolean> get, Consumer<Boolean> set) {
+    public static LiteralArgumentBuilder<FabricClientCommandSource> toggle(String command, Feature feature, OptionBinding<Boolean> optionBinding) {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
-                    set.accept(!get.get());
+                    optionBinding.set(ModConfig.HANDLER.instance(), !optionBinding.get(ModConfig.HANDLER.instance()));
                     ModConfig.HANDLER.save();
-                    ChatUtils.printChangedSetting(CATEGORY_KEY + category, get.get());
+                    ChatUtils.printChangedSetting(feature.getNameTranslation(), optionBinding.get(ModConfig.HANDLER.instance()));
                     return Command.SINGLE_SUCCESS;
                 });
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> string(String command, String argument, String setting, Supplier<String> get, Consumer<String> set) {
-        return getter(command, setting, get)
+    public static LiteralArgumentBuilder<FabricClientCommandSource> string(String command, String unit, OptionBinding<String> optionBinding) {
+        boolean greedy = true;
+        if (optionBinding.getConstraints() instanceof StringConstraints strConstraints)
+            greedy = strConstraints.getSpacesAllowed() == null || strConstraints.getSpacesAllowed();
+
+        return getter(command, optionBinding)
                 .then(ClientCommandManager.literal("set")
                         .executes(context -> {
-                            set.accept("");
+                            optionBinding.set(ModConfig.HANDLER.instance(), "");
                             ModConfig.HANDLER.save();
-                            ChatUtils.printChangedSetting(CATEGORY_KEY + setting, "");
+                            ChatUtils.printChangedSetting(optionBinding.getTranslation(), "");
                             return Command.SINGLE_SUCCESS;
                         })
-                        .then(setter(argument, setting, get, set, StringArgumentType.greedyString(), StringArgumentType::getString)));
+                        .then(setter(unit, optionBinding, greedy ? StringArgumentType.greedyString() : StringArgumentType.string(), StringArgumentType::getString)));
 
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String argument, String setting, boolean greedy, Supplier<List<String>> get, Consumer<List<String>> set) {
-        return stringList(command, argument, setting, greedy, -1, false, false, get, set);
+    public static LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String unit, ListOptionBinding<String> optionBinding) {
+        boolean greedy = true;
+        if (optionBinding.getConstraints() instanceof ListConstraints<String> listConstraints && listConstraints.getEntryConstraints() instanceof StringConstraints strConstraints)
+            greedy = strConstraints.getSpacesAllowed() == null || strConstraints.getSpacesAllowed();
+
+        return genericList(command, unit, optionBinding, greedy, greedy ? StringArgumentType.greedyString() : StringArgumentType.string(), StringArgumentType::getString);
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String argument, String setting, boolean greedy, int maxSize, boolean allowDupes, boolean indexed, Supplier<List<String>> get, Consumer<List<String>> set) {
-        return genericList(command, argument, setting, maxSize, allowDupes, indexed, greedy ? StringArgumentType.greedyString() : StringArgumentType.string(), StringArgumentType::getString, get, set);
+    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String unit, ListOptionBinding<T> optionBinding) {
+        return enumList(command, unit, optionBinding, false);
     }
 
-    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
-        return enumList(command, argument, setting, -1, false, false, type, get, set);
-    }
-
-    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, Class<T> type, Supplier<List<T>> get, Consumer<List<T>> set) {
-        return genericList(command, argument, setting, maxSize, allowDupes, indexed, GenericEnumArgumentType.genericEnum(type), (context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type), get, set);
+    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String unit, ListOptionBinding<T> optionBinding, boolean indexed) {
+        return genericList(command, unit, optionBinding, indexed, GenericEnumArgumentType.genericEnum(optionBinding.getListType()), (context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, optionBinding.getListType()));
     }
 
 
 
-    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String argument, String setting, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<T>> get, Consumer<List<T>> set) {
-        return genericList(command, argument, setting, -1, false, false, argumentType, getArgument, get, set);
+    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String unit, ListOptionBinding<T> optionBinding, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+        return genericList(command, unit, optionBinding, false, argumentType, getArgument);
     }
 
-    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String argument, String setting, int maxSize, boolean allowDupes, boolean indexed, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<T>> get, Consumer<List<T>> set) {
+    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String unit, ListOptionBinding<T> optionBinding, boolean indexed, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+        final int maxSize;
+        final boolean allowDupes;
+        if (optionBinding.getConstraints() instanceof ListConstraints<T> listConstraints) {
+            maxSize = listConstraints.getMaxSize();
+            allowDupes = listConstraints.getAllowDupes();
+        } else {
+            maxSize = Integer.MAX_VALUE;
+            allowDupes = false;
+        }
+
         Consumer<T> add = (value) -> {
-            ArrayList<T> list = new ArrayList<>(get.get());
-            if (maxSize > -1 && list.size() >= maxSize) {
-                ChatUtils.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Component.translatable(OPTION_KEY + setting));
+            ArrayList<T> list = new ArrayList<>(optionBinding.get(ModConfig.HANDLER.instance()));
+
+            if (list.size() >= maxSize) {
+                ChatUtils.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Component.translatable(optionBinding.getTranslation()));
                 return;
             }
 
             if (!allowDupes && list.contains(value)) {
-                ChatUtils.printWithPlaceholders("message.sbutils.listDupeError", value, Component.translatable(OPTION_KEY + setting));
+                ChatUtils.printWithPlaceholders("message.sbutils.listDupeError", value, Component.translatable(optionBinding.getTranslation()));
                 return;
             }
 
             list.add(value);
-            set.accept(list);
+            optionBinding.set(ModConfig.HANDLER.instance(), list);
             ModConfig.HANDLER.save();
-            ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(OPTION_KEY + setting));
-            ChatUtils.printListSetting(OPTION_KEY + setting, list, indexed);
+            ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(optionBinding.getTranslation()));
+            ChatUtils.printListSetting(optionBinding.getTranslation(), list, indexed);
         };
 
         if (indexed)
-            return customIndexedList(command, argument, setting, argumentType, getArgument, get, add,
+            return customIndexedList(command, unit, optionBinding.getPath(), argumentType, getArgument, () -> optionBinding.get(ModConfig.HANDLER.instance()), add,
                     (index) -> {
-                        ArrayList<T> list = new ArrayList<>(get.get());
+                        ArrayList<T> list = new ArrayList<>(optionBinding.get(ModConfig.HANDLER.instance()));
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
-                            ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(OPTION_KEY + setting));
+                            ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(optionBinding.getTranslation()));
                             return;
                         }
 
                         T removed = list.remove(adjustedIndex);
-                        set.accept(list);
+                        optionBinding.set(ModConfig.HANDLER.instance(), list);
                         ModConfig.HANDLER.save();
-                        ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Component.translatable(OPTION_KEY + setting));
-                        ChatUtils.printListSetting(OPTION_KEY + setting, list, true);
+                        ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Component.translatable(optionBinding.getTranslation()));
+                        ChatUtils.printListSetting(optionBinding.getTranslation(), list, true);
                     },
                     (index, value) -> {
-                        ArrayList<T> list = new ArrayList<>(get.get());
+                        ArrayList<T> list = new ArrayList<>(optionBinding.get(ModConfig.HANDLER.instance()));
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
-                            ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(OPTION_KEY + setting));
+                            ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(optionBinding.getTranslation()));
+                            return;
+                        }
+
+                        if (list.size() >= maxSize) {
+                            ChatUtils.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Component.translatable(optionBinding.getTranslation()));
                             return;
                         }
 
                         if (!allowDupes && list.contains(value)) {
-                            ChatUtils.printWithPlaceholders("message.sbutils.listDupeError", value, Component.translatable(OPTION_KEY + setting));
+                            ChatUtils.printWithPlaceholders("message.sbutils.listDupeError", value, Component.translatable(optionBinding.getTranslation()));
                             return;
                         }
 
                         list.add(index, value);
-                        set.accept(list);
+                        optionBinding.set(ModConfig.HANDLER.instance(), list);
                         ModConfig.HANDLER.save();
-                        ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(OPTION_KEY + setting));
-                        ChatUtils.printListSetting(OPTION_KEY + setting, list, true);
+                        ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(optionBinding.getTranslation()));
+                        ChatUtils.printListSetting(optionBinding.getTranslation(), list, true);
                     }
             );
 
-        return customList(command, argument, setting, argumentType, getArgument, get, add,
+        return customList(command, unit, optionBinding.getPath(), argumentType, getArgument, () -> optionBinding.get(ModConfig.HANDLER.instance()), add,
                 (value) -> {
-                    ArrayList<T> list = new ArrayList<>(get.get());
+                    ArrayList<T> list = new ArrayList<>(optionBinding.get(ModConfig.HANDLER.instance()));
                     boolean result = list.remove(value);
-                    set.accept(list);
+                    optionBinding.set(ModConfig.HANDLER.instance(), list);
                     ModConfig.HANDLER.save();
                     if (result) {
-                        ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", value, Component.translatable(OPTION_KEY + setting));
-                        ChatUtils.printListSetting(OPTION_KEY + setting, list);
+                        ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", value, Component.translatable(optionBinding.getTranslation()));
+                        ChatUtils.printListSetting(optionBinding.getTranslation(), list);
                     } else {
-                        ChatUtils.printWithPlaceholders("message.sbutils.listDelFail", value, Component.translatable(OPTION_KEY + setting));
+                        ChatUtils.printWithPlaceholders("message.sbutils.listDelFail", value, Component.translatable(optionBinding.getTranslation()));
                     }
                 }
         );
     }
 
-    public static <T, S> LiteralArgumentBuilder<FabricClientCommandSource> customList(String command, String argument, String setting, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<S>> getPrintable, Consumer<T> add, Consumer<T> del) {
-        return runnable(command, () -> ChatUtils.printListSetting(OPTION_KEY + setting, getPrintable.get()))
+    public static <T, S> LiteralArgumentBuilder<FabricClientCommandSource> customList(String command, String unit, String path, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<S>> getPrintable, Consumer<T> add, Consumer<T> del) {
+        return runnable(command, () -> ChatUtils.printListSetting(OPTION_KEY + path, getPrintable.get()))
                 .then(ClientCommandManager.literal("add")
-                        .then(ClientCommandManager.argument(argument, argumentType)
+                        .then(ClientCommandManager.argument(unit, argumentType)
                                 .executes(context -> {
-                                    add.accept(getArgument.apply(context, argument));
+                                    add.accept(getArgument.apply(context, unit));
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("del")
-                        .then(ClientCommandManager.argument(argument, argumentType)
+                        .then(ClientCommandManager.argument(unit, argumentType)
                                 .executes(context -> {
-                                    del.accept(getArgument.apply(context, argument));
+                                    del.accept(getArgument.apply(context, unit));
                                     return Command.SINGLE_SUCCESS;
                                 })));
     }
 
-    public static <T, S> LiteralArgumentBuilder<FabricClientCommandSource> customIndexedList(String command, String argument, String setting, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<S>> getPrintable, Consumer<T> add, Consumer<Integer> del, BiConsumer<Integer, T> insert) {
-        return runnable(command, () -> ChatUtils.printListSetting(OPTION_KEY + setting, getPrintable.get(), true))
+    public static <T, S> LiteralArgumentBuilder<FabricClientCommandSource> customIndexedList(String command, String unit, String path, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument, Supplier<List<S>> getPrintable, Consumer<T> add, Consumer<Integer> del, BiConsumer<Integer, T> insert) {
+        return runnable(command, () -> ChatUtils.printListSetting(OPTION_KEY + path, getPrintable.get(), true))
                 .then(ClientCommandManager.literal("add")
-                        .then(ClientCommandManager.argument(argument, argumentType)
+                        .then(ClientCommandManager.argument(unit, argumentType)
                                 .executes(context -> {
-                                    add.accept(getArgument.apply(context, argument));
+                                    add.accept(getArgument.apply(context, unit));
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(ClientCommandManager.literal("del")
@@ -183,52 +212,56 @@ public class CommandHelper {
                                 })))
                 .then(ClientCommandManager.literal("insert")
                         .then(ClientCommandManager.argument("index", IntegerArgumentType.integer(0))
-                                .then(ClientCommandManager.argument(argument, StringArgumentType.greedyString())
+                                .then(ClientCommandManager.argument(unit, StringArgumentType.greedyString())
                                         .executes(context -> {
-                                            insert.accept(IntegerArgumentType.getInteger(context, "index"), getArgument.apply(context, argument));
+                                            insert.accept(IntegerArgumentType.getInteger(context, "index"), getArgument.apply(context, unit));
                                             return Command.SINGLE_SUCCESS;
                                         }))));
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> bool(String command, String setting, Supplier<Boolean> get, Consumer<Boolean> set) {
-        return getterSetter(command, "enabled", setting, get, set, BoolArgumentType.bool(), BoolArgumentType::getBool);
+    public static LiteralArgumentBuilder<FabricClientCommandSource> bool(String command, OptionBinding<Boolean> optionBinding) {
+        return getterSetter(command, "enabled", optionBinding, BoolArgumentType.bool(), BoolArgumentType::getBool);
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> doubl(String command, String argument, String setting, Supplier<Double> get, Consumer<Double> set) {
-        return getterSetter(command, argument, setting, get, set, DoubleArgumentType.doubleArg(), DoubleArgumentType::getDouble);
+    public static LiteralArgumentBuilder<FabricClientCommandSource> doubl(String command, String unit, OptionBinding<Double> optionBinding) {
+        return getterSetter(command, unit, optionBinding, getDoubleArgumentType(optionBinding.getConstraints()), DoubleArgumentType::getDouble);
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> doubl(String command, String argument, String setting, Supplier<Double> get, Consumer<Double> set, double min) {
-        return getterSetter(command, argument, setting, get, set, DoubleArgumentType.doubleArg(min), DoubleArgumentType::getDouble);
+    private static DoubleArgumentType getDoubleArgumentType(Constraints<Double> constraints) {
+        if (!(constraints instanceof NumberConstraints<Double> numConstraints))
+            return DoubleArgumentType.doubleArg();
+        Double min = numConstraints.getMin();
+        Double max = numConstraints.getMax();
+        return DoubleArgumentType.doubleArg(min == null ? Double.MIN_VALUE : min, max == null ? Double.MAX_VALUE : max);
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> integer(String command, String argument, String setting, Supplier<Integer> get, Consumer<Integer> set) {
-        return getterSetter(command, argument, setting, get, set, IntegerArgumentType.integer(), IntegerArgumentType::getInteger);
+    public static LiteralArgumentBuilder<FabricClientCommandSource> integer(String command, String unit, OptionBinding<Integer> optionBinding) {
+        return getterSetter(command, unit, optionBinding, IntegerArgumentType.integer(), IntegerArgumentType::getInteger);
     }
 
-    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> genericEnum(String command, String argument, String setting, Class<T> type, Supplier<T> get, Consumer<T> set) {
-        return getterSetter(command, argument, setting, get, set, GenericEnumArgumentType.genericEnum(type), ((context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, type)));
+    public static <T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> genericEnum(String command, String unit, OptionBinding<T> optionBinding) {
+        return getterSetter(command, unit, optionBinding, GenericEnumArgumentType.genericEnum(optionBinding.getType()), ((context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, optionBinding.getType())));
     }
 
-    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> getterSetter(String command, String argument, String setting, Supplier<T> get, Consumer<T> set, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
-        return getter(command, setting, get)
-                .then(setter(argument, setting, get, set, argumentType, getArgument));
+    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> getterSetter(String command, String unit, OptionBinding<T> optionBinding, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+        return getter(command, optionBinding)
+                .then(setter(unit, optionBinding, argumentType, getArgument));
     }
 
-    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> getter(String command, String setting, Supplier<T> get) {
+    public static <T> LiteralArgumentBuilder<FabricClientCommandSource> getter(String command, OptionBinding<T> optionBinding) {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
-                    ChatUtils.printSetting(OPTION_KEY + setting, get.get());
+                    ChatUtils.printSetting(optionBinding.getTranslation(), optionBinding.get(ModConfig.HANDLER.instance()));
                     return Command.SINGLE_SUCCESS;
                 });
     }
 
-    public static <T> RequiredArgumentBuilder<FabricClientCommandSource, T> setter(String argument, String setting, Supplier<T> get, Consumer<T> set, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+    public static <T> RequiredArgumentBuilder<FabricClientCommandSource, T> setter(String argument, OptionBinding<T> optionBinding, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
         return ClientCommandManager.argument(argument, argumentType)
                 .executes(context -> {
-                    set.accept(getArgument.apply(context, argument));
+                    optionBinding.set(ModConfig.HANDLER.instance(), getArgument.apply(context, argument));
                     ModConfig.HANDLER.save();
-                    ChatUtils.printChangedSetting(OPTION_KEY + setting, get.get());
+                    ChatUtils.printChangedSetting(optionBinding.getTranslation(), optionBinding.get(ModConfig.HANDLER.instance()));
                     return Command.SINGLE_SUCCESS;
                 });
     }

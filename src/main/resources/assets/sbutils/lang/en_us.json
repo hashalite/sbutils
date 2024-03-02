@@ -135,8 +135,8 @@
   "text.sbutils.config.category.default": "sbutils",
 
   "text.sbutils.config.group.sbutils": "sbutils Settings",
-  "text.sbutils.config.option.messagePrefix": "Message Prefix",
-  "text.sbutils.config.option.messagePrefix.tooltip": "The prefix that appears before sbutils messages. The '%s' will be replaced with 'sbutils'.",
+  "text.sbutils.config.option.prefixFormat": "Message Prefix",
+  "text.sbutils.config.option.prefixFormat.tooltip": "The prefix that appears before sbutils messages. The '%s' will be replaced with 'sbutils'.",
   "text.sbutils.config.option.sbutilsColor": "sbutils Color",
   "text.sbutils.config.option.sbutilsColor.tooltip": "The color of the sbutils name in messages.",
   "text.sbutils.config.option.prefixColor": "Prefix Color",

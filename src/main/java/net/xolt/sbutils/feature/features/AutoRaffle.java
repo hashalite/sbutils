@@ -10,8 +10,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
+import net.xolt.sbutils.config.binding.constraints.NumberConstraints;
 import net.xolt.sbutils.feature.Feature;
-import net.xolt.sbutils.systems.ServerDetector;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
@@ -21,61 +23,59 @@ import java.util.List;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoRaffle extends Feature {
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoRaffle.enabled", Boolean.class, (config) -> config.autoRaffle.enabled, (config, value) -> config.autoRaffle.enabled = value);
+    private final OptionBinding<Integer> sbTickets = new OptionBinding<>("autoRaffle.sbTickets", Integer.class, (config) -> config.autoRaffle.sbTickets, (config, value) -> config.autoRaffle.sbTickets = value, new NumberConstraints<>(1, 2));
+    private final OptionBinding<Integer> ecoTickets = new OptionBinding<>("autoRaffle.ecoTickets", Integer.class, (config) -> config.autoRaffle.ecoTickets, (config, value) -> config.autoRaffle.ecoTickets = value, new NumberConstraints<>(1, 5));
 
-    private static final String COMMAND = "autoraffle";
-    private static final String ALIAS = "autoraf";
-
-    private boolean enabled;
     private boolean waitingToBuy;
     private boolean checkForGrass;
     private boolean shouldSendErrorMessage;
 
+    public AutoRaffle() {
+        super("autoRaffle", "autoraffle", "autoraf");
+        enabled.addListener(this::onToggle);
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, sbTickets, ecoTickets);
+    }
+
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "autoRaffle", () -> ModConfig.HANDLER.instance().autoRaffle.enabled, (value) -> ModConfig.HANDLER.instance().autoRaffle.enabled = value)
-                    .then(CommandHelper.integer("sbTickets", "amount", "autoRaffle.sbTickets", () -> ModConfig.HANDLER.instance().autoRaffle.sbTickets, (value) -> ModConfig.HANDLER.instance().autoRaffle.sbTickets = value))
-                    .then(CommandHelper.integer("ecoTickets", "amount", "autoRaffle.ecoTickets", () -> ModConfig.HANDLER.instance().autoRaffle.ecoTickets, (value) -> ModConfig.HANDLER.instance().autoRaffle.ecoTickets = value))
+                CommandHelper.toggle(command, this, enabled)
+                    .then(CommandHelper.integer("sbTickets", "amount", sbTickets))
+                    .then(CommandHelper.integer("ecoTickets", "amount", ecoTickets))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(autoRaffleNode));
+        registerAlias(dispatcher, autoRaffleNode);
     }
 
     public void tick() {
-        if (enabled != ModConfig.HANDLER.instance().autoRaffle.enabled) {
-            enabled = ModConfig.HANDLER.instance().autoRaffle.enabled;
-            reset();
-        }
-
-        if (!enabled || MC.getConnection() == null) {
+        if (!ModConfig.HANDLER.instance().autoRaffle.enabled || MC.getConnection() == null)
             return;
-        }
 
-        if (waitingToBuy && checkForGrass) {
+        if (waitingToBuy && checkForGrass)
             buyTickets();
-        }
+    }
+
+    private void onToggle(Boolean oldValue, Boolean newValue) {
+        reset();
     }
 
     public void onUpdateInventory() {
-        if (enabled && waitingToBuy) {
+        if (ModConfig.HANDLER.instance().autoRaffle.enabled && waitingToBuy)
             checkForGrass = true;
-        }
     }
 
     public void processMessage(Component message) {
-        if (ModConfig.HANDLER.instance().autoRaffle.enabled && RegexFilters.raffleEndFilter.matcher(message.getString()).matches()) {
+        if (ModConfig.HANDLER.instance().autoRaffle.enabled && RegexFilters.raffleEndFilter.matcher(message.getString()).matches())
             reset();
-        }
     }
 
     public void onJoinGame() {
-        if (ModConfig.HANDLER.instance().autoRaffle.enabled) {
+        if (ModConfig.HANDLER.instance().autoRaffle.enabled)
             reset();
-        }
     }
 
     public void buyTickets() {
@@ -95,9 +95,8 @@ public class AutoRaffle extends Feature {
     }
 
     private void buySkyblockTickets() {
-        if (MC.getConnection() == null) {
+        if (MC.getConnection() == null)
             return;
-        }
 
         int numTickets = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.sbTickets, 1), 2);
         int grassCount = getGrassCount();
@@ -118,9 +117,8 @@ public class AutoRaffle extends Feature {
     }
 
     private void buyEconomyTickets() {
-        if (MC.getConnection() == null) {
+        if (MC.getConnection() == null)
             return;
-        }
 
         int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.ecoTickets, 1), 5);
         ChatUtils.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
@@ -135,17 +133,14 @@ public class AutoRaffle extends Feature {
     }
 
     private static int getGrassCount() {
-        if (MC.player == null) {
+        if (MC.player == null)
             return -1;
-        }
 
         int counter = 0;
         for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
             ItemStack itemStack = MC.player.getInventory().getItem(i);
-            if (!(itemStack.getItem().equals(Items.GRASS_BLOCK))) {
+            if (!(itemStack.getItem().equals(Items.GRASS_BLOCK)))
                 continue;
-            }
-
             counter += itemStack.getCount();
         }
         return counter;

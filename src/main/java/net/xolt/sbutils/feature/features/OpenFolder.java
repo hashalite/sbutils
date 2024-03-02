@@ -5,8 +5,8 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.IOHandler;
 import net.xolt.sbutils.util.ChatUtils;
@@ -15,20 +15,21 @@ import java.util.List;
 
 public class OpenFolder extends Feature {
 
-    private static final String COMMAND = "openfolder";
-    private static final String ALIAS = "dir";
+    public OpenFolder() {
+        super("openFolder", "openfolder", "dir");
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return null;
+    }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> openFolderNode = dispatcher.register(
-                CommandHelper.runnable(COMMAND, OpenFolder::onOpenFolderCommand)
+                CommandHelper.runnable(command, OpenFolder::onOpenFolderCommand)
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(openFolderNode));
+        registerAlias(dispatcher, openFolderNode);
     }
 
     private static void onOpenFolderCommand() {

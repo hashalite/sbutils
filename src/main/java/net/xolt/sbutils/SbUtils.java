@@ -11,6 +11,8 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.config.gui.ConfigGui;
 import net.xolt.sbutils.feature.*;
 import net.xolt.sbutils.feature.features.*;
@@ -21,7 +23,9 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class SbUtils implements ClientModInitializer {
 
@@ -30,6 +34,11 @@ public class SbUtils implements ClientModInitializer {
     public static final Features FEATURES = new Features();
     public static final ServerDetector SERVER_DETECTOR = new ServerDetector();
     public static final TpsEstimator TPS_ESTIMATOR = new TpsEstimator();
+    private static final OptionBinding<String> prefixFormat = new OptionBinding<>("prefixFormat", String.class, (config) -> config.prefixFormat, (config, value) -> config.prefixFormat = value);
+    private static final OptionBinding<Color> sbutilsColor = new OptionBinding<>("sbutilsColor", Color.class, (config) -> config.sbutilsColor, (config, value) -> config.sbutilsColor = value);
+    private static final OptionBinding<Color> prefixColor = new OptionBinding<>("prefixColor", Color.class, (config) -> config.prefixColor, (config, value) -> config.prefixColor = value);
+    private static final OptionBinding<Color> messageColor = new OptionBinding<>("messageColor", Color.class, (config) -> config.messageColor, (config, value) -> config.messageColor = value);
+    private static final OptionBinding<Color> valueColor = new OptionBinding<>("valueColor", Color.class, (config) -> config.valueColor, (config, value) -> config.valueColor = value);
 
     public static KeyMapping configKey;
     public static KeyMapping islandKey;
@@ -79,7 +88,8 @@ public class SbUtils implements ClientModInitializer {
                 new NoGMT(),
                 new OpenFolder(),
                 new StaffDetector(),
-                new ToolSaver()
+                new ToolSaver(),
+                new UnenchantAll()
         );
     }
 
@@ -134,5 +144,9 @@ public class SbUtils implements ClientModInitializer {
                 MC.getConnection().sendCommand("trash");
             }
         });
+    }
+
+    public static List<? extends ConfigBinding<?>> getGlobalConfigBindings() {
+        return List.of(prefixFormat, sbutilsColor, prefixColor, messageColor, valueColor);
     }
 }

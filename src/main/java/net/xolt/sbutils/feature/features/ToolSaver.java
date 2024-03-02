@@ -20,9 +20,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -33,24 +34,27 @@ import java.util.List;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class ToolSaver extends Feature {
-
-    private static final String COMMAND = "toolsaver";
-    private static final String ALIAS = "saver";
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("toolSaver.enabled", Boolean.class, (config) -> config.toolSaver.enabled, (config, value) -> config.toolSaver.enabled = value);
+    private final OptionBinding<Integer> durability = new OptionBinding<>("toolSaver.durability", Integer.class, (config) -> config.toolSaver.durability, (config, value) -> config.toolSaver.durability = value);
 
     private long lastMessageSentAt;
+
+    public ToolSaver() {
+        super("toolSaver", "toolsaver", "saver");
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, durability);
+    }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "toolSaver", () -> ModConfig.HANDLER.instance().toolSaver.enabled, (value) -> ModConfig.HANDLER.instance().toolSaver.enabled = value)
-                    .then(CommandHelper.integer("durability", "durability", "toolSaver.durability", () -> ModConfig.HANDLER.instance().toolSaver.durability, (value) -> ModConfig.HANDLER.instance().toolSaver.durability = value))
+                CommandHelper.toggle(command, this, enabled)
+                    .then(CommandHelper.integer("durability", "durability", durability))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                    dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(toolSaverNode));
+        registerAlias(dispatcher, toolSaverNode);
     }
 
     public void onBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
@@ -104,9 +108,8 @@ public class ToolSaver extends Feature {
     }
 
     private static boolean shouldCancelEntityInteract(Player player, Entity entity, InteractionHand hand) {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled) {
+        if (!ModConfig.HANDLER.instance().toolSaver.enabled)
             return false;
-        }
 
         ItemStack item = player.getItemInHand(hand);
         if (!hasLowDurability(item))
@@ -124,23 +127,20 @@ public class ToolSaver extends Feature {
     }
 
     public static boolean shouldCancelAttack() {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().toolSaver.enabled || MC.player == null)
             return false;
-        }
 
         ItemStack holding = MC.player.getMainHandItem();
 
-        if (hasLowDurability(holding)) {
+        if (hasLowDurability(holding))
             return true;
-        }
 
         return false;
     }
 
     private static boolean hasLowDurability(ItemStack item) {
-        if (item.isEmpty() || !item.isDamageableItem()) {
+        if (item.isEmpty() || !item.isDamageableItem())
             return false;
-        }
 
         return item.getMaxDamage() - item.getDamageValue() <= ModConfig.HANDLER.instance().toolSaver.durability;
     }

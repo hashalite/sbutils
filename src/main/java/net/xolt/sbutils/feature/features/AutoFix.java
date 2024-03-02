@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
@@ -11,6 +10,8 @@ import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
@@ -23,10 +24,13 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoFix extends Feature {
 
-    private static final String COMMAND = "autofix";
-    private static final String ALIAS = "af";
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoFix.enabled", Boolean.class, (config) -> config.autoFix.enabled, (config, value) -> config.autoFix.enabled = value);
+    private final OptionBinding<ModConfig.FixMode> mode = new OptionBinding<>("autoFix.mode", ModConfig.FixMode.class, (config) -> config.autoFix.mode, (config, value) -> config.autoFix.mode = value);
+    private final OptionBinding<Double> percent = new OptionBinding<>("autoFix.percent", Double.class, (config) -> config.autoFix.percent, (config, value) -> config.autoFix.percent = value);
+    private final OptionBinding<Double> delay = new OptionBinding<>("autoFix.delay", Double.class, (config) -> config.autoFix.delay, (config, value) -> config.autoFix.delay = value);
+    private final OptionBinding<Double> retryDelay = new OptionBinding<>("autoFix.retryDelay", Double.class, (config) -> config.autoFix.retryDelay, (config, value) -> config.autoFix.retryDelay = value);
+    private final OptionBinding<Integer> maxRetries = new OptionBinding<>("autoFix.maxRetries", Integer.class, (config) -> config.autoFix.maxRetries, (config, value) -> config.autoFix.maxRetries = value);
 
-    private boolean enabled;
     private boolean fixing;
     private boolean waitingForResponse;
     private boolean findMostDamaged;
@@ -38,38 +42,35 @@ public class AutoFix extends Feature {
     private long joinedAt;
 
     public AutoFix() {
+        super("autoFix", "autofix", "af");
+        this.enabled.addListener(this::onToggle);
+        this.percent.addListener(this::onChangeMaxFixPercent);
         reset();
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, mode, percent, delay, retryDelay, maxRetries);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "autoFix", () -> ModConfig.HANDLER.instance().autoFix.enabled, (value) -> ModConfig.HANDLER.instance().autoFix.enabled = value)
+                CommandHelper.toggle(command, this, enabled)
                     .then(CommandHelper.runnable("info", () -> ChatUtils.printAutoFixInfo(ModConfig.HANDLER.instance().autoFix.enabled, fixing, findMostDamaged(), delayLeft())))
                     .then(CommandHelper.runnable("reset", () -> {reset(); ChatUtils.printMessage("message.sbutils.autoFix.reset");}))
-                    .then(CommandHelper.genericEnum("mode", "mode", "autoFix.mode", ModConfig.FixMode.class, () -> ModConfig.HANDLER.instance().autoFix.mode, (value) -> ModConfig.HANDLER.instance().autoFix.mode = value))
-                    .then(CommandHelper.doubl("percent", "percent", "autoFix.percent", () -> ModConfig.HANDLER.instance().autoFix.percent, (value) -> {ModConfig.HANDLER.instance().autoFix.percent = value; onChangeMaxFixPercent();}))
-                    .then(CommandHelper.doubl("delay", "seconds", "autoFix.delay", () -> ModConfig.HANDLER.instance().autoFix.delay, (value) -> ModConfig.HANDLER.instance().autoFix.delay = value))
-                    .then(CommandHelper.doubl("retryDelay", "seconds", "autoFix.retryDelay", () -> ModConfig.HANDLER.instance().autoFix.retryDelay, (value) -> ModConfig.HANDLER.instance().autoFix.retryDelay = value))
-                    .then(CommandHelper.integer("maxRetries", "retries", "autoFix.maxRetries", () -> ModConfig.HANDLER.instance().autoFix.maxRetries, (value) -> ModConfig.HANDLER.instance().autoFix.maxRetries = value))
+                    .then(CommandHelper.genericEnum("mode", "mode", mode))
+                    .then(CommandHelper.doubl("percent", "percent", percent))
+                    .then(CommandHelper.doubl("delay", "seconds", delay))
+                    .then(CommandHelper.doubl("retryDelay", "seconds", retryDelay))
+                    .then(CommandHelper.integer("maxRetries", "retries", maxRetries))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(autoFixNode));
+        registerAlias(dispatcher, autoFixNode);
     }
 
     public void tick() {
-        if (enabled != ModConfig.HANDLER.instance().autoFix.enabled) {
-            enabled = ModConfig.HANDLER.instance().autoFix.enabled;
-            reset();
-        }
-
-        if (!ModConfig.HANDLER.instance().autoFix.enabled || SbUtils.FEATURES.get(EnchantAll.class).active() || MC.player == null) {
+        if (!ModConfig.HANDLER.instance().autoFix.enabled || SbUtils.FEATURES.get(EnchantAll.class).active() || MC.player == null)
             return;
-        }
 
         long currentTime = System.currentTimeMillis();
 
@@ -95,15 +96,17 @@ public class AutoFix extends Feature {
             }
         }
 
-        if (waitingForResponse) {
+        if (waitingForResponse)
             return;
-        }
 
-        if (delayLeft() > 0) {
+        if (delayLeft() > 0)
             return;
-        }
 
         doAutoFix();
+    }
+
+    private void onToggle(Boolean oldValue, Boolean newValue) {
+        reset();
     }
 
     public void onJoinGame() {
@@ -115,30 +118,27 @@ public class AutoFix extends Feature {
     }
 
     public void onUpdateInventory() {
-        if (!ModConfig.HANDLER.instance().autoFix.enabled || fixing) {
+        if (!ModConfig.HANDLER.instance().autoFix.enabled || fixing)
             return;
-        }
 
         findMostDamaged = true;
     }
 
-    public void onChangeMaxFixPercent() {
+    public void onChangeMaxFixPercent(Double oldValue, Double newValue) {
         findMostDamaged = true;
     }
 
     private void doAutoFix() {
-        if (MC.player == null) {
+        if (MC.player == null)
             return;
-        }
 
         if (!fixing) {
             AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
             if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)) {
                 fixing = true;
 
-                if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL) {
+                if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL)
                     return;
-                }
 
                 prevSelectedSlot = MC.player.getInventory().selected;
 
@@ -160,9 +160,8 @@ public class AutoFix extends Feature {
             return;
         }
 
-        if (tries == 0) {
+        if (tries == 0)
             ChatUtils.printMessage("message.sbutils.autoFix.fixingItem");
-        }
 
         sendFixCommand();
 
@@ -172,9 +171,8 @@ public class AutoFix extends Feature {
     }
 
     public void processMessage(Component message) {
-        if (!waitingForResponse) {
+        if (!waitingForResponse)
             return;
-        }
 
         Matcher fixFailMatcher = RegexFilters.fixFailFilter.matcher(message.getString());
         if (fixFailMatcher.matches()) {
@@ -182,9 +180,8 @@ public class AutoFix extends Feature {
             String secondsText = fixFailMatcher.group(6);
             int minutes = minutesText == null || minutesText.isEmpty() ? 0 : Integer.parseInt(minutesText);
             int seconds = secondsText == null || secondsText.isEmpty() ? 0 : Integer.parseInt(secondsText);
-            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
+            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
                 returnAndSwapBack();
-            }
             reset();
             lastActionPerformedAt = calculateLastCommandSentAt((((long)minutes * 60000) + ((long)seconds * 1000) + 2000));
             return;
@@ -192,9 +189,8 @@ public class AutoFix extends Feature {
 
         Matcher fixSuccessMatcher = RegexFilters.fixSuccessFilter.matcher(message.getString());
         if (fixSuccessMatcher.matches()) {
-            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
+            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
                 returnAndSwapBack();
-            }
             reset();
             lastActionPerformedAt = System.currentTimeMillis();
         }
@@ -233,29 +229,24 @@ public class AutoFix extends Feature {
     }
 
     private static int findMostDamaged() {
-        if (MC.player == null) {
+        if (MC.player == null)
             return -1;
-        }
 
         int result = -1;
         int mostDamage = 0;
         for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
-            if (i >= 36 && i <= 39) {
+            if (i >= 36 && i <= 39)
                 // Skip armor slots
                 continue;
-            }
 
             ItemStack itemStack = MC.player.getInventory().getItem(i);
-
-            if (!itemStack.isDamageableItem()) {
+            if (!itemStack.isDamageableItem())
                 continue;
-            }
 
             double maxDamage = itemStack.getMaxDamage();
 
-            if (ModConfig.HANDLER.instance().autoFix.percent > -1 && (maxDamage - (double)itemStack.getDamageValue()) / maxDamage > ModConfig.HANDLER.instance().autoFix.percent) {
+            if (ModConfig.HANDLER.instance().autoFix.percent > -1 && (maxDamage - (double)itemStack.getDamageValue()) / maxDamage > ModConfig.HANDLER.instance().autoFix.percent)
                 continue;
-            }
 
             if (itemStack.getDamageValue() > mostDamage) {
                 result = i;
@@ -266,9 +257,8 @@ public class AutoFix extends Feature {
     }
 
     private static void sendFixCommand() {
-        if (MC.getConnection() == null) {
+        if (MC.getConnection() == null)
             return;
-        }
         String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
         MC.getConnection().sendCommand(command);
     }

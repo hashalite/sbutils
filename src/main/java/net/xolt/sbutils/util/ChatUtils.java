@@ -214,7 +214,7 @@ public class ChatUtils {
         printMessage(message);
         List<MutableComponent> formatted = filters.stream().map((filter) -> {
             boolean enabled = filter.isEnabled();
-            MutableComponent name = Component.translatable(filter.getKey()).append(": ").withColor(getMessageColor());
+            MutableComponent name = filter.getName().append(": ").withColor(getMessageColor());
             MutableComponent enabledText = Component.literal(enabled ? "enabled" : "disabled").withStyle(getBooleanColor(enabled));
             return name.append(enabledText);
         }).toList();

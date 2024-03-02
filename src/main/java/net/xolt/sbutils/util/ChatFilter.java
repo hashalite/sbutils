@@ -1,23 +1,24 @@
 package net.xolt.sbutils.util;
 
+import net.minecraft.network.chat.MutableComponent;
+import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.OptionBinding;
+
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.regex.Pattern;
 
 public class ChatFilter {
 
     private final List<Pattern> regex;
-    private final String key;
-    private final BooleanSupplier enabled;
+    private final OptionBinding<Boolean> option;
 
-    public ChatFilter(String key, List<Pattern> regex, BooleanSupplier enabled) {
+    public ChatFilter(OptionBinding<Boolean> option, List<Pattern> regex) {
         this.regex = regex;
-        this.key = key;
-        this.enabled = enabled;
+        this.option = option;
     }
 
-    public String getKey() {
-        return key;
+    public MutableComponent getName() {
+        return option.getName();
     }
 
     public boolean matches(String string) {
@@ -30,6 +31,6 @@ public class ChatFilter {
     }
 
     public boolean isEnabled() {
-        return enabled.getAsBoolean();
+        return option.get(ModConfig.HANDLER.instance());
     }
 }

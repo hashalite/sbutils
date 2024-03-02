@@ -225,7 +225,7 @@ public class ModConfig {
 
     @SerialEntry public InvCleanerConfig invCleaner = new InvCleanerConfig();
     public static class InvCleanerConfig {
-        @SerialEntry public double clickDelay = 0.05;
+        @SerialEntry public double clickDelay = 0.0;
         @SerialEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
     }
 

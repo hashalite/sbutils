@@ -30,20 +30,27 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.ChatUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoSilk extends Feature {
-
-    private static final String COMMAND = "autosilk";
-    private static final String ALIAS = "silk";
     public static final int BUTTON_WIDTH = 100;
     public static final int BUTTON_HEIGHT = 20;
+
+    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoSilk.enabled", Boolean.class, (config) -> config.autoSilk.enabled, (config, value) -> config.autoSilk.enabled = value);
+    private final OptionBinding<ModConfig.SilkTarget> targetTool = new OptionBinding<>("autoSilk.targetTool", ModConfig.SilkTarget.class, (config) -> config.autoSilk.targetTool, (config, value) -> config.autoSilk.targetTool = value);
+    private final OptionBinding<Boolean> cleaner = new OptionBinding<>("autoSilk.cleaner", Boolean.class, (config) -> config.autoSilk.cleaner, (config, value) -> config.autoSilk.cleaner = value);
+    private final OptionBinding<Double> delay = new OptionBinding<>("autoSilk.delay", Double.class, (config) -> config.autoSilk.delay, (config, value) -> config.autoSilk.delay = value);
+    private final OptionBinding<Boolean> showButton = new OptionBinding<>("autoSilk.showButton", Boolean.class, (config) -> config.autoSilk.showButton, (config, value) -> config.autoSilk.showButton = value);
+    private final OptionBinding<ModConfig.CornerButtonPos> buttonPos = new OptionBinding<>("autoSilk.buttonPos", ModConfig.CornerButtonPos.class, (config) -> config.autoSilk.buttonPos, (config, value) -> config.autoSilk.buttonPos = value);
 
     private EnchantState state;
     private long lastActionPerformedAt;
@@ -52,25 +59,26 @@ public class AutoSilk extends Feature {
     public CycleButton<Boolean> autoSilkButton;
 
     public AutoSilk() {
+        super("autoSilk", "autosilk", "silk");
         reset();
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(enabled, targetTool, cleaner, delay, showButton, buttonPos);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(
-                CommandHelper.toggle(COMMAND, "autoSilk", () -> ModConfig.HANDLER.instance().autoSilk.enabled, (value) -> ModConfig.HANDLER.instance().autoSilk.enabled = value)
-                    .then(CommandHelper.genericEnum("target", "tool", "autoSilk.targetTool", ModConfig.SilkTarget.class, () -> ModConfig.HANDLER.instance().autoSilk.targetTool, (value) -> ModConfig.HANDLER.instance().autoSilk.targetTool = value))
-                    .then(CommandHelper.doubl("delay", "seconds", "autoSilk.delay", () -> ModConfig.HANDLER.instance().autoSilk.delay, (value) -> ModConfig.HANDLER.instance().autoSilk.delay = value))
-                    .then(CommandHelper.bool("showButton", "autoSilk.showButton", () -> ModConfig.HANDLER.instance().autoSilk.showButton, (value) -> ModConfig.HANDLER.instance().autoSilk.showButton = value))
-                    .then(CommandHelper.genericEnum("buttonPos", "position", "autoSilk.buttonPos", ModConfig.CornerButtonPos.class, () -> ModConfig.HANDLER.instance().autoSilk.buttonPos, (value) -> ModConfig.HANDLER.instance().autoSilk.buttonPos = value))
-                    .then(CommandHelper.bool("cleaner", "autoSilk.cleaner", () -> ModConfig.HANDLER.instance().autoSilk.cleaner, (value) -> ModConfig.HANDLER.instance().autoSilk.cleaner = value))
+                CommandHelper.toggle(command, this, enabled)
+                    .then(CommandHelper.genericEnum("target", "tool", targetTool))
+                    .then(CommandHelper.doubl("delay", "seconds", delay))
+                    .then(CommandHelper.bool("showButton", showButton))
+                    .then(CommandHelper.genericEnum("buttonPos", "position", buttonPos))
+                    .then(CommandHelper.bool("cleaner", cleaner))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                    dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(autoSilkNode));
+        registerAlias(dispatcher, autoSilkNode);
     }
 
     public void onDisconnect() {
@@ -78,36 +86,31 @@ public class AutoSilk extends Feature {
     }
 
     public void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled || !(MC.screen instanceof EnchantmentScreen)) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled || !(MC.screen instanceof EnchantmentScreen))
             return;
-        }
 
         reset();
     }
 
     public void onEnchantUpdate() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled)
             return;
-        }
 
         if (state.equals(EnchantState.WAIT_FOR_TOOL_ENCHANTS)) {
             state = EnchantState.ENCHANT_TOOL;
             return;
         }
 
-        if (state.equals(EnchantState.WAIT_FOR_BOOK_ENCHANTS)) {
+        if (state.equals(EnchantState.WAIT_FOR_BOOK_ENCHANTS))
             state = EnchantState.ENCHANT_BOOK;
-        }
     }
 
     public void onUpdateInvSlot(ClientboundContainerSetSlotPacket packet) {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled) {
+        if (!ModConfig.HANDLER.instance().autoSilk.enabled)
             return;
-        }
 
-        if (state.equals(EnchantState.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && !EnchantmentHelper.getEnchantments(packet.getItem()).isEmpty()) {
+        if (state.equals(EnchantState.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && !EnchantmentHelper.getEnchantments(packet.getItem()).isEmpty())
             state = EnchantState.RETURN_ITEM_AND_RESET;
-        }
     }
 
     public void tick() {
@@ -137,11 +140,10 @@ public class AutoSilk extends Feature {
                 return;
             }
             if (getTotalLapis(screenHandler) < 3) {
-                if (getTotalLapis(screenHandler) == 0) {
+                if (getTotalLapis(screenHandler) == 0)
                     ChatUtils.printMessage("message.sbutils.autoSilk.noLapis");
-                } else {
+                else
                     ChatUtils.printMessage("message.sbutils.autoSilk.notEnoughLapis");
-                }
                 disable();
                 return;
             }
@@ -204,22 +206,19 @@ public class AutoSilk extends Feature {
     }
 
     private void returnItem(EnchantState nextState) {
-        if (screenHandler == null) {
+        if (screenHandler == null)
             return;
-        }
 
         LocalPlayer player = MC.player;
         MultiPlayerGameMode interactionManager = MC.gameMode;
-        if (player == null || interactionManager == null) {
+        if (player == null || interactionManager == null)
             return;
-        }
 
         state = nextState;
 
-        if (screenHandler.getSlot(0).getItem().isEmpty()) {
+        if (screenHandler.getSlot(0).getItem().isEmpty())
             // Item already taken
             return;
-        }
 
         interactionManager.handleInventoryMouseClick(screenHandler.containerId, 0, 0, ClickType.QUICK_MOVE, MC.player);
     }
@@ -241,9 +240,8 @@ public class AutoSilk extends Feature {
     }
 
     private void insertItem(Item item) {
-        if (screenHandler == null) {
+        if (screenHandler == null)
             return;
-        }
 
         if (item.equals(Items.LAPIS_LAZULI) && screenHandler.getGoldCount() >= 3) {
             state = EnchantState.INSERT_TOOL;
@@ -252,9 +250,8 @@ public class AutoSilk extends Feature {
 
         LocalPlayer player = MC.player;
         MultiPlayerGameMode interactionManager = MC.gameMode;
-        if (player == null || interactionManager == null) {
+        if (player == null || interactionManager == null)
             return;
-        }
 
         if (!item.equals(Items.LAPIS_LAZULI) && !screenHandler.getSlot(0).getItem().isEmpty()) {
             // Slot is not empty; remove existing item
@@ -264,30 +261,27 @@ public class AutoSilk extends Feature {
 
         Slot itemSlot = findInEnchantScreen(item, true, screenHandler);
         if (itemSlot == null) {
-            if (item.equals(Items.LAPIS_LAZULI)) {
+            if (item.equals(Items.LAPIS_LAZULI))
                 ChatUtils.printMessage(getTotalLapis(screenHandler) > 0 ? "message.sbutils.autoSilk.notEnoughLapis" : "message.sbutils.autoSilk.noLapis");
-            } else if (item.equals(Items.BOOK)) {
+            else if (item.equals(Items.BOOK))
                 ChatUtils.printMessage("message.sbutils.autoSilk.noBooks");
-            } else {
+            else
                 ChatUtils.printWithPlaceholders("message.sbutils.autoSilk.noTools", item.getDescriptionId());
-            }
             reset();
             return;
         }
 
         interactionManager.handleInventoryMouseClick(screenHandler.containerId, itemSlot.index, 0, ClickType.QUICK_MOVE, MC.player);
 
-        if (item.equals(Items.LAPIS_LAZULI)) {
-            if (screenHandler.getGoldCount() >= 3) {
+        if (item.equals(Items.LAPIS_LAZULI))
+            if (screenHandler.getGoldCount() >= 3)
                 state = EnchantState.INSERT_TOOL;
-            } else {
+            else
                 state = EnchantState.INSERT_LAPIS;
-            }
-        } else if (item.equals(Items.BOOK)) {
+        else if (item.equals(Items.BOOK))
             state = EnchantState.WAIT_FOR_BOOK_ENCHANTS;
-        } else {
+        else
             state = EnchantState.WAIT_FOR_TOOL_ENCHANTS;
-        }
     }
 
     private void enchantBook() {
@@ -295,29 +289,25 @@ public class AutoSilk extends Feature {
     }
 
     private void enchantItem(boolean book) {
-        if (screenHandler == null) {
+        if (screenHandler == null)
             return;
-        }
 
         LocalPlayer player = MC.player;
         MultiPlayerGameMode interactionManager = MC.gameMode;
-        if (player == null || interactionManager == null) {
+        if (player == null || interactionManager == null)
             return;
-        }
 
         int[] enchantments = screenHandler.enchantClue;
         int buttonIndex = book ? 0 : -1;
         for (int i = 0; i < enchantments.length; i++) {
             Optional<Holder.Reference<Enchantment>> optionalEnchantment = BuiltInRegistries.ENCHANTMENT.getHolder(enchantments[i]);
-            if (!optionalEnchantment.isPresent()) {
+            if (optionalEnchantment.isEmpty())
                 continue;
-            }
 
             Enchantment enchantment = optionalEnchantment.get().value();
 
-            if (enchantment.equals(Enchantments.SILK_TOUCH)) {
+            if (enchantment.equals(Enchantments.SILK_TOUCH))
                 buttonIndex = i;
-            }
         }
 
         if (buttonIndex == -1) {
@@ -341,9 +331,8 @@ public class AutoSilk extends Feature {
     private void disable() {
         ModConfig.HANDLER.instance().autoSilk.enabled = false;
         ModConfig.HANDLER.save();
-        if (autoSilkButton != null) {
+        if (autoSilkButton != null)
             autoSilkButton.setValue(false);
-        }
         reset();
     }
 
@@ -359,9 +348,8 @@ public class AutoSilk extends Feature {
     }
 
     private static boolean clickNearestEnchantTable() {
-        if (MC.player == null || MC.level == null || MC.gameMode == null) {
+        if (MC.player == null || MC.level == null || MC.gameMode == null)
             return false;
-        }
 
         BlockPos playerPos = MC.player.blockPosition();
         BlockPos tablePos = null;
@@ -371,31 +359,27 @@ public class AutoSilk extends Feature {
                 for (int z = playerPos.getZ() - range; z <= playerPos.getZ() + range; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockState state = MC.level.getBlockState(pos);
-                    if (state.getBlock() instanceof EnchantmentTableBlock) {
+                    if (state.getBlock() instanceof EnchantmentTableBlock)
                         tablePos = pos;
-                    }
                 }
             }
         }
 
-        if (tablePos == null) {
+        if (tablePos == null)
             return false;
-        }
 
         MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(tablePos.getCenter(), Direction.UP, tablePos, false));
         return true;
     }
 
     private static Slot findInEnchantScreen(Item item, boolean ignoreEnchantingSlots, EnchantmentMenu screenHandler) {
-        if (screenHandler == null) {
+        if (screenHandler == null)
             return null;
-        }
 
         Slot result = null;
         for (Slot slot : screenHandler.slots) {
-            if (ignoreEnchantingSlots && slot.index < 2) {
+            if (ignoreEnchantingSlots && slot.index < 2)
                 continue;
-            }
             ItemStack itemStack = slot.getItem();
             if (itemStack.getItem().equals(item) && itemStack.getEnchantmentTags().isEmpty()) {
                 if (item.getMaxStackSize() == 1)
@@ -404,9 +388,8 @@ public class AutoSilk extends Feature {
                     result = slot;
                     continue;
                 }
-                if (result.getItem().getCount() > slot.getItem().getCount()) {
+                if (result.getItem().getCount() > slot.getItem().getCount())
                     result = slot;
-                }
             }
         }
         return result;
@@ -420,55 +403,46 @@ public class AutoSilk extends Feature {
         int total = 0;
         for (Slot slot : screenHandler.slots) {
             ItemStack itemStack = slot.getItem();
-            if (itemStack.getItem().equals(Items.LAPIS_LAZULI)) {
+            if (itemStack.getItem().equals(Items.LAPIS_LAZULI))
                 total += itemStack.getCount();
-            }
         }
         return total;
     }
 
     private static int countFreeSlots(EnchantmentMenu screenHandler) {
-        if (screenHandler == null) {
+        if (screenHandler == null)
             return -1;
-        }
 
         int total = 0;
         for (Slot slot : screenHandler.slots) {
-            if (slot.index < 2) {
+            if (slot.index < 2)
                 continue;
-            }
             ItemStack itemStack = slot.getItem();
-            if (itemStack.isEmpty()) {
+            if (itemStack.isEmpty())
                 total++;
-            }
         }
 
-        if (!screenHandler.getSlot(0).getItem().isEmpty()) {
+        if (!screenHandler.getSlot(0).getItem().isEmpty())
             total--;
-        }
 
         ItemStack lapis = screenHandler.getSlot(1).getItem();
-        if (!lapis.isEmpty() && countFreeLapisSlots(screenHandler) < lapis.getCount()) {
+        if (!lapis.isEmpty() && countFreeLapisSlots(screenHandler) < lapis.getCount())
             total--;
-        }
 
         return total;
     }
 
     private static int countFreeLapisSlots(EnchantmentMenu screenHandler) {
-        if (screenHandler == null) {
+        if (screenHandler == null)
             return -1;
-        }
 
         int total = 0;
         for (Slot slot : screenHandler.slots) {
-            if (slot.index < 2) {
+            if (slot.index < 2)
                 continue;
-            }
             ItemStack itemStack = slot.getItem();
-            if (itemStack.getItem() == Items.LAPIS_LAZULI) {
+            if (itemStack.getItem() == Items.LAPIS_LAZULI)
                 total += itemStack.getMaxStackSize() - itemStack.getCount();
-            }
         }
         return total;
     }

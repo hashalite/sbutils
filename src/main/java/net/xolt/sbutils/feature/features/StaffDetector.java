@@ -6,9 +6,10 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.commands.CommandBuildContext;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.binding.ConfigBinding;
+import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
@@ -19,77 +20,74 @@ import java.util.UUID;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class StaffDetector extends Feature {
-
-    private static final String COMMAND = "staffdetect";
-    private static final String ALIAS = "sd";
+    private final OptionBinding<Boolean> detectJoin = new OptionBinding<>("staffDetector.detectJoin", Boolean.class, (config) -> config.staffDetector.detectJoin, (config, value) -> config.staffDetector.detectJoin = value);
+    private final OptionBinding<Boolean> detectLeave = new OptionBinding<>("staffDetector.detectLeave", Boolean.class, (config) -> config.staffDetector.detectLeave, (config, value) -> config.staffDetector.detectLeave = value);
+    private final OptionBinding<Boolean> playSound = new OptionBinding<>("staffDetector.playSound", Boolean.class, (config) -> config.staffDetector.playSound, (config, value) -> config.staffDetector.playSound = value);
+    private final OptionBinding<ModConfig.NotifSound> sound = new OptionBinding<>("staffDetector.sound", ModConfig.NotifSound.class, (config) -> config.staffDetector.sound, (config, value) -> config.staffDetector.sound = value);
 
     private boolean checkForNoStaff = false;
 
+    public StaffDetector() {
+        super("staffDetector", "staffdetect", "sd");
+    }
+
+    @Override
+    public List<? extends ConfigBinding<?>> getConfigBindings() {
+        return List.of(detectJoin, detectLeave, playSound, sound);
+    }
+
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        final LiteralCommandNode<FabricClientCommandSource> staffDetectorNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(CommandHelper.bool("detectJoin", "staffDetector.detectJoin", () -> ModConfig.HANDLER.instance().staffDetector.detectJoin, (value) -> ModConfig.HANDLER.instance().staffDetector.detectJoin = value))
-                .then(CommandHelper.bool("detectLeave", "staffDetector.detectLeave", () -> ModConfig.HANDLER.instance().staffDetector.detectLeave, (value) -> ModConfig.HANDLER.instance().staffDetector.detectLeave = value))
-                .then(CommandHelper.genericEnum("sound", "sound", "staffDetector.sound", ModConfig.NotifSound.class, () -> ModConfig.HANDLER.instance().staffDetector.sound, (value) -> ModConfig.HANDLER.instance().staffDetector.sound = value))
+        final LiteralCommandNode<FabricClientCommandSource> staffDetectorNode = dispatcher.register(ClientCommandManager.literal(command)
+                .then(CommandHelper.bool("detectJoin", detectJoin))
+                .then(CommandHelper.bool("detectLeave", detectLeave))
+                .then(CommandHelper.bool("playSound", playSound))
+                .then(CommandHelper.genericEnum("sound", "sound", sound))
         );
-
-        dispatcher.register(ClientCommandManager.literal(ALIAS)
-                .executes(context ->
-                        dispatcher.execute(COMMAND, context.getSource())
-                )
-                .redirect(staffDetectorNode));
+        registerAlias(dispatcher, staffDetectorNode);
     }
 
     public void onPlayerLeave(PlayerInfo player) {
-        if (!ModConfig.HANDLER.instance().staffDetector.detectLeave || !isStaff(player)) {
+        if (!ModConfig.HANDLER.instance().staffDetector.detectLeave || !isStaff(player))
             return;
-        }
 
         ChatUtils.printStaffNotification(player, false);
 
-        if (!staffOnline()) {
+        if (!staffOnline())
             ChatUtils.printMessage("message.sbutils.staffDetector.noStaff");
-        }
 
         checkForNoStaff = true;
 
-        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound) {
+        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
             MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
-        }
     }
 
     public void afterPlayerLeave() {
-        if (!checkForNoStaff) {
+        if (!checkForNoStaff)
             return;
-        }
 
-        if (!staffOnline()) {
+        if (!staffOnline())
             ChatUtils.printMessage("message.sbutils.staffDetector.noStaff");
-        }
 
         checkForNoStaff = false;
     }
 
     public static void onPlayerJoin(PlayerInfo player) {
-        if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player)) {
+        if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player))
             return;
-        }
 
         ChatUtils.printStaffNotification(player, true);
-        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound) {
+        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
             MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
-        }
     }
 
     private static boolean isStaff(PlayerInfo player) {
-        if (player == null) {
+        if (player == null)
             return false;
-        }
 
         // Special Noobcrew case
-        if (player.getProfile().getId().equals(UUID.fromString("1ba2d16f-3d11-4a1f-b214-09e83906e6b5"))) {
+        if (player.getProfile().getId().equals(UUID.fromString("1ba2d16f-3d11-4a1f-b214-09e83906e6b5")))
             return true;
-        }
 
         String displayName = MC.gui.getTabList().getNameForDisplay(player).getString();
 
@@ -97,15 +95,12 @@ public class StaffDetector extends Feature {
     }
 
     public static boolean staffOnline() {
-        if (MC.getConnection() == null) {
+        if (MC.getConnection() == null)
             return false;
-        }
 
-        for (PlayerInfo playerListEntry : MC.getConnection().getListedOnlinePlayers()) {
-            if (isStaff(playerListEntry)) {
+        for (PlayerInfo playerListEntry : MC.getConnection().getListedOnlinePlayers())
+            if (isStaff(playerListEntry))
                 return true;
-            }
-        }
 
         return false;
     }
