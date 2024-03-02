@@ -164,6 +164,8 @@ public class ModConfig {
     public static class AutoSilkConfig {
         @SerialEntry public boolean enabled = false;
         @SerialEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
+        @SerialEntry public boolean bookPriority = false;
+        @SerialEntry public boolean booksOnly = false;
         @SerialEntry public boolean cleaner = true;
         @SerialEntry public double delay = 0.25;
         @SerialEntry public boolean showButton = true;

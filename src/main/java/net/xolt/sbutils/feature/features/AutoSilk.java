@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
@@ -13,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
@@ -47,6 +47,8 @@ public class AutoSilk extends Feature {
 
     private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoSilk.enabled", Boolean.class, (config) -> config.autoSilk.enabled, (config, value) -> config.autoSilk.enabled = value);
     private final OptionBinding<ModConfig.SilkTarget> targetTool = new OptionBinding<>("autoSilk.targetTool", ModConfig.SilkTarget.class, (config) -> config.autoSilk.targetTool, (config, value) -> config.autoSilk.targetTool = value);
+    private final OptionBinding<Boolean> bookPriority = new OptionBinding<>("autoSilk.bookPriority", Boolean.class, (config) -> config.autoSilk.bookPriority, (config, value) -> config.autoSilk.bookPriority = value);
+    private final OptionBinding<Boolean> booksOnly = new OptionBinding<>("autoSilk.booksOnly", Boolean.class, (config) -> config.autoSilk.booksOnly, (config, value) -> config.autoSilk.booksOnly = value);
     private final OptionBinding<Boolean> cleaner = new OptionBinding<>("autoSilk.cleaner", Boolean.class, (config) -> config.autoSilk.cleaner, (config, value) -> config.autoSilk.cleaner = value);
     private final OptionBinding<Double> delay = new OptionBinding<>("autoSilk.delay", Double.class, (config) -> config.autoSilk.delay, (config, value) -> config.autoSilk.delay = value);
     private final OptionBinding<Boolean> showButton = new OptionBinding<>("autoSilk.showButton", Boolean.class, (config) -> config.autoSilk.showButton, (config, value) -> config.autoSilk.showButton = value);
@@ -56,6 +58,7 @@ public class AutoSilk extends Feature {
     private long lastActionPerformedAt;
     private EnchantmentMenu screenHandler;
     private boolean cleaning;
+    private boolean toolChecked;
     public CycleButton<Boolean> autoSilkButton;
 
     public AutoSilk() {
@@ -65,7 +68,7 @@ public class AutoSilk extends Feature {
 
     @Override
     public List<? extends ConfigBinding<?>> getConfigBindings() {
-        return List.of(enabled, targetTool, cleaner, delay, showButton, buttonPos);
+        return List.of(enabled, targetTool, bookPriority, booksOnly, cleaner, delay, showButton, buttonPos);
     }
 
     @Override
@@ -73,6 +76,8 @@ public class AutoSilk extends Feature {
         final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(
                 CommandHelper.toggle(command, this, enabled)
                     .then(CommandHelper.genericEnum("target", "tool", targetTool))
+                    .then(CommandHelper.bool("bookPriority", bookPriority))
+                    .then(CommandHelper.bool("booksOnly", booksOnly))
                     .then(CommandHelper.doubl("delay", "seconds", delay))
                     .then(CommandHelper.bool("showButton", showButton))
                     .then(CommandHelper.genericEnum("buttonPos", "position", buttonPos))
@@ -148,8 +153,8 @@ public class AutoSilk extends Feature {
                 return;
             }
             Item targetTool = ModConfig.HANDLER.instance().autoSilk.targetTool.getTool();
-            if (findInEnchantScreen(targetTool, true, screenHandler) == null) {
-                ChatUtils.printWithPlaceholders("message.sbutils.autoSilk.noTools", targetTool.getDescriptionId());
+            if (!ModConfig.HANDLER.instance().autoSilk.booksOnly && findInEnchantScreen(targetTool, true, screenHandler) == null) {
+                ChatUtils.printWithPlaceholders("message.sbutils.autoSilk.noTools", Component.translatable(targetTool.getDescriptionId()));
                 disable();
                 return;
             }
@@ -191,7 +196,7 @@ public class AutoSilk extends Feature {
                 enchantPickaxe();
                 break;
             case RETURN_ITEM_AND_CONTINUE:
-                returnItem(EnchantState.INSERT_BOOK);
+                returnItem(ModConfig.HANDLER.instance().autoSilk.bookPriority && !toolChecked ? EnchantState.INSERT_TOOL : EnchantState.INSERT_BOOK);
                 break;
             case INSERT_BOOK:
                 insertBook();
@@ -243,8 +248,10 @@ public class AutoSilk extends Feature {
         if (screenHandler == null)
             return;
 
+        EnchantState startingItem = ModConfig.HANDLER.instance().autoSilk.bookPriority || ModConfig.HANDLER.instance().autoSilk.booksOnly ? EnchantState.INSERT_BOOK : EnchantState.INSERT_TOOL;
+
         if (item.equals(Items.LAPIS_LAZULI) && screenHandler.getGoldCount() >= 3) {
-            state = EnchantState.INSERT_TOOL;
+            state = startingItem;
             return;
         }
 
@@ -275,7 +282,7 @@ public class AutoSilk extends Feature {
 
         if (item.equals(Items.LAPIS_LAZULI))
             if (screenHandler.getGoldCount() >= 3)
-                state = EnchantState.INSERT_TOOL;
+                state = startingItem;
             else
                 state = EnchantState.INSERT_LAPIS;
         else if (item.equals(Items.BOOK))
@@ -298,7 +305,7 @@ public class AutoSilk extends Feature {
             return;
 
         int[] enchantments = screenHandler.enchantClue;
-        int buttonIndex = book ? 0 : -1;
+        int silkIndex = -1;
         for (int i = 0; i < enchantments.length; i++) {
             Optional<Holder.Reference<Enchantment>> optionalEnchantment = BuiltInRegistries.ENCHANTMENT.getHolder(enchantments[i]);
             if (optionalEnchantment.isEmpty())
@@ -307,16 +314,26 @@ public class AutoSilk extends Feature {
             Enchantment enchantment = optionalEnchantment.get().value();
 
             if (enchantment.equals(Enchantments.SILK_TOUCH))
-                buttonIndex = i;
+                silkIndex = i;
         }
 
-        if (buttonIndex == -1) {
-            // No silktouch for tool, continue to book
+        if (!ModConfig.HANDLER.instance().autoSilk.booksOnly && silkIndex == -1 && (!book || (ModConfig.HANDLER.instance().autoSilk.bookPriority && !toolChecked))) {
+            // Either tool has no Silk Touch, so we should return and continue to book
+            // Or bookPriority is enabled and book has no Silk Touch, so we should return and continue to tool
+            // Unless tool has already been checked
+            if (!book)
+                toolChecked = true;
             state = EnchantState.RETURN_ITEM_AND_CONTINUE;
             return;
         }
 
-        if (MC.player.experienceLevel < screenHandler.costs[buttonIndex]) {
+        toolChecked = false;
+
+        // If we have gotten to this point and Silk Touch is not present, then the item is a book and should be enchanted with the lowest level enchant
+        if (silkIndex == -1)
+            silkIndex = 0;
+
+        if (MC.player.experienceLevel < screenHandler.costs[silkIndex]) {
             ChatUtils.printMessage("message.sbutils.autoSilk.notEnoughExperience");
             reset();
             ModConfig.HANDLER.instance().autoSilk.enabled = false;
@@ -324,7 +341,7 @@ public class AutoSilk extends Feature {
             return;
         }
 
-        interactionManager.handleInventoryButtonClick(screenHandler.containerId, buttonIndex);
+        interactionManager.handleInventoryButtonClick(screenHandler.containerId, silkIndex);
         state = EnchantState.WAIT_FOR_ENCHANTING;
     }
 
@@ -341,6 +358,7 @@ public class AutoSilk extends Feature {
         lastActionPerformedAt = 0;
         screenHandler = null;
         cleaning = false;
+        toolChecked = false;
     }
 
     private static boolean shouldCleanStack(ItemStack stack) {

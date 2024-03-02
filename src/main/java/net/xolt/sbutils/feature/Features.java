@@ -1,16 +1,17 @@
 package net.xolt.sbutils.feature;
 
-import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Features {
 
     private final Map<Class<? extends Feature>, Feature> features = new IdentityHashMap<>();
+    private final List<Feature> ordered = new ArrayList<>();
 
-    @SafeVarargs public final <T extends Feature> void add(T... features) {
+    @SafeVarargs
+    public final <T extends Feature> void add(T... features) {
         for (Feature feature : features) {
             this.features.put(feature.getClass(), feature);
+            this.ordered.add(feature);
         }
     }
 
@@ -20,6 +21,6 @@ public class Features {
     }
 
     public Collection<Feature> getAll() {
-        return features.values();
+        return ordered;
     }
 }
