@@ -54,7 +54,7 @@ public class ChatListenerMixin {
         SbUtils.FEATURES.get(AutoRaffle.class).processMessage(message);
         SbUtils.FEATURES.get(AutoReply.class).processMessage(message);
         SbUtils.FEATURES.get(EnchantAll.class).processMessage(message);
-        EventNotifier.processMessage(message);
+        SbUtils.FEATURES.get(Notifier.class).processMessage(message);
         SbUtils.FEATURES.get(AutoKit.class).processMessage(message);
     }
 

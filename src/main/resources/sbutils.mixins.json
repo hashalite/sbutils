@@ -3,19 +3,20 @@
   "package": "net.xolt.sbutils.mixins",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "AbstractContainerMenuMixin",
     "ChatComponentMixin",
+    "ChatListenerMixin",
     "ClientCommonPacketListenerImplMixin",
-    "ConnectionMixin",
-    "LocalPlayerMixin",
-    "MultiPlayerGameModeMixin",
     "ClientPacketListenerMixin",
     "CommandNodeAccessor",
+    "ConnectionMixin",
+    "ContainerScreenAccessor",
     "EnchantmentScreenMixin",
     "GameRendererMixin",
-    "ContainerScreenAccessor",
-    "ChatListenerMixin",
+    "GuiMixin",
+    "LocalPlayerMixin",
     "MinecraftMixin",
-    "AbstractContainerMenuMixin"
+    "MultiPlayerGameModeMixin",
   ],
   "injectors": {
     "defaultRequire": 1

@@ -215,14 +215,19 @@ public class ModConfig {
         @SerialEntry public boolean excludeFrost = true;
     }
 
-    @SerialEntry public EventNotifierConfig eventNotifier = new EventNotifierConfig();
-    public static class EventNotifierConfig {
+    @SerialEntry public NotifierConfig notifier = new NotifierConfig();
+    public static class NotifierConfig {
         @SerialEntry public boolean showLlamaTitle = false;
         @SerialEntry public boolean playLlamaSound = false;
         @SerialEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
         @SerialEntry public boolean showTraderTitle = false;
+        @SerialEntry public boolean showTraderItems = false;
         @SerialEntry public boolean playTraderSound = false;
         @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
+        @SerialEntry public boolean playShopSound = false;
+        @SerialEntry public NotifSound shopSound = NotifSound.DISPENSER;
+        @SerialEntry public boolean playVisitSound = false;
+        @SerialEntry public NotifSound visitSound = NotifSound.COW_BELL;
     }
 
     @SerialEntry public InvCleanerConfig invCleaner = new InvCleanerConfig();

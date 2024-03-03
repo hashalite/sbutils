@@ -40,6 +40,7 @@ public abstract class MinecraftMixin {
         SbUtils.FEATURES.get(AutoCommand.class).tick();
         SbUtils.FEATURES.get(AutoKit.class).tick();
         SbUtils.FEATURES.get(InvCleaner.class).tick();
+        SbUtils.FEATURES.get(Notifier.class).tick();
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

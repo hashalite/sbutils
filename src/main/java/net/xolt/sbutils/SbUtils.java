@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
 
 public class SbUtils implements ClientModInitializer {
@@ -78,7 +77,7 @@ public class SbUtils implements ClientModInitializer {
                 new Convert(),
                 new DeathCoords(),
                 new EnchantAll(),
-                new EventNotifier(),
+                new Notifier(),
                 new InvCleaner(),
                 new JoinCommands(),
                 new Mentions(),
