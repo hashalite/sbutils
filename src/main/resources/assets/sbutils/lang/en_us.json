@@ -51,10 +51,10 @@
 
   "message.sbutils.chatLogger.status": "Chat logger status:",
 
-  "message.sbutils.eventNotifier.vpLlama": "VP Llama",
-  "message.sbutils.eventNotifier.wanderingTrader": "Trader",
-  "message.sbutils.eventNotifier.sighted": "%s Sighted!",
-  "message.sbutils.eventNotifier.traderItems": "Items for sale:",
+  "message.sbutils.notifier.vpLlama": "VP Llama",
+  "message.sbutils.notifier.wanderingTrader": "Trader",
+  "message.sbutils.notifier.sighted": "%s Sighted!",
+  "message.sbutils.notifier.traderItems": "Items for sale:",
 
   "message.sbutils.autoMine.noPickaxe": "Disabling Auto Mine because you don't have any pickaxes to switch to, and Auto Fix isn't enabled.",
   "message.sbutils.autoMine.timerNotSet": "Auto Mine timer is not set.",
@@ -95,7 +95,6 @@
   "message.sbutils.autoCrate.finished": "Auto Crate finished.",
   "message.sbutils.autoCrate.closeGui": "Disabling Auto Crate because you closed the crate gui.",
 
-  "message.sbutils.autoKit.kits": "Current Auto Kit list:",
   "message.sbutils.autoKit.invFull": "Your inventory doesn't have enough space for kit %s. Waiting...",
   "message.sbutils.autoKit.info": "Current kit queue:",
   "message.sbutils.autoKit.infoFormat": "%s | %s",
@@ -261,8 +260,12 @@
   "text.sbutils.config.option.autoKit.claimDelay.tooltip": "The amount of additional delay after the predicted kit reset time, to account for inaccuracies. Only applies to non 24-hour kits. (Seconds)",
   "text.sbutils.config.option.autoKit.systemDelay": "System Delay",
   "text.sbutils.config.option.autoKit.systemDelay.tooltip": "Delay used to account for system time desync when claiming 24-hour kits. Changing this is not recommended. (Seconds)",
-  "text.sbutils.config.option.autoKit.kits": "Auto Kit List",
-  "text.sbutils.config.option.autoKit.kits.tooltip": "The kits to claim automatically.",
+  "text.sbutils.config.option.autoKit.sbKits": "Skyblock Kit List",
+  "text.sbutils.config.option.autoKit.sbKits.tooltip": "The kits to claim automatically while on /skyblock.",
+  "text.sbutils.config.option.autoKit.ecoKits": "Economy Kit List",
+  "text.sbutils.config.option.autoKit.ecoKits.tooltip": "The kits to claim automatically while on /economy.",
+  "text.sbutils.config.option.autoKit.classicKits": "Classic Kit List",
+  "text.sbutils.config.option.autoKit.classicKits.tooltip": "The kits to claim automatically while on /classic.",
 
 
   "text.sbutils.config.category.autoMine": "Auto Mine",
@@ -417,6 +420,8 @@
   "text.sbutils.config.option.notifier.showTraderTitle.tooltip": "Shows a title when a wandering trader appears at spawn.",
   "text.sbutils.config.option.notifier.showTraderItems": "Show Trader Items",
   "text.sbutils.config.option.notifier.showTraderItems.tooltip": "Displays the items offered by the wandering trader when it appears.",
+  "text.sbutils.config.option.notifier.showTradesOnClick": "Show Trades on Click",
+  "text.sbutils.config.option.notifier.showTradesOnClick.tooltip": "Shows wandering trader items when the alert message is clicked.",
   "text.sbutils.config.option.notifier.playTraderSound": "Play Trader Sound",
   "text.sbutils.config.option.notifier.playTraderSound.tooltip": "Plays a sound when a wandering trader appears at spawn.",
   "text.sbutils.config.option.notifier.traderSound": "Trader Sound",

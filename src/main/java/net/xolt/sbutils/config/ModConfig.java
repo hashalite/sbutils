@@ -130,7 +130,9 @@ public class ModConfig {
         @SerialEntry public double commandDelay = 1.0;
         @SerialEntry public double claimDelay = 10.0;
         @SerialEntry public double systemDelay = 10.0;
-        @SerialEntry public List<Kit> kits = new ArrayList<>();
+        @SerialEntry public List<SkyblockKit> sbKits = new ArrayList<>();
+        @SerialEntry public List<EconomyKit> ecoKits = new ArrayList<>();
+        @SerialEntry public List<ClassicKit> classicKits = new ArrayList<>();
     }
 
     @SerialEntry public AutoMineConfig autoMine = new AutoMineConfig();
@@ -222,6 +224,7 @@ public class ModConfig {
         @SerialEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
         @SerialEntry public boolean showTraderTitle = false;
         @SerialEntry public boolean showTraderItems = false;
+        @SerialEntry public boolean showTradesOnClick = false;
         @SerialEntry public boolean playTraderSound = false;
         @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
         @SerialEntry public boolean playShopSound = false;
@@ -464,7 +467,13 @@ public class ModConfig {
         }
     }
 
-    public enum Kit implements NameableEnum, StringRepresentable {
+    public interface Kit extends NameableEnum, StringRepresentable {
+        int getCooldown();
+
+        List<ItemStack> getItems();
+    }
+
+    public enum SkyblockKit implements Kit {
 
         SKYTITAN("Skytitan", 24, List.of(
                 new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
@@ -515,27 +524,132 @@ public class ModConfig {
         private final int cooldown;
         private final List<ItemStack> items;
 
-        Kit(String name, int interval, List<ItemStack> items) {
+        SkyblockKit(String name, int interval, List<ItemStack> items) {
             this.name = name;
             this.items = items;
             this.cooldown = interval;
         }
 
+        @Override
         public int getCooldown() {
             return cooldown;
         }
 
+        @Override
         public List<ItemStack> getItems() {
             return items;
         }
 
+        @Override
         public Component getDisplayName() {
-            return Component.translatable(name);
+            return Component.literal(name);
         }
 
         @Override
         public String getSerializedName() {
-            return getDisplayName().getString();
+            return name;
+        }
+    }
+
+    public enum EconomyKit implements Kit {
+        HIGHROLLER("Highroller", SkyblockKit.SKYGOD),
+        ELITE("Elite", SkyblockKit.SKYLORD),
+        VIP("Vip", SkyblockKit.SKYKING),
+        PREMIUM("Premium", SkyblockKit.SKYKNIGHT),
+        SPAWNER(SkyblockKit.SPAWNER),
+        IRON(SkyblockKit.IRON),
+        WOOL(SkyblockKit.WOOL),
+        WOOD(SkyblockKit.WOOD),
+        COBBLE(SkyblockKit.COBBLE);
+
+        private final String name;
+        private final int cooldown;
+        private final List<ItemStack> items;
+
+        EconomyKit(SkyblockKit kit) {
+            this(kit.name, kit.cooldown, kit.items);
+        }
+
+        EconomyKit(String name, SkyblockKit kit) {
+            this(name, kit.cooldown, kit.items);
+        }
+
+        EconomyKit(String name, int interval, List<ItemStack> items) {
+            this.name = name;
+            this.items = items;
+            this.cooldown = interval;
+        }
+
+        @Override
+        public int getCooldown() {
+            return cooldown;
+        }
+
+        @Override
+        public List<ItemStack> getItems() {
+            return items;
+        }
+
+        @Override
+        public Component getDisplayName() {
+            return Component.literal(name);
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name;
+        }
+    }
+
+    public enum ClassicKit implements Kit {
+
+        DONOR250("Donor250", SkyblockKit.SKYTITAN),
+        DONOR100("Donor100", SkyblockKit.SKYGOD),
+        DONOR50("Donor50", SkyblockKit.SKYLORD),
+        DONOR25("Donor25", SkyblockKit.SKYKING),
+        DONOR10("Donor10", SkyblockKit.SKYKNIGHT),
+        SPAWNER(SkyblockKit.SPAWNER),
+        IRON(SkyblockKit.IRON),
+        WOOL(SkyblockKit.WOOL),
+        WOOD(SkyblockKit.WOOD),
+        COBBLE(SkyblockKit.COBBLE);
+
+        private final String name;
+        private final int cooldown;
+        private final List<ItemStack> items;
+
+        ClassicKit(Kit kit) {
+            this(kit.getSerializedName(), kit.getCooldown(), kit.getItems());
+        }
+
+        ClassicKit(String name, Kit kit) {
+            this(name, kit.getCooldown(), kit.getItems());
+        }
+
+        ClassicKit(String name, int interval, List<ItemStack> items) {
+            this.name = name;
+            this.items = items;
+            this.cooldown = interval;
+        }
+
+        @Override
+        public int getCooldown() {
+            return cooldown;
+        }
+
+        @Override
+        public List<ItemStack> getItems() {
+            return items;
+        }
+
+        @Override
+        public Component getDisplayName() {
+            return Component.literal(name);
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name;
         }
     }
 

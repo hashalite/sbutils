@@ -2,13 +2,14 @@ package net.xolt.sbutils.util;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import com.mojang.authlib.GameProfile;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
+import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.systems.ServerDetector;
+
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.TypeDescriptor;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
@@ -140,17 +141,23 @@ public class IOHandler {
         } catch (IOException e) {}
     }
 
-    public static void writeAutoKitData(Map<String, Map<String, Long>> autoKitData) {
+    public static void writeAutoKitData(Map<String, Map<String, Map<String, Long>>> autoKitData) {
         Gson gson = new GsonBuilder().setFieldNamingStrategy(FieldNamingPolicy.IDENTITY).setPrettyPrinting().create();
         overwriteFile(autoKitFile, List.of(gson.toJson(autoKitData)));
     }
 
-    public static Map<String, Map<String, Long>> readAutoKitData() {
+    public static Map<String, Map<String, Map<String, Long>>> readAutoKitData() {
         String stringData = readFile(autoKitFile);
         if (stringData == null || stringData.isEmpty()) {
             return new HashMap<>();
         }
         Gson gson = new GsonBuilder().setFieldNamingStrategy(FieldNamingPolicy.IDENTITY).create();
-        return gson.fromJson(stringData, new TypeToken<Map<String, Map<String, Long>>>(){}.getType());
+
+        try {
+            return gson.fromJson(stringData, new TypeToken<Map<String, Map<String, Map<String, Long>>>>(){}.getType());
+        } catch (JsonSyntaxException e) {
+            LOGGER.error("Auto Kit data is in the wrong format, resetting.");
+            return new HashMap<>();
+        }
     }
 }

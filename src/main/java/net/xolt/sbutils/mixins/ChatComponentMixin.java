@@ -3,6 +3,7 @@ package net.xolt.sbutils.mixins;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.feature.features.Mentions;
 import net.xolt.sbutils.feature.features.NoGMT;
+import net.xolt.sbutils.feature.features.Notifier;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -37,6 +38,11 @@ public abstract class ChatComponentMixin {
         if (NoGMT.shouldModify(modified)) {
             ci.cancel();
             modified = NoGMT.modifyMessage(modified);
+        }
+
+        if (Notifier.shouldModify(modified)) {
+            ci.cancel();
+            modified = Notifier.modifyMessage(message);
         }
 
         if (ci.isCancelled()) {

@@ -6,7 +6,9 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -18,6 +20,7 @@ import net.xolt.sbutils.util.ApiUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
@@ -28,6 +31,7 @@ public class Notifier extends Feature {
     private final OptionBinding<ModConfig.NotifSound> llamaSound = new OptionBinding<>("notifier.llamaSound", ModConfig.NotifSound.class, (config) -> config.notifier.llamaSound, (config, value) -> config.notifier.llamaSound = value);
     private final OptionBinding<Boolean> showTraderTitle = new OptionBinding<>("notifier.showTraderTitle", Boolean.class, (config) -> config.notifier.showTraderTitle, (config, value) -> config.notifier.showTraderTitle = value);
     private final OptionBinding<Boolean> showTraderItems = new OptionBinding<>("notifier.showTraderItems", Boolean.class, (config) -> config.notifier.showTraderItems, (config, value) -> config.notifier.showTraderItems = value);
+    private final OptionBinding<Boolean> showTradesOnClick = new OptionBinding<>("notifier.showTradesOnClick", Boolean.class, (config) -> config.notifier.showTradesOnClick, (config, value) -> config.notifier.showTradesOnClick = value);
     private final OptionBinding<Boolean> playTraderSound = new OptionBinding<>("notifier.playTraderSound", Boolean.class, (config) -> config.notifier.playTraderSound, (config, value) -> config.notifier.playTraderSound = value);
     private final OptionBinding<ModConfig.NotifSound> traderSound = new OptionBinding<>("notifier.traderSound", ModConfig.NotifSound.class, (config) -> config.notifier.traderSound, (config, value) -> config.notifier.traderSound = value);
     private final OptionBinding<Boolean> playShopSound = new OptionBinding<>("notifier.playShopSound", Boolean.class, (config) -> config.notifier.playShopSound, (config, value) -> config.notifier.playShopSound = value);
@@ -46,7 +50,7 @@ public class Notifier extends Feature {
 
     @Override
     public List<? extends ConfigBinding<?>> getConfigBindings() {
-        return List.of(showLlamaTitle, playLlamaSound, llamaSound, showTraderTitle, showTraderItems, playTraderSound, traderSound, playShopSound, shopSound, playVisitSound, visitSound);
+        return List.of(showLlamaTitle, playLlamaSound, llamaSound, showTraderTitle, showTraderItems, showTradesOnClick, playTraderSound, traderSound, playShopSound, shopSound, playVisitSound, visitSound);
     }
 
     @Override
@@ -58,7 +62,9 @@ public class Notifier extends Feature {
                         .then(CommandHelper.genericEnum("sound", "sound", llamaSound)))
                 .then(ClientCommandManager.literal("trader")
                         .then(CommandHelper.bool("title", showTraderTitle))
-                        .then(CommandHelper.bool("items", showTraderItems))
+                        .then(CommandHelper.bool("items", showTraderItems)
+                                .then(CommandHelper.bool("onClick", showTradesOnClick)))
+                        .then(CommandHelper.runnable("checkItems", this::displayTraderItems))
                         .then(CommandHelper.bool("playSound", playTraderSound))
                         .then(CommandHelper.genericEnum("sound", "sound", traderSound)))
                 .then(CommandHelper.bool("shop", playShopSound)
@@ -78,7 +84,7 @@ public class Notifier extends Feature {
         if (traderItems == null || showTraderItemsTicks <= 0 || MC.getConnection() == null)
             return;
 
-        guiGraphics.drawCenteredString(MC.font, Component.translatable("message.sbutils.eventNotifier.traderItems"), guiGraphics.guiWidth() / 2, guiGraphics.guiHeight() - 88, ModConfig.HANDLER.instance().messageColor.getRGB());
+        guiGraphics.drawCenteredString(MC.font, Component.translatable("message.sbutils.notifier.traderItems"), guiGraphics.guiWidth() / 2, guiGraphics.guiHeight() - 88, ModConfig.HANDLER.instance().messageColor.getRGB());
         int itemsWidth = traderItems.size() * 16;
         for (int i = 0; i < traderItems.size(); i++) {
             int x = (i * 16) + ((guiGraphics.guiWidth() - itemsWidth) / 2);
@@ -97,13 +103,32 @@ public class Notifier extends Feature {
             doLlamaNotification();
         else if (RegexFilters.wanderingTraderFilter.matcher(stringMessage).matches()) {
             if (ModConfig.HANDLER.instance().notifier.showTraderItems)
-                ApiUtils.getWanderingTrades(SbUtils.SERVER_DETECTOR.getCurrentServer(), this::onReceiveTraderItems);
+                displayTraderItems();
             doTraderNotification();
         } else if (RegexFilters.incomingTransactionFilter.matcher(stringMessage).matches()) {
             doShopNotification();
         } else if (RegexFilters.visitFilter.matcher(stringMessage).matches()) {
             doVisitNotification();
         }
+    }
+
+    public static Component modifyMessage(Component message) {
+        MutableComponent result = message.copy().withStyle(message.getStyle().withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/notifier trader checkItems")));
+        List<Component> siblings = new ArrayList<>(result.getSiblings());
+        result.getSiblings().clear();
+        for (Component sibling : siblings)
+            result.append(modifyMessage(sibling));
+        return result;
+    }
+
+
+
+    public static boolean shouldModify(Component message) {
+        return ModConfig.HANDLER.instance().notifier.showTradesOnClick && RegexFilters.wanderingTraderFilter.matcher(message.getString()).matches();
+    }
+
+    private void displayTraderItems() {
+        ApiUtils.getWanderingTrades(SbUtils.SERVER_DETECTOR.getCurrentServer(), this::onReceiveTraderItems);
     }
 
     private void onReceiveTraderItems(List<ItemStack> items) {
@@ -116,7 +141,7 @@ public class Notifier extends Feature {
             MC.player.playSound(ModConfig.HANDLER.instance().notifier.llamaSound.getSound(), 1, 1);
 
         if (ModConfig.HANDLER.instance().notifier.showLlamaTitle)
-            ChatUtils.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Component.translatable("message.sbutils.eventNotifier.vpLlama"));
+            ChatUtils.sendPlaceholderTitle("message.sbutils.notifier.sighted", Component.translatable("message.sbutils.notifier.vpLlama"));
     }
 
     private static void doTraderNotification() {
@@ -124,7 +149,7 @@ public class Notifier extends Feature {
             MC.player.playSound(ModConfig.HANDLER.instance().notifier.traderSound.getSound(), 1, 1);
 
         if (ModConfig.HANDLER.instance().notifier.showTraderTitle)
-            ChatUtils.sendPlaceholderTitle("message.sbutils.eventNotifier.sighted", Component.translatable("message.sbutils.eventNotifier.wanderingTrader"));
+            ChatUtils.sendPlaceholderTitle("message.sbutils.notifier.sighted", Component.translatable("message.sbutils.notifier.wanderingTrader"));
     }
 
     private static void doShopNotification() {

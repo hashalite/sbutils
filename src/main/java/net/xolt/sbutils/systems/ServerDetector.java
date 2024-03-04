@@ -92,14 +92,24 @@ public class ServerDetector {
 
     public static void onSwitchServer(SbServer server) {
         SbUtils.FEATURES.get(AutoAdvert.class).onSwitchServer();
-        SbUtils.FEATURES.get(AutoKit.class).onSwitchServer(server);
+        SbUtils.FEATURES.get(AutoKit.class).onSwitchServer();
     }
 
     public enum SbServer {
-        HUB,
-        SKYWARS,
-        SKYBLOCK,
-        ECONOMY,
-        CLASSIC;
+        HUB("Hub"),
+        SKYWARS("Skywars"),
+        SKYBLOCK("Skyblock"),
+        ECONOMY("Economy"),
+        CLASSIC("Classic");
+
+        String name;
+
+        SbServer(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }
