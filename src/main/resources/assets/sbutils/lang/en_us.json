@@ -48,6 +48,9 @@
   "message.sbutils.enchantAll.noEnchantPermission": "You don't have access to the /enchant command.",
 
   "message.sbutils.chatFilter.status": "Chat filter status:",
+  "message.sbutils.chatFilter.filterEntry": "%s | Enabled: %s",
+  "message.sbutils.chatFilter.filterSetSuccess": "Filter changed from %s to %s.",
+  "message.sbutils.chatFilter.filterToggleSuccess": "Filter %s has been %s.",
 
   "message.sbutils.chatLogger.status": "Chat logger status:",
 
@@ -369,6 +372,10 @@
   "text.sbutils.config.option.chatFilters.perishedInVoidFilter.tooltip": "Whether 'perished in void' messages should be filtered from chat.",
   "text.sbutils.config.option.chatFilters.skyChatFilter": "Filter SkyChats",
   "text.sbutils.config.option.chatFilters.skyChatFilter.tooltip": "Whether SkyChat messages should be filtered from chat.",
+  "text.sbutils.config.option.chatFilters.customFilters": "Custom Filters",
+  "text.sbutils.config.option.chatFilters.customFilters.tooltip": "A list of custom regex filters to apply to chat.",
+  "text.sbutils.config.option.chatFilters.customFilters.regex": "Regex",
+  "text.sbutils.config.option.chatFilters.customFilters.enabled": "Status",
 
 
   "text.sbutils.config.category.chatLogger": "Chat Logger",

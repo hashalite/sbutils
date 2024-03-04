@@ -195,6 +195,22 @@ public class ModConfig {
         @SerialEntry public boolean cratesFilter = false;
         @SerialEntry public boolean perishedInVoidFilter = false;
         @SerialEntry public boolean skyChatFilter = false;
+        @SerialEntry public List<FilterEntry> customFilters = new ArrayList<>();
+
+        public static class FilterEntry implements MultiValue {
+            @SerialEntry public String regex;
+            @SerialEntry public boolean enabled;
+
+            public FilterEntry(String regex, boolean enabled) {
+                this.regex = regex;
+                this.enabled = enabled;
+            }
+
+            @Override
+            public MutableComponent format() {
+                return ChatUtils.insertPlaceholders("message.sbutils.chatFilter.filterEntry", regex, enabled);
+            }
+        }
     }
 
     @SerialEntry public ChatLoggerConfig chatLogger = new ChatLoggerConfig();

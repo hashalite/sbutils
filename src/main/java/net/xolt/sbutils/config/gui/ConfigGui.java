@@ -14,6 +14,7 @@ import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.config.binding.constraints.ListConstraints;
 import net.xolt.sbutils.config.binding.constraints.NumberConstraints;
 import net.xolt.sbutils.config.gui.controllers.AutoCommandEntryController;
+import net.xolt.sbutils.config.gui.controllers.FilterEntryController;
 import net.xolt.sbutils.config.gui.controllers.JoinCommandsEntryController;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.feature.Features;
@@ -166,6 +167,8 @@ public class ConfigGui {
             return (option) -> (Controller<T>)new AutoCommandEntryController((Option<ModConfig.AutoCommandConfig.AutoCommandEntry>) option);
         } else if (type.equals(ModConfig.JoinCommandsConfig.JoinCommandsEntry.class)) {
             return (option) -> (Controller<T>)new JoinCommandsEntryController((Option<ModConfig.JoinCommandsConfig.JoinCommandsEntry>) option);
+        } else if (type.equals(ModConfig.ChatFiltersConfig.FilterEntry.class)) {
+            return (option) -> (Controller<T>)new FilterEntryController((Option<ModConfig.ChatFiltersConfig.FilterEntry>)option);
         }
         return null;
     }
