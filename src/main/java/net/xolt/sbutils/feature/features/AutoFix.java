@@ -174,7 +174,17 @@ public class AutoFix extends Feature {
         if (!waitingForResponse)
             return;
 
-        Matcher fixFailMatcher = RegexFilters.fixFailFilter.matcher(message.getString());
+        String messageString = message.getString();
+
+        Matcher fixNoPermsMatcher = RegexFilters.noPermission.matcher(messageString);
+        if (fixNoPermsMatcher.matches()) {
+            ChatUtils.printMessage(ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "message.sbutils.autoFix.noFixPermission" : "message.sbutils.autoFix.noFixAllPermission");
+            ModConfig.HANDLER.instance().autoFix.enabled = false;
+            ModConfig.HANDLER.save();
+            return;
+        }
+
+        Matcher fixFailMatcher = RegexFilters.fixFailFilter.matcher(messageString);
         if (fixFailMatcher.matches()) {
             String minutesText = fixFailMatcher.group(3);
             String secondsText = fixFailMatcher.group(6);
@@ -187,7 +197,7 @@ public class AutoFix extends Feature {
             return;
         }
 
-        Matcher fixSuccessMatcher = RegexFilters.fixSuccessFilter.matcher(message.getString());
+        Matcher fixSuccessMatcher = RegexFilters.fixSuccessFilter.matcher(messageString);
         if (fixSuccessMatcher.matches()) {
             if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
                 returnAndSwapBack();

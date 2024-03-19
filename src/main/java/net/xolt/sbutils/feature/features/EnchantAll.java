@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
@@ -183,7 +182,7 @@ public class EnchantAll extends Feature {
                 RegexFilters.unenchantSuccess.matcher(messageString).matches() ||
                 RegexFilters.enchantError.matcher(messageString).matches()) {
             awaitingResponse = false;
-        } else if (RegexFilters.enchantNoPermission.matcher(messageString).matches()) {
+        } else if (RegexFilters.noPermission.matcher(messageString).matches()) {
             noPermission = true;
             awaitingResponse = false;
         }

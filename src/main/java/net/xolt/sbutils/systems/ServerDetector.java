@@ -65,10 +65,7 @@ public class ServerDetector {
         Thread socketThread = new Thread(() -> {
             InetAddress result = null;
             try {
-                InetAddress address = InetAddress.getByName("server.skyblock.net");
-                Socket socket = new Socket(address, 25565);
-                result = socket.getInetAddress();
-                socket.close();
+                result = InetAddress.getByName("server.skyblock.net");
             } catch (Exception e) {
                 SbUtils.LOGGER.error("Failed to retrieve current Skyblock ip address.");
             }

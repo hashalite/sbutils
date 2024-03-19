@@ -44,8 +44,8 @@
   "message.sbutils.enchantAll.cooldown": "Enchant All cooldown initiated. Resuming in %s seconds.",
   "message.sbutils.enchantAll.itemNotEnchantable": "You are not holding an enchantable item.",
   "message.sbutils.enchantAll.noEnchantableItems": "You don't have any enchantable items in your inventory.",
-  "message.sbutils.enchantAll.noEnchantAllPermission": "You don't have access to the server-sided /enchantall command. If you are a SkyGod, set 'Enchant Mode' to 'Individual'.",
-  "message.sbutils.enchantAll.noEnchantPermission": "You don't have access to the /enchant command.",
+  "message.sbutils.enchantAll.noEnchantAllPermission": "You don't have access to the server-sided '/enchantall' command. If you are a SkyGod, set 'Enchant Mode' to 'Individual'.",
+  "message.sbutils.enchantAll.noEnchantPermission": "You don't have access to the '/enchant' command.",
 
   "message.sbutils.chatFilter.status": "Chat filter status:",
   "message.sbutils.chatFilter.filterEntry": "%s | Enabled: %s",
@@ -71,6 +71,8 @@
   "message.sbutils.autoFix.currentlyFixing": "Auto Fix is currently fixing an item.",
   "message.sbutils.autoFix.waiting": "Auto Fix is waiting for an item with a low enough durability.",
   "message.sbutils.autoFix.maxTriesReached": "Fix command sent %s times with no response. Disabling Auto Fix.",
+  "message.sbutils.autoFix.noFixPermission": "Disabling Auto Fix because you don't have access to the '/fix' command.",
+  "message.sbutils.autoFix.noFixAllPermission": "Disabling Auto Fix because you don't have access to the '/fix all' command.",
 
   "message.sbutils.toolSaver.actionBlocked": "Action blocked due to item durability being too low.",
 

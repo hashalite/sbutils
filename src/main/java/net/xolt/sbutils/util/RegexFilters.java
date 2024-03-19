@@ -21,7 +21,7 @@ public class RegexFilters {
     public static final Pattern enchantAllSuccess = Pattern.compile("All possible enchantments have been applied to the item in your hand\\.");
     public static final Pattern unenchantSuccess = Pattern.compile("The enchantment .* has been removed from your item in hand\\.");
     public static final Pattern enchantError = Pattern.compile("Error: .*");
-    public static final Pattern enchantNoPermission = Pattern.compile("You do not have access to that command\\.");
+    public static final Pattern noPermission = Pattern.compile("You do not have access to that command\\."); // Also used by Auto Fix
 
     
     // Chat Filters
