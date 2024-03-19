@@ -129,17 +129,18 @@ public class AutoFix extends Feature {
     }
 
     private void doAutoFix() {
-        if (MC.player == null)
+        if (MC.player == null || itemPrevSlot == -1)
             return;
+
+        if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL) {
+            sendFixCommand();
+            return;
+        }
 
         if (!fixing) {
             AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
-            if (itemPrevSlot != -1 && InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)) {
+            if (InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)) {
                 fixing = true;
-
-                if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL)
-                    return;
-
                 prevSelectedSlot = MC.player.getInventory().selected;
 
                 if (itemPrevSlot < 9) {
@@ -164,10 +165,6 @@ public class AutoFix extends Feature {
             ChatUtils.printMessage("message.sbutils.autoFix.fixingItem");
 
         sendFixCommand();
-
-        tries++;
-        lastActionPerformedAt = System.currentTimeMillis();
-        waitingForResponse = true;
     }
 
     public void processMessage(Component message) {
@@ -181,6 +178,9 @@ public class AutoFix extends Feature {
             ChatUtils.printMessage(ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "message.sbutils.autoFix.noFixPermission" : "message.sbutils.autoFix.noFixAllPermission");
             ModConfig.HANDLER.instance().autoFix.enabled = false;
             ModConfig.HANDLER.save();
+            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
+                returnAndSwapBack();
+            reset();
             return;
         }
 
@@ -206,12 +206,22 @@ public class AutoFix extends Feature {
         }
     }
 
+    private void sendFixCommand() {
+        if (MC.getConnection() == null)
+            return;
+        String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
+        MC.getConnection().sendCommand(command);
+        tries++;
+        lastActionPerformedAt = System.currentTimeMillis();
+        waitingForResponse = true;
+    }
+
     private void returnAndSwapBack() {
         if (MC.player == null)
             return;
 
         AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
-        if (itemPrevSlot != -1 || !InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
+        if (itemPrevSlot == -1 || (itemPrevSlot >= 9 && !InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)))
             return;
 
         InvUtils.swapToHotbar(itemPrevSlot, selectedSlot, currentScreenHandler);
@@ -264,13 +274,6 @@ public class AutoFix extends Feature {
             }
         }
         return result;
-    }
-
-    private static void sendFixCommand() {
-        if (MC.getConnection() == null)
-            return;
-        String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
-        MC.getConnection().sendCommand(command);
     }
 
     private static int delay() {
