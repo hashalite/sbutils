@@ -6,7 +6,10 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.AutoAdvert;
 import net.xolt.sbutils.feature.features.AutoKit;
-import net.xolt.sbutils.util.RegexFilters;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -15,20 +18,30 @@ public class ServerDetector {
     private SbServer currentServer;
     private boolean receivedCommandTree;
     private boolean receivedTabHeader;
+    private boolean receivedAddress;
     private String tabHeader;
+    private InetAddress skyblockAddress;
 
     public void onPlayerListHeader(String header) {
         tabHeader = header;
         receivedTabHeader = true;
-        if (receivedCommandTree) {
-            updateServer(determineServer(tabHeader));
+        if (receivedCommandTree && receivedAddress) {
+            updateServer(determineServer(tabHeader, skyblockAddress));
         }
     }
 
     public void afterCommandTree() {
         receivedCommandTree = true;
-        if (receivedTabHeader) {
-            updateServer(determineServer(tabHeader));
+        if (receivedTabHeader && receivedAddress) {
+            updateServer(determineServer(tabHeader, skyblockAddress));
+        }
+    }
+
+    public void onReceiveSkyblockAddress(InetAddress address) {
+        this.skyblockAddress = address;
+        receivedAddress = true;
+        if (receivedTabHeader && receivedCommandTree) {
+            updateServer(determineServer(tabHeader, skyblockAddress));
         }
     }
 
@@ -45,6 +58,23 @@ public class ServerDetector {
 
     public void onJoinGame() {
         reset();
+        getCurrentSkyblockAddress();
+    }
+
+    private void getCurrentSkyblockAddress() {
+        Thread socketThread = new Thread(() -> {
+            InetAddress result = null;
+            try {
+                InetAddress address = InetAddress.getByName("server.skyblock.net");
+                Socket socket = new Socket(address, 25565);
+                result = socket.getInetAddress();
+                socket.close();
+            } catch (Exception e) {
+                SbUtils.LOGGER.error("Failed to retrieve current Skyblock ip address.");
+            }
+            this.onReceiveSkyblockAddress(result);
+        });
+        socketThread.start();
     }
 
     public SbServer getCurrentServer() {
@@ -59,12 +89,14 @@ public class ServerDetector {
         currentServer = null;
         receivedCommandTree = false;
         receivedTabHeader = false;
+        receivedAddress = false;
         tabHeader = null;
+        skyblockAddress = null;
     }
 
-    private static SbServer determineServer(String tabHeader) {
+    private static SbServer determineServer(String tabHeader, InetAddress skyblockAddress) {
         ClientPacketListener connection = MC.getConnection();
-        if (connection == null || !RegexFilters.addressFilter.matcher(connection.getConnection().getRemoteAddress().toString()).matches()) {
+        if (connection == null || !(connection.getConnection().getRemoteAddress() instanceof InetSocketAddress address) || !address.getAddress().equals(skyblockAddress)) {
             return null;
         }
 

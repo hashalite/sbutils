@@ -97,9 +97,4 @@ public class RegexFilters {
     public static final Pattern emailFilter = Pattern.compile("\\[[0-9]+\\] \\[([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+)\\] .*");
     public static final Pattern mailGuiFilter = Pattern.compile("Skyblock Mail");
     public static final Pattern mailLoreFilter = Pattern.compile("Sent at ([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+ (AM|PM)).*");
-
-
-    // Server Detector
-
-    public static final Pattern addressFilter = Pattern.compile("server.(skyblock.net|skywars.com)\\./.*");
 }

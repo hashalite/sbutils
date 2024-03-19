@@ -149,7 +149,7 @@ public class ChatUtils {
         printList(list, numbered);
     }
 
-    private static <T> void printList(List<T> items, boolean numbered) {
+    public static <T> void printList(List<T> items, boolean numbered) {
         for (int i = 0; i < items.size(); i++)
             printMessage(Component.literal(" " + (numbered ? (i + 1) + ". " : "- ")).withColor(getValueColor()).append(format(items.get(i))), false);
     }

@@ -97,7 +97,8 @@ public class AutoAdvert extends Feature {
         adverts.add(advert);
         IOHandler.writeAdverts(adverts, adFile);
 
-        ChatUtils.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAds(adverts));
+        ChatUtils.printMessage("message.sbutils.autoAdvert.addSuccess");
+        ChatUtils.printList(formatAds(adverts), true);
     }
 
     private static void onDelCommand(int index) {
@@ -118,7 +119,8 @@ public class AutoAdvert extends Feature {
         adverts.remove(adjustedIndex);
         IOHandler.writeAdverts(adverts, adFile);
 
-        ChatUtils.printListSetting("message.sbutils.autoAdvert.deleteSuccess", formatAds(adverts));
+        ChatUtils.printMessage("message.sbutils.autoAdvert.deleteSuccess");
+        ChatUtils.printList(formatAds(adverts), true);
     }
 
     private static void onInsertCommand(int index, String advert) {
@@ -139,7 +141,8 @@ public class AutoAdvert extends Feature {
         adverts.add(adjustedIndex, advert);
         IOHandler.writeAdverts(adverts, adFile);
 
-        ChatUtils.printListSetting("message.sbutils.autoAdvert.addSuccess", formatAds(adverts));
+        ChatUtils.printMessage("message.sbutils.autoAdvert.addSuccess");
+        ChatUtils.printList(formatAds(adverts), true);
     }
 
     private static int onToggleCommand(int index) {
@@ -165,7 +168,8 @@ public class AutoAdvert extends Feature {
 
         IOHandler.writeAdverts(adverts, adFile);
 
-        ChatUtils.printListSetting("message.sbutils.autoAdvert.toggleSuccess", formatAds(adverts));
+        ChatUtils.printMessage("message.sbutils.autoAdvert.toggleSuccess");
+        ChatUtils.printList(formatAds(adverts), true);
         return Command.SINGLE_SUCCESS;
     }
 
