@@ -313,8 +313,10 @@ public class AutoSilk extends Feature {
 
             Enchantment enchantment = optionalEnchantment.get().value();
 
-            if (enchantment.equals(Enchantments.SILK_TOUCH))
+            if (enchantment.equals(Enchantments.SILK_TOUCH)) {
                 silkIndex = i;
+                break;
+            }
         }
 
         if (!ModConfig.HANDLER.instance().autoSilk.booksOnly && silkIndex == -1 && (!book || (ModConfig.HANDLER.instance().autoSilk.bookPriority && !toolChecked))) {
