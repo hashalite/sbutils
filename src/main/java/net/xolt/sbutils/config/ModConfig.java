@@ -1,13 +1,13 @@
 package net.xolt.sbutils.config;
 
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import dev.isxander.yacl3.api.NameableEnum;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
-import dev.isxander.yacl3.config.v2.api.SerialEntry;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
-import net.fabricmc.loader.api.FabricLoader;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.ConfigHolder;
+import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import me.shedaniel.autoconfig.annotation.ConfigEntry.Gui.EnumHandler.EnumDisplayOption;
+import me.shedaniel.clothconfig2.gui.entries.SelectionListEntry;
 import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -16,235 +16,552 @@ import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
-import net.xolt.sbutils.config.KeyValueController.KeyValuePair;
+import net.xolt.sbutils.features.AutoFix;
+import net.xolt.sbutils.features.AutoKit;
+import net.xolt.sbutils.features.AutoPrivate;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ModConfig {
+@Config(name = "sbutils")
+@Config.Gui.Background("minecraft:textures/block/deepslate_tiles.png")
+public class ModConfig implements ConfigData {
 
-    public static final ConfigClassHandler<ModConfig> HANDLER = ConfigClassHandler.createBuilder(ModConfig.class)
-            .id(new Identifier("sbutils", "config"))
-            .serializer(config -> GsonConfigSerializerBuilder.create(config)
-                    .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
-                    .appendGsonBuilder(builder -> builder.registerTypeHierarchyAdapter(KeyValueController.KeyValuePair.class, new KeyValueController.KeyValuePair.KeyValueTypeAdapter()))
-                    .appendGsonBuilder(builder -> builder.setFieldNamingPolicy(FieldNamingPolicy.IDENTITY))
-                    .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
-                    .build()).build();
+    @ConfigEntry.Gui.Excluded
+    public static ModConfig INSTANCE;
 
-    // Mod Settings
+    @ConfigEntry.Gui.Excluded
+    public static ConfigHolder<ModConfig> HOLDER;
 
-    @SerialEntry
+    public static void init() {
+        AutoConfig.register(ModConfig.class, ModConfigSerializer::new);
+        HOLDER = AutoConfig.getConfigHolder(ModConfig.class);
+        HOLDER.registerSaveListener(ModConfig::onSave);
+        INSTANCE = HOLDER.getConfig();
+    }
+
+    private static ActionResult onSave(ConfigHolder<ModConfig> modConfigConfigHolder, ModConfig modConfig) {
+        AutoFix.onConfigSave(modConfig);
+        AutoKit.onConfigSave(modConfig);
+        AutoPrivate.onConfigSave(modConfig);
+
+        return ActionResult.SUCCESS;
+    }
+
+    @ConfigEntry.Gui.Tooltip
     public String messagePrefix = "[@]";
-    @SerialEntry public Color sbutilsColor = Color.YELLOW;
-    @SerialEntry public Color prefixColor = Color.AQUA;
-    @SerialEntry public Color messageColor = Color.AQUA;
-    @SerialEntry public Color valueColor = Color.WHITE;
 
-
-    // Auto Advert Settings
-
-    @SerialEntry public boolean autoAdvert = false;
-    @SerialEntry public String skyblockAdFile = "skyblock";
-    @SerialEntry public String economyAdFile = "economy";
-    @SerialEntry public String classicAdFile = "classic";
-    @SerialEntry public double advertDelay = 300.0;
-    @SerialEntry public double advertInitialDelay = 10.0;
-    @SerialEntry public boolean advertUseWhitelist = false;
-    @SerialEntry public List<String> advertWhitelist = List.of();
-
-
-    // Join Commands Settings
-
-    @SerialEntry public boolean joinCmdsEnabled = false;
-    @SerialEntry public double joinCmdInitialDelay = 0.0;
-    @SerialEntry public double joinCmdDelay = 0.0;
-
-
-    // Mentions Settings
-
-    @SerialEntry public boolean mentions = false;
-    @SerialEntry public boolean playMentionSound = true;
-    @SerialEntry public NotifSound mentionSound = NotifSound.EXPERIENCE;
-    @SerialEntry public boolean mentionHighlight = true;
-    @SerialEntry public Color highlightColor = Color.GOLD;
-    @SerialEntry public boolean excludeServerMsgs = true;
-    @SerialEntry public boolean excludeSelfMsgs = true;
-    @SerialEntry public boolean excludeSender = false;
-    @SerialEntry public boolean mentionsCurrentAccount = true;
-    @SerialEntry public List<String> mentionsAliases = List.of();
-
-
-    // No GMT Settings
-
-    @SerialEntry public boolean noGMT = false;
-    @SerialEntry public String timeZone = "";
-    @SerialEntry public boolean showTimeZone = true;
-
-
-    // Enchant All Settings
-
-    @SerialEntry public EnchantMode enchantMode = EnchantMode.ALL;
-    @SerialEntry public double enchantDelay = 0.55;
-    @SerialEntry public int cooldownFrequency = 12;
-    @SerialEntry public double cooldownTime = 6.0;
-    @SerialEntry public boolean excludeFrost = true;
-
-
-    // Chat Append Settings
-
-    @SerialEntry public boolean addPrefix = false;
-    @SerialEntry public String chatPrefix = "";
-    @SerialEntry public boolean addSuffix = false;
-    @SerialEntry public String chatSuffix = "";
-
-
-    // Chat Filters Settings
-
-    @SerialEntry public boolean tipsFilterEnabled = false;
-    @SerialEntry public boolean advancementsFilterEnabled = false;
-    @SerialEntry public boolean welcomeFilterEnabled = false;
-    @SerialEntry public boolean friendJoinFilterEnabled = false;
-    @SerialEntry public boolean motdFilterEnabled = false;
-    @SerialEntry public boolean voteFilterEnabled = false;
-    @SerialEntry public boolean voteRewardFilterEnabled = false;
-    @SerialEntry public boolean raffleFilterEnabled = false;
-    @SerialEntry public boolean cratesFilterEnabled = false;
-    @SerialEntry public boolean perishedInVoidFilterEnabled = false;
-    @SerialEntry public boolean skyChatFilterEnabled = false;
-
-
-    // Chat Logger Settings
-
-    @SerialEntry public boolean shopLoggerIncoming = false;
-    @SerialEntry public boolean shopLoggerOutgoing = false;
-    @SerialEntry public boolean msgLoggerIncoming = false;
-    @SerialEntry public boolean msgLoggerOutgoing = false;
-    @SerialEntry public boolean visitLogger = false;
-    @SerialEntry public boolean dpLogger = false;
-
-
-    // Event Notifier Settings
-
-    @SerialEntry public boolean showLlamaTitle = false;
-    @SerialEntry public boolean playLlamaSound = false;
-    @SerialEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
-    @SerialEntry public boolean showTraderTitle = false;
-    @SerialEntry public boolean playTraderSound = false;
-    @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
-
-
-    // Auto Mine Settings
-
-    @SerialEntry public boolean autoMine = false;
-    @SerialEntry public boolean autoSwitch = true;
-    @SerialEntry public int switchDurability = 20;
-
-
-    // Auto Fix Settings
-
-    @SerialEntry public boolean autoFix = false;
-    @SerialEntry public FixMode autoFixMode = FixMode.HAND;
-    @SerialEntry public double maxFixPercent = 0.2;
-    @SerialEntry public double autoFixDelay = 120.0;
-    @SerialEntry public double fixRetryDelay = 3.0;
-    @SerialEntry public int maxFixRetries = 3;
-
-
-    // Tool Saver Settings
-
-    @SerialEntry public boolean toolSaver = false;
-    @SerialEntry public int toolSaverDurability = 20;
-
-
-    // Anti Place Settings
-
-    @SerialEntry public boolean antiPlaceHeads = false;
-    @SerialEntry public boolean antiPlaceGrass = false;
-
-
-    // Auto Command Settings
-
-    @SerialEntry public boolean autoCommandEnabled = false;
-    @SerialEntry public double minAutoCommandDelay = 1.5;
-    @SerialEntry public List<KeyValuePair<String, KeyValuePair<Double, Boolean>>> autoCommands = List.of(new KeyValuePair<>("", new KeyValuePair<>(5.0, false)));
-
-
-    // Auto Reply Settings
-
-    @SerialEntry public boolean autoReply = false;
-    @SerialEntry public String autoResponse = "I am currently AFK. Please /mail me and I'll get back to you later!";
-    @SerialEntry public double autoReplyDelay = 1.0;
-
-
-    // Auto Raffle Settings
-
-    @SerialEntry public boolean autoRaffle = false;
-    @SerialEntry public int skyblockRaffleTickets = 2;
-    @SerialEntry public int economyRaffleTickets = 5;
-    @SerialEntry public double grassCheckDelay = 5.0;
-
-
-    // Auto Private Settings
-
-    @SerialEntry public boolean autoPrivate = false;
-    @SerialEntry public List<String> autoPrivateNames = new ArrayList<>();
-
-
-    // Auto Silk Settings
-
-    @SerialEntry public boolean autoSilk = false;
-    @SerialEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
-    @SerialEntry public double autoSilkDelay = 0.25;
-    @SerialEntry public boolean showSilkButton = true;
-    @SerialEntry public CornerButtonPos silkButtonPos = CornerButtonPos.BOTTOM_LEFT;
-
-
-    // Auto Crate Settings
-
-    @SerialEntry public boolean autoCrate = false;
-    @SerialEntry public CrateMode crateMode = CrateMode.COMMON;
-    @SerialEntry public double crateDelay = 0.25;
-    @SerialEntry public double crateDistance = 4.0;
-
-
-    // Auto Kit Settings
-
-    @SerialEntry public boolean autoKit = false;
-    @SerialEntry public double autoKitCommandDelay = 1.0;
-    @SerialEntry public double autoKitClaimDelay = 10.0;
-    @SerialEntry public double autoKitSystemDelay = 10.0;
-    @SerialEntry public List<Kit> autoKits = List.of();
-
-
-    // Staff Detector Settings
-
-    @SerialEntry public boolean detectStaffJoin = false;
-    @SerialEntry public boolean detectStaffLeave = false;
-    @SerialEntry public boolean playStaffSound = false;
-    @SerialEntry public NotifSound staffDetectSound = NotifSound.BIT;
-
-
-    public enum Color implements NameableEnum, StringIdentifiable {
-        DARK_RED("text.sbutils.config.option.color.darkRed", Formatting.DARK_RED),
-        RED("text.sbutils.config.option.color.red", Formatting.RED),
-        GOLD("text.sbutils.config.option.color.gold", Formatting.GOLD),
-        YELLOW("text.sbutils.config.option.color.yellow", Formatting.YELLOW),
-        DARK_GREEN("text.sbutils.config.option.color.darkGreen", Formatting.DARK_GREEN),
-        GREEN("text.sbutils.config.option.color.green", Formatting.GREEN),
-        DARK_BLUE("text.sbutils.config.option.color.darkBlue", Formatting.DARK_BLUE),
-        BLUE("text.sbutils.config.option.color.blue", Formatting.BLUE),
-        CYAN("text.sbutils.config.option.color.cyan", Formatting.DARK_AQUA),
-        AQUA("text.sbutils.config.option.color.aqua", Formatting.AQUA),
-        PURPLE("text.sbutils.config.option.color.purple", Formatting.DARK_PURPLE),
-        PINK("text.sbutils.config.option.color.pink", Formatting.LIGHT_PURPLE),
-        WHITE("text.sbutils.config.option.color.white", Formatting.WHITE),
-        LIGHT_GRAY("text.sbutils.config.option.color.lightGray", Formatting.GRAY),
-        DARK_GRAY("text.sbutils.config.option.color.darkGray", Formatting.DARK_GRAY),
-        BLACK("text.sbutils.config.option.color.black", Formatting.BLACK);
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+    public Color sbutilsColor = Color.YELLOW;
+
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+    public Color prefixColor = Color.AQUA;
+
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+    public Color messageColor = Color.AQUA;
+
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+    public Color valueColor = Color.WHITE;
+
+    public List<String> stringList = List.of();
+
+    @ConfigEntry.Category("gameplay")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AntiPlaceConfig antiPlace = new AntiPlaceConfig();
+    public static class AntiPlaceConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean antiPlaceHeads = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean antiPlaceGrass = false;
+    }
+
+    @ConfigEntry.Category("chat")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoAdvertConfig autoAdvert = new AutoAdvertConfig();
+    public static class AutoAdvertConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean enabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public String skyblockAdFile = "skyblock";
+
+        @ConfigEntry.Gui.Tooltip
+        public String economyAdFile = "economy";
+
+        @ConfigEntry.Gui.Tooltip
+        public String classicAdFile = "classic";
+
+        @ConfigEntry.Gui.Tooltip
+        public double advertDelay = 300.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public double advertInitialDelay = 10.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean advertUseWhitelist = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public List<String> advertWhitelist = List.of();
+    }
+
+    @ConfigEntry.Category("command")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoCommandConfig autoCommand = new AutoCommandConfig();
+    public static class AutoCommandConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoCommandEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public double minAutoCommandDelay = 1.5;
+
+        @ConfigEntry.Gui.Tooltip
+        public List<AutoCommandEntry> autoCommands = List.of(new AutoCommandEntry());
+
+        public static class AutoCommandEntry {
+            public String command;
+            public double delay;
+            public boolean enabled;
+
+            public AutoCommandEntry() {
+                this("", 5.0, false);
+            }
+
+            public AutoCommandEntry(String command, double delay, boolean enabled) {
+                this.command = command;
+                this.delay = delay;
+                this.enabled = enabled;
+            }
+        }
+    }
+
+    @ConfigEntry.Category("world")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoCrateConfig autoCrate = new AutoCrateConfig();
+    public static class AutoCrateConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoCrate = false;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public CrateMode crateMode = CrateMode.COMMON;
+
+        @ConfigEntry.Gui.Tooltip
+        public double crateDelay = 0.25;
+
+        @ConfigEntry.Gui.Tooltip
+        public double crateDistance = 4.0;
+    }
+
+    @ConfigEntry.Category("command")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoFixConfig autoFix = new AutoFixConfig();
+    public static class AutoFixConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoFix = false;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public FixMode autoFixMode = FixMode.HAND;
+
+        @ConfigEntry.Gui.Tooltip
+        public double maxFixPercent = 0.2;
+
+        @ConfigEntry.Gui.Tooltip
+        public double autoFixDelay = 120.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public double fixRetryDelay = 3.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public int maxFixRetries = 3;
+    }
+
+    @ConfigEntry.Category("command")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoKitConfig autoKit = new AutoKitConfig();
+    public static class AutoKitConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoKit = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public double autoKitCommandDelay = 1.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public double autoKitClaimDelay = 10.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public double autoKitSystemDelay = 10.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public List<KitEntry> autoKits = List.of();
+
+        public static class KitEntry {
+            @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+            public Kit kit;
+
+            public KitEntry() {
+                this(Kit.SKYTITAN);
+            }
+
+            public KitEntry(Kit kit) {
+                this.kit = kit;
+            }
+
+            @Override public int hashCode() {
+                return kit.hashCode();
+            }
+
+            @Override public boolean equals(Object obj) {
+                if (!(obj instanceof KitEntry))
+                    return false;
+                return kit.equals(((KitEntry)obj).kit);
+            }
+        }
+    }
+
+    @ConfigEntry.Category("world")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoMineConfig autoMine = new AutoMineConfig();
+    public static class AutoMineConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoMine = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoSwitch = true;
+
+        @ConfigEntry.Gui.Tooltip
+        public int switchDurability = 20;
+    }
+
+    @ConfigEntry.Category("world")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoPrivateConfig autoPrivate = new AutoPrivateConfig();
+    public static class AutoPrivateConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoPrivate = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public List<String> autoPrivateNames = List.of();
+    }
+
+    @ConfigEntry.Category("command")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoRaffleConfig autoRaffle = new AutoRaffleConfig();
+    public static class AutoRaffleConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoRaffle = false;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 2)
+        public int skyblockRaffleTickets = 2;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 5)
+        public int economyRaffleTickets = 5;
+
+        @ConfigEntry.Gui.Tooltip
+        public double grassCheckDelay = 5.0;
+    }
+
+    @ConfigEntry.Category("chat")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoReplyConfig autoReply = new AutoReplyConfig();
+    public static class AutoReplyConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoReply = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public String autoResponse = "I am currently AFK. Please /mail me and I'll get back to you later!";
+
+        @ConfigEntry.Gui.Tooltip
+        public double autoReplyDelay = 1.0;
+    }
+
+    @ConfigEntry.Category("world")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public AutoSilkConfig autoSilk = new AutoSilkConfig();
+    public static class AutoSilkConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean autoSilk = false;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
+
+        @ConfigEntry.Gui.Tooltip
+        public double autoSilkDelay = 0.25;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean showSilkButton = true;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public CornerButtonPos silkButtonPos = CornerButtonPos.BOTTOM_LEFT;
+    }
+
+    @ConfigEntry.Category("chat")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public ChatAppendConfig chatAppend = new ChatAppendConfig();
+    public static class ChatAppendConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean addPrefix = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public String chatPrefix = "";
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean addSuffix = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public String chatSuffix = "";
+    }
+
+    @ConfigEntry.Category("chat")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public ChatFiltersConfig chatFilters = new ChatFiltersConfig();
+    public static class ChatFiltersConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean tipsFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean advancementsFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean welcomeFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean friendJoinFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean motdFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean voteFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean voteRewardFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean raffleFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean cratesFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean perishedInVoidFilterEnabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean skyChatFilterEnabled = false;
+    }
+
+    @ConfigEntry.Category("chat")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public ChatLoggerConfig chatLogger = new ChatLoggerConfig();
+    public static class ChatLoggerConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean shopLoggerIncoming = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean shopLoggerOutgoing = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean msgLoggerIncoming = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean msgLoggerOutgoing = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean visitLogger = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean dpLogger = false;
+    }
+
+    @ConfigEntry.Category("command")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public EnchantAllConfig enchantAll = new EnchantAllConfig();
+    public static class EnchantAllConfig {
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public EnchantMode enchantMode = EnchantMode.ALL;
+
+        @ConfigEntry.Gui.Tooltip
+        public double enchantDelay = 0.55;
+
+        @ConfigEntry.Gui.Tooltip
+        public int cooldownFrequency = 12;
+
+        @ConfigEntry.Gui.Tooltip
+        public double cooldownTime = 6.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean excludeFrost = true;
+    }
+
+    @ConfigEntry.Category("notifications")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public EventNotifierConfig eventNotifier = new EventNotifierConfig();
+    public static class EventNotifierConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean showLlamaTitle = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean playLlamaSound = false;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public NotifSound llamaSound = NotifSound.DIDGERIDOO;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean showTraderTitle = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean playTraderSound = false;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public NotifSound traderSound = NotifSound.BANJO;
+    }
+
+    @ConfigEntry.Category("command")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public JoinCommandsConfig joinCommands = new JoinCommandsConfig();
+    public static class JoinCommandsConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean enabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public double joinCmdInitialDelay = 0.0;
+
+        @ConfigEntry.Gui.Tooltip
+        public double joinCmdDelay = 0.0;
+    }
+
+    @ConfigEntry.Category("notifications")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public MentionsConfig mentions = new MentionsConfig();
+    public static class MentionsConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean enabled = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean playMentionSound = true;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public NotifSound mentionSound = NotifSound.EXPERIENCE;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean mentionHighlight = true;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public Color highlightColor = Color.GOLD;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean excludeServerMsgs = true;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean excludeSelfMsgs = true;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean excludeSender = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean mentionsCurrentAccount = true;
+
+        @ConfigEntry.Gui.Tooltip
+        public List<String> mentionsAliases = List.of();
+    }
+
+    @ConfigEntry.Category("gameplay")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public NoGmtConfig noGmt = new NoGmtConfig();
+    public static class NoGmtConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean noGMT = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public String timeZone = "";
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean showTimeZone = true;
+    }
+
+    @ConfigEntry.Category("notifications")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public StaffDetectorConfig staffDetector = new StaffDetectorConfig();
+    public static class StaffDetectorConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean detectStaffJoin = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean detectStaffLeave = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean playStaffSound = false;
+
+        @ConfigEntry.Gui.Tooltip
+        @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
+        public NotifSound staffDetectSound = NotifSound.BIT;
+    }
+
+    @ConfigEntry.Category("gameplay")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.Gui.CollapsibleObject
+    public ToolSaverConfig toolSaver = new ToolSaverConfig();
+    public static class ToolSaverConfig {
+        @ConfigEntry.Gui.Tooltip
+        public boolean toolSaver = false;
+
+        @ConfigEntry.Gui.Tooltip
+        public int toolSaverDurability = 20;
+    }
+
+    public enum Color implements SelectionListEntry.Translatable, StringIdentifiable {
+        DARK_RED("text.autoconfig.sbutils.option.color.darkRed", Formatting.DARK_RED),
+        RED("text.autoconfig.sbutils.option.color.red", Formatting.RED),
+        GOLD("text.autoconfig.sbutils.option.color.gold", Formatting.GOLD),
+        YELLOW("text.autoconfig.sbutils.option.color.yellow", Formatting.YELLOW),
+        DARK_GREEN("text.autoconfig.sbutils.option.color.darkGreen", Formatting.DARK_GREEN),
+        GREEN("text.autoconfig.sbutils.option.color.green", Formatting.GREEN),
+        DARK_BLUE("text.autoconfig.sbutils.option.color.darkBlue", Formatting.DARK_BLUE),
+        BLUE("text.autoconfig.sbutils.option.color.blue", Formatting.BLUE),
+        CYAN("text.autoconfig.sbutils.option.color.cyan", Formatting.DARK_AQUA),
+        AQUA("text.autoconfig.sbutils.option.color.aqua", Formatting.AQUA),
+        PURPLE("text.autoconfig.sbutils.option.color.purple", Formatting.DARK_PURPLE),
+        PINK("text.autoconfig.sbutils.option.color.pink", Formatting.LIGHT_PURPLE),
+        WHITE("text.autoconfig.sbutils.option.color.white", Formatting.WHITE),
+        LIGHT_GRAY("text.autoconfig.sbutils.option.color.lightGray", Formatting.GRAY),
+        DARK_GRAY("text.autoconfig.sbutils.option.color.darkGray", Formatting.DARK_GRAY),
+        BLACK("text.autoconfig.sbutils.option.color.black", Formatting.BLACK);
 
         private final String name;
         private final Formatting formatting;
@@ -255,11 +572,11 @@ public class ModConfig {
         }
 
         public String asString() {
-            return getDisplayName().getString();
+            return Text.translatable(name).getString();
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public String getKey() {
+            return name;
         }
 
         public Formatting getFormatting() {
@@ -271,8 +588,8 @@ public class ModConfig {
                 super(StringIdentifiable.createCodec(Color::values), Color::values);
             }
 
-            public static ColorArgumentType color() {
-                return new ColorArgumentType();
+            public static Color.ColorArgumentType color() {
+                return new Color.ColorArgumentType();
             }
 
             public static Color getColor(CommandContext<?> context, String id) {
@@ -281,9 +598,9 @@ public class ModConfig {
         }
     }
 
-    public enum FixMode implements NameableEnum, StringIdentifiable {
-        HAND("text.sbutils.config.option.autoFixMode.hand"),
-        ALL("text.sbutils.config.option.autoFixMode.all");
+    public enum FixMode implements SelectionListEntry.Translatable, StringIdentifiable {
+        HAND("text.autoconfig.sbutils.option.autoFix.autoFixMode.hand"),
+        ALL("text.autoconfig.sbutils.option.autoFix.autoFixMode.all");
 
         private final String name;
 
@@ -291,12 +608,12 @@ public class ModConfig {
             this.name = name;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public String getKey() {
+            return name;
         }
 
         public String asString() {
-            return getDisplayName().getString();
+            return Text.translatable(name).getString();
         }
 
         public static class FixModeArgumentType extends EnumArgumentType<FixMode> {
@@ -304,8 +621,8 @@ public class ModConfig {
                 super(StringIdentifiable.createCodec(FixMode::values), FixMode::values);
             }
 
-            public static FixModeArgumentType fixMode() {
-                return new FixModeArgumentType();
+            public static FixMode.FixModeArgumentType fixMode() {
+                return new FixMode.FixModeArgumentType();
             }
 
             public static FixMode getFixMode(CommandContext<?> context, String id) {
@@ -314,9 +631,9 @@ public class ModConfig {
         }
     }
 
-    public enum EnchantMode implements NameableEnum, StringIdentifiable {
-        INDIVIDUAL("text.sbutils.config.option.enchantMode.individual"),
-        ALL("text.sbutils.config.option.enchantMode.all");
+    public enum EnchantMode implements SelectionListEntry.Translatable, StringIdentifiable {
+        INDIVIDUAL("text.autoconfig.sbutils.option.enchantAll.enchantMode.individual"),
+        ALL("text.autoconfig.sbutils.option.enchantAll.enchantMode.all");
 
         private final String name;
 
@@ -324,12 +641,12 @@ public class ModConfig {
             this.name = name;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public String getKey() {
+            return name;
         }
 
         public String asString() {
-            return getDisplayName().getString();
+            return Text.translatable(name).getString();
         }
 
         public static class EnchantModeArgumentType extends EnumArgumentType<EnchantMode> {
@@ -337,8 +654,8 @@ public class ModConfig {
                 super(StringIdentifiable.createCodec(EnchantMode::values), EnchantMode::values);
             }
 
-            public static EnchantModeArgumentType enchantMode() {
-                return new EnchantModeArgumentType();
+            public static EnchantMode.EnchantModeArgumentType enchantMode() {
+                return new EnchantMode.EnchantModeArgumentType();
             }
 
             public static EnchantMode getEnchantMode(CommandContext<?> context, String id) {
@@ -347,7 +664,7 @@ public class ModConfig {
         }
     }
 
-    public enum SilkTarget implements NameableEnum, StringIdentifiable {
+    public enum SilkTarget implements SelectionListEntry.Translatable, StringIdentifiable {
         DIAMOND_PICKAXE(Items.DIAMOND_PICKAXE),
         DIAMOND_AXE(Items.DIAMOND_AXE),
         DIAMOND_SHOVEL(Items.DIAMOND_SHOVEL),
@@ -364,8 +681,8 @@ public class ModConfig {
             return tool;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(tool.getTranslationKey());
+        public String getKey() {
+            return tool.getTranslationKey();
         }
 
         @Override
@@ -375,11 +692,11 @@ public class ModConfig {
 
         public static class SilkTargetArgumentType extends EnumArgumentType<SilkTarget> {
             private SilkTargetArgumentType() {
-                super(StringIdentifiable.createCodec(ModConfig.SilkTarget::values), ModConfig.SilkTarget::values);
+                super(StringIdentifiable.createCodec(SilkTarget::values), SilkTarget::values);
             }
 
-            public static SilkTargetArgumentType silkTarget() {
-                return new SilkTargetArgumentType();
+            public static SilkTarget.SilkTargetArgumentType silkTarget() {
+                return new SilkTarget.SilkTargetArgumentType();
             }
 
             public static SilkTarget getSilkTarget(CommandContext<?> context, String id) {
@@ -388,7 +705,7 @@ public class ModConfig {
         }
     }
 
-    public enum CornerButtonPos implements NameableEnum, StringIdentifiable {
+    public enum CornerButtonPos implements SelectionListEntry.Translatable, StringIdentifiable {
         TOP_LEFT("top_left"),
         TOP_RIGHT("top_right"),
         BOTTOM_LEFT("bottom_left"),
@@ -400,22 +717,22 @@ public class ModConfig {
             this.name = name;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public String getKey() {
+            return name;
         }
 
         @Override
         public String asString() {
-            return getDisplayName().getString();
+            return name;
         }
 
         public static class CornerButtonPosArgumentType extends EnumArgumentType<CornerButtonPos> {
             private CornerButtonPosArgumentType() {
-                super(StringIdentifiable.createCodec(ModConfig.CornerButtonPos::values), ModConfig.CornerButtonPos::values);
+                super(StringIdentifiable.createCodec(CornerButtonPos::values), CornerButtonPos::values);
             }
 
-            public static CornerButtonPosArgumentType cornerButtonPos() {
-                return new CornerButtonPosArgumentType();
+            public static CornerButtonPos.CornerButtonPosArgumentType cornerButtonPos() {
+                return new CornerButtonPos.CornerButtonPosArgumentType();
             }
 
             public static CornerButtonPos getCornerButtonPos(CommandContext<?> context, String id) {
@@ -424,7 +741,7 @@ public class ModConfig {
         }
     }
 
-    public enum NotifSound implements NameableEnum, StringIdentifiable {
+    public enum NotifSound implements SelectionListEntry.Translatable, StringIdentifiable {
         EXPERIENCE(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.getId().toShortTranslationKey(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP),
         LAY_EGG(SoundEvents.ENTITY_CHICKEN_EGG.getId().toShortTranslationKey(), SoundEvents.ENTITY_CHICKEN_EGG),
         DISPENSER(SoundEvents.BLOCK_DISPENSER_FAIL.getId().toShortTranslationKey(), SoundEvents.BLOCK_DISPENSER_FAIL),
@@ -459,8 +776,8 @@ public class ModConfig {
             return name;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public String getKey() {
+            return name;
         }
 
         public SoundEvent getSound() {
@@ -472,8 +789,8 @@ public class ModConfig {
                 super(StringIdentifiable.createCodec(NotifSound::values), NotifSound::values);
             }
 
-            public static NotifSoundArgumentType notifSound() {
-                return new NotifSoundArgumentType();
+            public static NotifSound.NotifSoundArgumentType notifSound() {
+                return new NotifSound.NotifSoundArgumentType();
             }
 
             public static NotifSound getNotifSound(CommandContext<?> context, String id) {
@@ -482,12 +799,12 @@ public class ModConfig {
         }
     }
 
-    public enum CrateMode implements NameableEnum, StringIdentifiable {
-        VOTER("text.sbutils.config.option.crateMode.voter"),
-        COMMON("text.sbutils.config.option.crateMode.common"),
-        RARE("text.sbutils.config.option.crateMode.rare"),
-        EPIC("text.sbutils.config.option.crateMode.epic"),
-        LEGENDARY("text.sbutils.config.option.crateMode.legendary");
+    public enum CrateMode implements SelectionListEntry.Translatable, StringIdentifiable {
+        VOTER("text.autoconfig.sbutils.option.autoCrate.crateMode.voter"),
+        COMMON("text.autoconfig.sbutils.option.autoCrate.crateMode.common"),
+        RARE("text.autoconfig.sbutils.option.autoCrate.crateMode.rare"),
+        EPIC("text.autoconfig.sbutils.option.autoCrate.crateMode.epic"),
+        LEGENDARY("text.autoconfig.sbutils.option.autoCrate.crateMode.legendary");
 
         private final String name;
 
@@ -496,11 +813,11 @@ public class ModConfig {
         }
 
         public String asString() {
-            return getDisplayName().getString();
+            return Text.translatable(name).getString();
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public String getKey() {
+            return name;
         }
 
         public static class CrateModeArgumentType extends EnumArgumentType<CrateMode> {
@@ -508,8 +825,8 @@ public class ModConfig {
                 super(StringIdentifiable.createCodec(CrateMode::values), CrateMode::values);
             }
 
-            public static CrateModeArgumentType crateMode() {
-                return new CrateModeArgumentType();
+            public static CrateMode.CrateModeArgumentType crateMode() {
+                return new CrateMode.CrateModeArgumentType();
             }
 
             public static CrateMode getCrateMode(CommandContext<?> context, String id) {
@@ -518,7 +835,7 @@ public class ModConfig {
         }
     }
 
-    public enum Kit implements NameableEnum, StringIdentifiable {
+    public enum Kit implements SelectionListEntry.Translatable, StringIdentifiable {
 
         SKYTITAN("Skytitan", 24, List.of(
                 new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64),
@@ -556,11 +873,11 @@ public class ModConfig {
                 new ItemStack(Items.YELLOW_WOOL, 64), new ItemStack(Items.LIME_WOOL, 64), new ItemStack(Items.PINK_WOOL, 64), new ItemStack(Items.GRAY_WOOL, 64),
                 new ItemStack(Items.LIGHT_GRAY_WOOL, 64), new ItemStack(Items.CYAN_WOOL, 64), new ItemStack(Items.PURPLE_WOOL, 64), new ItemStack(Items.BLUE_WOOL, 64),
                 new ItemStack(Items.BROWN_WOOL, 64), new ItemStack(Items.GREEN_WOOL, 64), new ItemStack(Items.RED_WOOL, 64), new ItemStack(Items.BLACK_WOOL, 64)
-                )),
+        )),
         WOOD("Wood", 24, List.of(
                 new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64),
                 new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64), new ItemStack(Items.OAK_PLANKS, 64)
-                )),
+        )),
         COBBLE("Cobble", 24, List.of(
                 new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64)
         ));
@@ -583,22 +900,22 @@ public class ModConfig {
             return items;
         }
 
-        public Text getDisplayName() {
-            return Text.translatable(name);
+        public String getKey() {
+            return name;
         }
 
         @Override
         public String asString() {
-            return getDisplayName().getString();
+            return Text.translatable(name).getString();
         }
 
         public static class KitArgumentType extends EnumArgumentType<Kit> {
             private KitArgumentType() {
-                super(StringIdentifiable.createCodec(ModConfig.Kit::values), ModConfig.Kit::values);
+                super(StringIdentifiable.createCodec(Kit::values), Kit::values);
             }
 
             public static KitArgumentType kit() {
-                return new KitArgumentType();
+                return new Kit.KitArgumentType();
             }
 
             public static Kit getKit(CommandContext<?> context, String id) {

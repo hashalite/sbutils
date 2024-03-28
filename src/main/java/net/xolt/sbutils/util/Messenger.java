@@ -6,7 +6,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.xolt.sbutils.config.KeyValueController;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.AutoKit;
 
@@ -29,8 +28,8 @@ public class Messenger {
             return;
         }
 
-        MutableText sbutilsText = Text.literal("sbutils").formatted(ModConfig.HANDLER.instance().sbutilsColor.getFormatting());
-        MutableText prefix = insertPlaceholders(Text.literal(ModConfig.HANDLER.instance().messagePrefix + " ").formatted(ModConfig.HANDLER.instance().prefixColor.getFormatting()), sbutilsText);
+        MutableText sbutilsText = Text.literal("sbutils").formatted(ModConfig.INSTANCE.sbutilsColor.getFormatting());
+        MutableText prefix = insertPlaceholders(Text.literal(ModConfig.INSTANCE.messagePrefix + " ").formatted(ModConfig.INSTANCE.prefixColor.getFormatting()), sbutilsText);
 
         MC.player.sendMessage(prefix.append(message));
     }
@@ -62,11 +61,11 @@ public class Messenger {
     }
 
     private static Formatting getMessageColor() {
-        return ModConfig.HANDLER.instance().messageColor.getFormatting();
+        return ModConfig.INSTANCE.messageColor.getFormatting();
     }
 
     private static Formatting getValueColor() {
-        return ModConfig.HANDLER.instance().valueColor.getFormatting();
+        return ModConfig.INSTANCE.valueColor.getFormatting();
     }
 
     public static void printWithPlaceholders(String message, Object ... args) {
@@ -143,7 +142,7 @@ public class Messenger {
 
     public static void printAutoAdvertInfo(boolean enabled, boolean onSkyblock, int adIndex, int remainingDelay, boolean userWhitelisted, boolean whitelistEnabled) {
         if (!enabled) {
-            printSetting("text.sbutils.config.category.autoadvert", false);
+            printSetting("text.autoconfig.sbutils.option.autoAdvert", false);
             return;
         }
 
@@ -239,7 +238,7 @@ public class Messenger {
 
     public static void printAutoFixInfo(boolean enabled, boolean fixing, int mostDamagedItem, int remainingDelay) {
         if (!enabled) {
-            printSetting("text.sbutils.config.category.autofix", false);
+            printSetting("text.autoconfig.sbutils.option.autoFix", false);
             return;
         }
 
@@ -263,17 +262,17 @@ public class Messenger {
         }
     }
 
-    public static void printAutoCommands(List<KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>>> commands, HashMap<KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>>, Long> cmdsLastSentAt, boolean enabled) {
+    public static void printAutoCommands(List<ModConfig.AutoCommandConfig.AutoCommandEntry> commands, HashMap<ModConfig.AutoCommandConfig.AutoCommandEntry, Long> cmdsLastSentAt, boolean enabled) {
         printMessage("message.sbutils.autoCommand.commands");
         MutableText commandEntryFormat = Text.translatable("message.sbutils.autoCommand.commandEntry").formatted(getMessageColor());
         Formatting valueColor = getValueColor();
         long currentTime = System.currentTimeMillis();
         for (int i = 0; i < commands.size(); i++) {
-            KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>> command = commands.get(i);
-            MutableText commandText = Text.literal(command.getKey()).formatted(valueColor);
-            double delay = command.getValue().getKey();
+            ModConfig.AutoCommandConfig.AutoCommandEntry command = commands.get(i);
+            MutableText commandText = Text.literal(command.command).formatted(valueColor);
+            double delay = command.delay;
             MutableText delayText = Text.literal(formatTime(delay)).formatted(valueColor);
-            boolean cmdEnabled = command.getValue().getValue();
+            boolean cmdEnabled = command.enabled;
             MutableText enabledText = boolToText(cmdEnabled);
             Long cmdLastSentAt = cmdsLastSentAt.get(command);
             MutableText delayLeftText;
@@ -289,11 +288,11 @@ public class Messenger {
         }
     }
 
-    public static void printAutoCommandToggled(KeyValueController.KeyValuePair<String, KeyValueController.KeyValuePair<Double, Boolean>> command, boolean enabled) {
+    public static void printAutoCommandToggled(ModConfig.AutoCommandConfig.AutoCommandEntry command) {
         Formatting valueColor = getValueColor();
         MutableText format = Text.translatable("message.sbutils.autoCommand.commandToggleSuccess");
-        MutableText commandText = Text.literal(command.getKey()).formatted(valueColor);
-        MutableText enabledText = boolToText(enabled);
+        MutableText commandText = Text.literal(command.command).formatted(valueColor);
+        MutableText enabledText = boolToText(!command.enabled);
         insertPlaceholders(format, commandText, enabledText);
     }
 
@@ -336,7 +335,7 @@ public class Messenger {
     }
 
     public static void printAutoMineEnabledFor(int timer) {
-        printWithPlaceholders("message.sbutils.autoMine.enabledFor", "text.sbutils.config.category.automine", formatTime(timer));
+        printWithPlaceholders("message.sbutils.autoMine.enabledFor", "text.autoconfig.sbutils.option.autoMine", formatTime(timer));
     }
 
     public static void printAutoMineTime(int timer) {
@@ -344,7 +343,7 @@ public class Messenger {
             Messenger.printMessage("message.sbutils.autoMine.timerNotSet");
             return;
         }
-        printWithPlaceholders("message.sbutils.autoMine.disabledIn", "text.sbutils.config.category.automine", formatTime(timer));
+        printWithPlaceholders("message.sbutils.autoMine.disabledIn", "text.autoconfig.sbutils.option.autoMine", formatTime(timer));
     }
 
     private static String formatTime(double seconds) {

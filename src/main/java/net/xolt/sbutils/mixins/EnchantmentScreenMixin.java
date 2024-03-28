@@ -24,10 +24,10 @@ public abstract class EnchantmentScreenMixin extends HandledScreen<EnchantmentSc
 
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
-        if (!ModConfig.HANDLER.instance().showSilkButton) {
+        if (!ModConfig.INSTANCE.autoSilk.showSilkButton) {
             return;
         }
-        ModConfig.CornerButtonPos buttonPos = ModConfig.HANDLER.instance().silkButtonPos;
+        ModConfig.CornerButtonPos buttonPos = ModConfig.INSTANCE.autoSilk.silkButtonPos;
         int y = switch (buttonPos) {
             case TOP_LEFT, TOP_RIGHT -> ((this.height - this.backgroundHeight) / 2) - AutoSilk.BUTTON_HEIGHT;
             case BOTTOM_LEFT, BOTTOM_RIGHT -> (this.height + this.backgroundHeight) / 2;
@@ -37,25 +37,25 @@ public abstract class EnchantmentScreenMixin extends HandledScreen<EnchantmentSc
             case TOP_RIGHT, BOTTOM_RIGHT -> ((this.width + this.backgroundWidth) / 2) - AutoSilk.BUTTON_WIDTH;
         };
         AutoSilk.autoSilkButton = CyclingButtonWidget.onOffBuilder(Text.translatable("message.sbutils.enabled"), Text.translatable("message.sbutils.disabled"))
-                .initially(ModConfig.HANDLER.instance().autoSilk)
-                .build(x, y, 100, 20, Text.translatable("text.sbutils.config.category.autosilk"), (button, value) -> {
-                    ModConfig.HANDLER.instance().autoSilk = value;
+                .initially(ModConfig.INSTANCE.autoSilk.autoSilk)
+                .build(x, y, 100, 20, Text.translatable("text.autoconfig.sbutils.option.autoSilk.autoSilk"), (button, value) -> {
+                    ModConfig.INSTANCE.autoSilk.autoSilk = value;
                     if (!value) {
-                        ModConfig.HANDLER.save();
+                        ModConfig.HOLDER.save();
                     }
                 });
     }
 
     @Inject(method = "mouseClicked", at = @At("TAIL"))
     private void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (ModConfig.HANDLER.instance().showSilkButton && AutoSilk.autoSilkButton != null) {
+        if (ModConfig.INSTANCE.autoSilk.showSilkButton && AutoSilk.autoSilkButton != null) {
             AutoSilk.autoSilkButton.mouseClicked(mouseX, mouseY, button);
         }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
     private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (ModConfig.HANDLER.instance().showSilkButton && AutoSilk.autoSilkButton != null) {
+        if (ModConfig.INSTANCE.autoSilk.showSilkButton && AutoSilk.autoSilkButton != null) {
             AutoSilk.autoSilkButton.render(context, mouseX, mouseY, delta);
         }
     }

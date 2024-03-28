@@ -30,8 +30,8 @@ public class AntiPlace {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal(COMMAND)
-                .then(CommandUtils.bool("heads", "antiPlaceHeads", () -> ModConfig.HANDLER.instance().antiPlaceHeads, (value) -> ModConfig.HANDLER.instance().antiPlaceHeads = value))
-                .then(CommandUtils.bool("grass", "antiPlaceGrass", () -> ModConfig.HANDLER.instance().antiPlaceGrass, (value) -> ModConfig.HANDLER.instance().antiPlaceGrass = value))
+                .then(CommandUtils.bool("heads", "antiPlace.antiPlaceHeads", () -> ModConfig.INSTANCE.antiPlace.antiPlaceHeads, (value) -> ModConfig.INSTANCE.antiPlace.antiPlaceHeads = value))
+                .then(CommandUtils.bool("grass", "antiPlace.antiPlaceGrass", () -> ModConfig.INSTANCE.antiPlace.antiPlaceGrass, (value) -> ModConfig.INSTANCE.antiPlace.antiPlaceGrass = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -52,12 +52,12 @@ public class AntiPlace {
         }
 
         ItemStack held = player.getStackInHand(hand);
-        if (ModConfig.HANDLER.instance().antiPlaceHeads && isNamedHead(held)) {
+        if (ModConfig.INSTANCE.antiPlace.antiPlaceHeads && isNamedHead(held)) {
             notifyBlocked("message.sbutils.antiPlace.headBlocked");
             return true;
         }
 
-        if (ModConfig.HANDLER.instance().antiPlaceGrass && isGrass(held)) {
+        if (ModConfig.INSTANCE.antiPlace.antiPlaceGrass && isGrass(held)) {
             notifyBlocked("message.sbutils.antiPlace.grassBlocked");
             return true;
         }

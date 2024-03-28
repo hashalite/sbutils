@@ -29,8 +29,8 @@ public class CommandUtils {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
                     set.accept(!get.get());
-                    ModConfig.HANDLER.save();
-                    Messenger.printChangedSetting("text.sbutils.config.category." + category, get.get());
+                    ModConfig.HOLDER.save();
+                    Messenger.printChangedSetting("text.autoconfig.sbutils.option." + category, get.get());
                     return Command.SINGLE_SUCCESS;
                 });
     }
@@ -40,8 +40,8 @@ public class CommandUtils {
                 .then(ClientCommandManager.literal("set")
                         .executes(context -> {
                             set.accept("");
-                            ModConfig.HANDLER.save();
-                            Messenger.printChangedSetting("text.sbutils.config.option." + setting, "");
+                            ModConfig.HOLDER.save();
+                            Messenger.printChangedSetting("text.autoconfig.sbutils.option." + setting, "");
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(setter(argument, setting, get, set, StringArgumentType.greedyString(), StringArgumentType::getString)));
@@ -99,7 +99,7 @@ public class CommandUtils {
     public static <T> LiteralArgumentBuilder<FabricClientCommandSource> getter(String command, String setting, Supplier<T> get) {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
-                    Messenger.printSetting("text.sbutils.config.option." + setting, get.get());
+                    Messenger.printSetting("text.autoconfig.sbutils.option." + setting, get.get());
                     return Command.SINGLE_SUCCESS;
                 });
     }
@@ -108,8 +108,8 @@ public class CommandUtils {
         return ClientCommandManager.argument(argument, argumentType)
                 .executes(context -> {
                     set.accept(getArgument.apply(context, argument));
-                    ModConfig.HANDLER.save();
-                    Messenger.printChangedSetting("text.sbutils.config.option." + setting, get.get());
+                    ModConfig.HOLDER.save();
+                    Messenger.printChangedSetting("text.autoconfig.sbutils.option." + setting, get.get());
                     return Command.SINGLE_SUCCESS;
                 });
     }

@@ -1,13 +1,16 @@
 package net.xolt.sbutils;
 
+import com.mojang.brigadier.CommandDispatcher;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.xolt.sbutils.config.ConfigGui;
+import net.minecraft.command.CommandRegistryAccess;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.features.*;
 import net.xolt.sbutils.util.IOHandler;
@@ -37,43 +40,44 @@ public class SbUtils implements ClientModInitializer {
     public void onInitializeClient() {
         IOHandler.createAll();
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            EnchantAll.registerCommand(dispatcher);
-            AutoAdvert.registerCommand(dispatcher);
-            Convert.registerCommand(dispatcher);
-            OpenFolder.registerCommand(dispatcher);
-            AutoPrivate.registerCommand(dispatcher);
-            StaffDetector.registerCommand(dispatcher);
-            ChatFilters.registerCommand(dispatcher);
-            ChatLogger.registerCommand(dispatcher);
-            JoinCommands.registerCommand(dispatcher);
-            AutoCrate.registerCommand(dispatcher);
-            AutoSilk.registerCommand(dispatcher);
-            Mentions.registerCommand(dispatcher);
-            ToolSaver.registerCommand(dispatcher);
-            AutoMine.registerCommand(dispatcher);
-            AutoFix.registerCommand(dispatcher);
-            AutoRaffle.registerCommand(dispatcher);
-            ChatAppend.registerCommand(dispatcher);
-            AutoReply.registerCommand(dispatcher);
-            AutoCommand.registerCommand(dispatcher);
-            AntiPlace.registerCommand(dispatcher);
-            Centered.registerCommand(dispatcher);
-            DeathCoords.registerCommand(dispatcher);
-            EventNotifier.registerCommand(dispatcher);
-            NoGMT.registerCommand(dispatcher);
-            AutoKit.registerCommand(dispatcher);
-        });
-
-        registerKeybindings();
-
-        ModConfig.HANDLER.load();
+        ModConfig.init();
 
         EnchantAll.init();
         AutoSilk.init();
         AutoFix.init();
         AutoReply.init();
         AutoKit.init();
+
+        ClientCommandRegistrationCallback.EVENT.register(SbUtils::registerCommands);
+        registerKeybindings();
+    }
+
+    private static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+        EnchantAll.registerCommand(dispatcher);
+        AutoAdvert.registerCommand(dispatcher);
+        Convert.registerCommand(dispatcher);
+        OpenFolder.registerCommand(dispatcher);
+        AutoPrivate.registerCommand(dispatcher);
+        StaffDetector.registerCommand(dispatcher);
+        ChatFilters.registerCommand(dispatcher);
+        ChatLogger.registerCommand(dispatcher);
+        JoinCommands.registerCommand(dispatcher);
+        AutoCrate.registerCommand(dispatcher);
+        AutoSilk.registerCommand(dispatcher);
+        Mentions.registerCommand(dispatcher);
+        ToolSaver.registerCommand(dispatcher);
+        AutoMine.registerCommand(dispatcher);
+        AutoFix.registerCommand(dispatcher);
+        AutoRaffle.registerCommand(dispatcher);
+        ChatAppend.registerCommand(dispatcher);
+        AutoReply.registerCommand(dispatcher);
+        AutoCommand.registerCommand(dispatcher);
+        AntiPlace.registerCommand(dispatcher);
+        Centered.registerCommand(dispatcher);
+        DeathCoords.registerCommand(dispatcher);
+        EventNotifier.registerCommand(dispatcher);
+        NoGMT.registerCommand(dispatcher);
+        AutoKit.registerCommand(dispatcher);
     }
 
     private static void registerKeybindings() {
@@ -88,7 +92,7 @@ public class SbUtils implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (configKey.wasPressed()) {
-                MC.setScreen(ConfigGui.getModConfigScreen(MC.currentScreen));
+                MC.setScreen(AutoConfig.getConfigScreen(ModConfig.class, MC.currentScreen).get());
             }
 
             if (MC.getNetworkHandler() == null) {

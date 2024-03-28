@@ -18,34 +18,34 @@ public class ChatLogger {
     private static final String ALIAS = "logger";
 
     private static List<ChatFilter> shopFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.shopLoggerIncoming",
+            new ChatFilter("text.autoconfig.sbutils.option.chatLogger.shopLoggerIncoming",
                     List.of(RegexFilters.incomingTransactionFilter),
-                    () -> ModConfig.HANDLER.instance().shopLoggerIncoming),
-            new ChatFilter("text.sbutils.config.option.shopLoggerOutgoing",
+                    () -> ModConfig.INSTANCE.chatLogger.shopLoggerIncoming),
+            new ChatFilter("text.autoconfig.sbutils.option.chatLogger.shopLoggerOutgoing",
                     List.of(RegexFilters.outgoingTransactionFilter),
-                    () -> ModConfig.HANDLER.instance().shopLoggerOutgoing)
+                    () -> ModConfig.INSTANCE.chatLogger.shopLoggerOutgoing)
     );
     private static List<ChatFilter> messageFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.msgLoggerIncoming", List.of(RegexFilters.incomingMsgFilter), () -> ModConfig.HANDLER.instance().msgLoggerIncoming),
-            new ChatFilter("text.sbutils.config.option.msgLoggerOutgoing", List.of(RegexFilters.outgoingMsgFilter), () -> ModConfig.HANDLER.instance().msgLoggerOutgoing)
+            new ChatFilter("text.autoconfig.sbutils.option.chatLogger.msgLoggerIncoming", List.of(RegexFilters.incomingMsgFilter), () -> ModConfig.INSTANCE.chatLogger.msgLoggerIncoming),
+            new ChatFilter("text.autoconfig.sbutils.option.chatLogger.msgLoggerOutgoing", List.of(RegexFilters.outgoingMsgFilter), () -> ModConfig.INSTANCE.chatLogger.msgLoggerOutgoing)
     );
     private static List<ChatFilter> visitFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.visitLogger", List.of(RegexFilters.visitFilter), () -> ModConfig.HANDLER.instance().visitLogger)
+            new ChatFilter("text.autoconfig.sbutils.option.chatLogger.visitLogger", List.of(RegexFilters.visitFilter), () -> ModConfig.INSTANCE.chatLogger.visitLogger)
     );
     private static List<ChatFilter> dpFilters = List.of(
-            new ChatFilter("text.sbutils.config.option.dpLogger", List.of(RegexFilters.dpWinnerFilter), () -> ModConfig.HANDLER.instance().dpLogger)
+            new ChatFilter("text.autoconfig.sbutils.option.chatLogger.dpLogger", List.of(RegexFilters.dpWinnerFilter), () -> ModConfig.INSTANCE.chatLogger.dpLogger)
     );
 
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(
                 CommandUtils.runnable(COMMAND, () -> Messenger.printEnabledFilters("message.sbutils.chatLogger.status", getFilters()))
-                    .then(CommandUtils.bool("incomingShop", "shopLoggerIncoming", () -> ModConfig.HANDLER.instance().shopLoggerIncoming, (value) -> ModConfig.HANDLER.instance().shopLoggerIncoming = value))
-                    .then(CommandUtils.bool("outgoingShop", "shopLoggerOutgoing", () -> ModConfig.HANDLER.instance().shopLoggerOutgoing, (value) -> ModConfig.HANDLER.instance().shopLoggerOutgoing = value))
-                    .then(CommandUtils.bool("incomingMsg", "msgLoggerIncoming", () -> ModConfig.HANDLER.instance().msgLoggerIncoming, (value) -> ModConfig.HANDLER.instance().msgLoggerIncoming = value))
-                    .then(CommandUtils.bool("outgoingMsg", "msgLoggerOutgoing", () -> ModConfig.HANDLER.instance().msgLoggerOutgoing, (value) -> ModConfig.HANDLER.instance().msgLoggerOutgoing = value))
-                    .then(CommandUtils.bool("visit", "visitLogger", () -> ModConfig.HANDLER.instance().visitLogger, (value) -> ModConfig.HANDLER.instance().visitLogger = value))
-                    .then(CommandUtils.bool("dp", "dpLogger", () -> ModConfig.HANDLER.instance().dpLogger, (value) -> ModConfig.HANDLER.instance().dpLogger = value))
+                    .then(CommandUtils.bool("incomingShop", "chatLogger.shopLoggerIncoming", () -> ModConfig.INSTANCE.chatLogger.shopLoggerIncoming, (value) -> ModConfig.INSTANCE.chatLogger.shopLoggerIncoming = value))
+                    .then(CommandUtils.bool("outgoingShop", "chatLogger.shopLoggerOutgoing", () -> ModConfig.INSTANCE.chatLogger.shopLoggerOutgoing, (value) -> ModConfig.INSTANCE.chatLogger.shopLoggerOutgoing = value))
+                    .then(CommandUtils.bool("incomingMsg", "chatLogger.msgLoggerIncoming", () -> ModConfig.INSTANCE.chatLogger.msgLoggerIncoming, (value) -> ModConfig.INSTANCE.chatLogger.msgLoggerIncoming = value))
+                    .then(CommandUtils.bool("outgoingMsg", "chatLogger.msgLoggerOutgoing", () -> ModConfig.INSTANCE.chatLogger.msgLoggerOutgoing, (value) -> ModConfig.INSTANCE.chatLogger.msgLoggerOutgoing = value))
+                    .then(CommandUtils.bool("visit", "chatLogger.visitLogger", () -> ModConfig.INSTANCE.chatLogger.visitLogger, (value) -> ModConfig.INSTANCE.chatLogger.visitLogger = value))
+                    .then(CommandUtils.bool("dp", "chatLogger.dpLogger", () -> ModConfig.INSTANCE.chatLogger.dpLogger, (value) -> ModConfig.INSTANCE.chatLogger.dpLogger = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)

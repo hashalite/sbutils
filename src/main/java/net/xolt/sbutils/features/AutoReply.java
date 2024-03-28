@@ -31,9 +31,9 @@ public class AutoReply {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoreply", () -> ModConfig.HANDLER.instance().autoReply, (value) -> ModConfig.HANDLER.instance().autoReply = value)
-                    .then(CommandUtils.string("response", "response", "autoResponse", () -> ModConfig.HANDLER.instance().autoResponse, (value) -> ModConfig.HANDLER.instance().autoResponse = value))
-                    .then(CommandUtils.doubl("delay", "seconds", "autoReplyDelay", () -> ModConfig.HANDLER.instance().autoReplyDelay, (value) -> ModConfig.HANDLER.instance().autoReplyDelay = value))
+                CommandUtils.toggle(COMMAND, "autoReply", () -> ModConfig.INSTANCE.autoReply.autoReply, (value) -> ModConfig.INSTANCE.autoReply.autoReply = value)
+                    .then(CommandUtils.string("response", "response", "autoReply.autoResponse", () -> ModConfig.INSTANCE.autoReply.autoResponse, (value) -> ModConfig.INSTANCE.autoReply.autoResponse = value))
+                    .then(CommandUtils.doubl("delay", "seconds", "autoReply.autoReplyDelay", () -> ModConfig.INSTANCE.autoReply.autoReplyDelay, (value) -> ModConfig.INSTANCE.autoReply.autoReplyDelay = value))
         );
 
         dispatcher.register(ClientCommandManager.literal(ALIAS)
@@ -44,17 +44,17 @@ public class AutoReply {
     }
 
     public static void tick() {
-        if (!ModConfig.HANDLER.instance().autoReply || MC.getNetworkHandler() == null) {
+        if (!ModConfig.INSTANCE.autoReply.autoReply || MC.getNetworkHandler() == null) {
             return;
         }
 
-        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.instance().autoReplyDelay * 1000.0) {
+        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.INSTANCE.autoReply.autoReplyDelay * 1000.0) {
             sendMessage();
         }
     }
 
     public static void processMessage(Text message) {
-        if (!ModConfig.HANDLER.instance().autoReply) {
+        if (!ModConfig.INSTANCE.autoReply.autoReply) {
             return;
         }
 
@@ -65,7 +65,7 @@ public class AutoReply {
     }
 
     private static void queueResponse(String sender) {
-        msgQueue.offer("msg " + sender + " " + ModConfig.HANDLER.instance().autoResponse);
+        msgQueue.offer("msg " + sender + " " + ModConfig.INSTANCE.autoReply.autoResponse);
     }
 
     private static void sendMessage() {

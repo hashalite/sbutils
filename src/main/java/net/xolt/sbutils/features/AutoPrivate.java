@@ -12,6 +12,7 @@ import net.xolt.sbutils.util.CommandUtils;
 import net.xolt.sbutils.util.Messenger;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
@@ -24,9 +25,9 @@ public class AutoPrivate {
     public static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         SbUtils.commands.addAll(List.of(COMMAND, ALIAS));
         final LiteralCommandNode<FabricClientCommandSource> autoPrivateNode = dispatcher.register(
-                CommandUtils.toggle(COMMAND, "autoprivate", () -> ModConfig.HANDLER.instance().autoPrivate, (value) -> ModConfig.HANDLER.instance().autoPrivate = value)
+                CommandUtils.toggle(COMMAND, "autoPrivate", () -> ModConfig.INSTANCE.autoPrivate.autoPrivate, (value) -> ModConfig.INSTANCE.autoPrivate.autoPrivate = value)
                         .then(CommandUtils.stringList("names", "name", "message.sbutils.autoPrivate.names",
-                                () -> ModConfig.HANDLER.instance().autoPrivateNames,
+                                () -> ModConfig.INSTANCE.autoPrivate.autoPrivateNames,
                                 AutoPrivate::onAddNameCommand,
                                 AutoPrivate::onDelNameCommand,
                                 AutoPrivate::onInsertNameCommand))
@@ -40,7 +41,7 @@ public class AutoPrivate {
     }
 
     private static void onAddNameCommand(String name) {
-        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().autoPrivateNames);
+        List<String> names = new ArrayList<>(ModConfig.INSTANCE.autoPrivate.autoPrivateNames);
 
         if (names.size() >= 2) {
             Messenger.printMessage("message.sbutils.autoPrivate.maxNamesSet");
@@ -53,15 +54,15 @@ public class AutoPrivate {
         }
 
         names.add(name);
-        ModConfig.HANDLER.instance().autoPrivateNames = names;
-        ModConfig.HANDLER.save();
+        ModConfig.INSTANCE.autoPrivate.autoPrivateNames = names;
+        ModConfig.HOLDER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoPrivate.nameAddSuccess", name);
     }
 
     private static void onDelNameCommand(int index) {
-        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().autoPrivateNames);
+        List<String> names = new ArrayList<>(ModConfig.INSTANCE.autoPrivate.autoPrivateNames);
 
-        if (ModConfig.HANDLER.instance().autoPrivateNames.isEmpty()) {
+        if (ModConfig.INSTANCE.autoPrivate.autoPrivateNames.isEmpty()) {
             Messenger.printMessage("message.sbutils.autoPrivate.noNamesSet");
             return;
         }
@@ -73,13 +74,13 @@ public class AutoPrivate {
         }
 
         String name = names.remove(adjustedIndex);
-        ModConfig.HANDLER.instance().autoPrivateNames = names;
-        ModConfig.HANDLER.save();
+        ModConfig.INSTANCE.autoPrivate.autoPrivateNames = names;
+        ModConfig.HOLDER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoPrivate.nameDelSuccess", name);
     }
 
     private static void onInsertNameCommand(int index, String name) {
-        List<String> names = new ArrayList<>(ModConfig.HANDLER.instance().autoPrivateNames);
+        List<String> names = new ArrayList<>(ModConfig.INSTANCE.autoPrivate.autoPrivateNames);
 
         int adjustedIndex = index - 1;
         if (adjustedIndex > Math.max(1, names.size()) || adjustedIndex < 0) {
@@ -95,13 +96,13 @@ public class AutoPrivate {
         names.add(adjustedIndex, name);
         while (names.size() > 2)
             names.remove(names.size() - 1);
-        ModConfig.HANDLER.instance().autoPrivateNames = names;
-        ModConfig.HANDLER.save();
+        ModConfig.INSTANCE.autoPrivate.autoPrivateNames = names;
+        ModConfig.HOLDER.save();
         Messenger.printWithPlaceholders("message.sbutils.autoPrivate.nameAddSuccess", name);
     }
 
     public static boolean onSignEditorOpen(SignEditorOpenS2CPacket packet) {
-        if (!ModConfig.HANDLER.instance().autoPrivate || !packet.isFront()) {
+        if (!ModConfig.INSTANCE.autoPrivate.autoPrivate || !packet.isFront()) {
             return false;
         }
         return updateSign(packet);
@@ -112,7 +113,7 @@ public class AutoPrivate {
             return false;
         }
 
-        List<String> names = ModConfig.HANDLER.instance().autoPrivateNames;
+        List<String> names = ModConfig.INSTANCE.autoPrivate.autoPrivateNames;
         String[] lines = {"", ""};
 
         for (int i = 0; i < Math.min(names.size(), lines.length); i++) {
@@ -121,5 +122,12 @@ public class AutoPrivate {
 
         MC.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(packet.getPos(), true, "[private]", "", lines[0], lines[1]));
         return true;
+    }
+
+    public static void onConfigSave(ModConfig newConfig) {
+        newConfig.autoPrivate.autoPrivateNames = new ArrayList<>(new LinkedHashSet<>(newConfig.autoPrivate.autoPrivateNames));
+        while (newConfig.autoPrivate.autoPrivateNames.size() > 2) {
+            newConfig.autoPrivate.autoPrivateNames.remove(newConfig.autoPrivate.autoPrivateNames.size() - 1);
+        }
     }
 }
