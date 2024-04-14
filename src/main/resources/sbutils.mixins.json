@@ -15,8 +15,9 @@
     "GameRendererMixin",
     "GuiMixin",
     "LocalPlayerMixin",
+    "MapInstanceAccessor",
     "MinecraftMixin",
-    "MultiPlayerGameModeMixin",
+    "MultiPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

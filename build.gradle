@@ -17,6 +17,10 @@ repositories {
     maven { url "https://maven.parchmentmc.org/" }
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/sbutils.accesswidener")
+}
+
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.mc_version}"

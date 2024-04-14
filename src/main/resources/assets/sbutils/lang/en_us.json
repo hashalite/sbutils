@@ -38,6 +38,10 @@
   "message.sbutils.joinCommands.commandSetSuccess": "Command changed from %s to %s.",
   "message.sbutils.joinCommands.accountSetSuccess": "Account list for command %s updated to %s.",
 
+  "message.sbutils.mapSaver.saveSuccess": "Map saved successfully.",
+  "message.sbutils.mapSaver.saveFailed": "Failed to save map.",
+  "message.sbutils.mapSaver.notHoldingOrInFrame": "You are not holding or looking at a map.",
+
   "message.sbutils.enchantAll.complete": "Enchanting complete.",
   "message.sbutils.enchantAll.pleaseWait": "Please wait until the current item is finished enchanting.",
   "message.sbutils.enchantAll.cancelSlotSwitch": "Cancelled /enchantall due to switching slots.",

@@ -80,6 +80,7 @@ public class SbUtils implements ClientModInitializer {
                 new Notifier(),
                 new InvCleaner(),
                 new JoinCommands(),
+                new MapSaver(),
                 new Mentions(),
                 new NoGMT(),
                 new OpenFolder(),

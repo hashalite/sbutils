@@ -2,11 +2,10 @@ package net.xolt.sbutils.util;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.xolt.sbutils.SbUtils;
-import net.xolt.sbutils.systems.ServerDetector;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +20,7 @@ import java.util.Map;
 import static net.xolt.sbutils.SbUtils.LOGGER;
 
 public class IOHandler {
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("[YYYY-MM-dd HH:mm:ss] ");
+    private static final SimpleDateFormat dateTimeLogFormat = new SimpleDateFormat("[YYYY-MM-dd HH:mm:ss] ");
     public static final File mcDirectory = FabricLoader.getInstance().getGameDir().toFile();
 
     public static final File modDirectory = new File(mcDirectory + File.separator + "sbutils");
@@ -33,6 +32,7 @@ public class IOHandler {
     public static final File dpLogFile = new File(loggerDir + File.separator + "dp.txt");
     public static final File autoKitDir = new File(modDirectory + File.separator + "autokit");
     public static final File autoKitFile = new File(autoKitDir + File.separator + "autokit.json");
+    public static final File mapSaverDir = new File(modDirectory + File.separator + "mapsaver");
 
     public static boolean createAll() {
         return createDirectories() && createFiles();
@@ -44,6 +44,7 @@ public class IOHandler {
             autoAdvertDir.mkdir();
             loggerDir.mkdir();
             autoKitDir.mkdir();
+            mapSaverDir.mkdir();
         } catch (SecurityException e) {
             LOGGER.error("Unable to create directory: " + e.getMessage());
             return false;
@@ -86,19 +87,19 @@ public class IOHandler {
     }
 
     public static void logTransaction(Component message,long messageReceivedAt) {
-        logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), transactionLogFile);
+        logToFile(dateTimeLogFormat.format(new Date(messageReceivedAt)) + message.getString(), transactionLogFile);
     }
 
     public static void logMessage(Component message,long messageReceivedAt) {
-        logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), messageLogFile);
+        logToFile(dateTimeLogFormat.format(new Date(messageReceivedAt)) + message.getString(), messageLogFile);
     }
 
     public static void logVisit(Component message,long messageReceivedAt) {
-        logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), visitLogFile);
+        logToFile(dateTimeLogFormat.format(new Date(messageReceivedAt)) + message.getString(), visitLogFile);
     }
 
     public static void logDpWinner(Component message, long messageReceivedAt) {
-        logToFile(dateFormat.format(new Date(messageReceivedAt)) + message.getString(), dpLogFile);
+        logToFile(dateTimeLogFormat.format(new Date(messageReceivedAt)) + message.getString(), dpLogFile);
     }
 
     public static boolean writeAdverts(List<String> adverts, String adFile) {
@@ -159,5 +160,18 @@ public class IOHandler {
             LOGGER.error("Auto Kit data is in the wrong format, resetting.");
             return new HashMap<>();
         }
+    }
+
+    public static boolean saveMapImage(int mapId, NativeImage image) {
+        File imagePath = null;
+        int suffix = 1;
+        while (imagePath == null || imagePath.exists())
+            imagePath = new File(mapSaverDir + File.separator + mapId + "-" + suffix++ + ".png");
+        try {
+            image.writeToFile(imagePath);
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 }

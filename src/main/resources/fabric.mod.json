@@ -23,6 +23,7 @@
   "mixins": [
     "sbutils.mixins.json"
   ],
+  "accessWidener":  "sbutils.accesswidener",
   "depends": {
     "fabricloader": ">=0.12.11",
     "fabric": "*",
