@@ -50,12 +50,11 @@ public class ChatListenerMixin {
 
     private static void preFilterMessage(Component message) {
         SbUtils.FEATURES.get(ChatLogger.class).processMessage(message);
-        SbUtils.FEATURES.get(AutoFix.class).processMessage(message);
         SbUtils.FEATURES.get(AutoRaffle.class).processMessage(message);
         SbUtils.FEATURES.get(AutoReply.class).processMessage(message);
-        SbUtils.FEATURES.get(EnchantAll.class).processMessage(message);
         SbUtils.FEATURES.get(Notifier.class).processMessage(message);
-        SbUtils.FEATURES.get(AutoKit.class).processMessage(message);
+        SbUtils.FEATURES.get(AutoKit.class).onKitResponse(message);
+        SbUtils.COMMAND_SENDER.processMessage(message);
     }
 
     private static void postFilterMessage(Component message) {

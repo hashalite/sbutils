@@ -16,6 +16,7 @@ import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.config.gui.ConfigGui;
 import net.xolt.sbutils.feature.*;
 import net.xolt.sbutils.feature.features.*;
+import net.xolt.sbutils.systems.CommandSender;
 import net.xolt.sbutils.systems.ServerDetector;
 import net.xolt.sbutils.systems.TpsEstimator;
 import net.xolt.sbutils.util.IOHandler;
@@ -31,6 +32,7 @@ public class SbUtils implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("sbutils");
     public static final Minecraft MC = Minecraft.getInstance();
     public static final Features FEATURES = new Features();
+    public static final CommandSender COMMAND_SENDER = new CommandSender();
     public static final ServerDetector SERVER_DETECTOR = new ServerDetector();
     public static final TpsEstimator TPS_ESTIMATOR = new TpsEstimator();
     private static final OptionBinding<String> prefixFormat = new OptionBinding<>("prefixFormat", String.class, (config) -> config.prefixFormat, (config, value) -> config.prefixFormat = value);

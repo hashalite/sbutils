@@ -7,9 +7,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -21,6 +23,7 @@ import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.mixins.ContainerScreenAccessor;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
+import net.xolt.sbutils.util.RegexFilters;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -125,6 +128,11 @@ public class InvCleaner extends Feature {
         ChatUtils.printMessage("message.sbutils.invCleaner.cleaning");
     }
 
+    private void onDisposalResponse(Component response) {
+        if (response == null)
+            reset();
+    }
+
     private void reset() {
         cleaning = false;
         openedDisposal = false;
@@ -134,10 +142,10 @@ public class InvCleaner extends Feature {
         stacksCleaned = 0;
     }
 
-    private static void openDisposal() {
+    private void openDisposal() {
         if (MC.getConnection() == null)
             return;
-        MC.getConnection().sendCommand("disposal");
+        SbUtils.COMMAND_SENDER.sendCommand("disposal", this::onDisposalResponse, RegexFilters.openingDisposal);
     }
 
     private static boolean isDisposalScreen(Screen screen) {

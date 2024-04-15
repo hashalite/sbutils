@@ -19,6 +19,8 @@
   "message.sbutils.timeArgumentType.timeTooLowException": "%s is below minimum time %s",
   "message.sbutils.colorArgumentType.invalidColorFormat": "Invalid color format \"%s\"",
 
+  "message.sbutils.commandSender.timedOut": "Command '%s' timed out while waiting for a response.",
+
   "message.sbutils.invCleaner.cleaning": "Cleaning your inventory...",
   "message.sbutils.invCleaner.cleanFailed": "Couldn't clean your inventory.",
   "message.sbutils.invCleaner.cleanFailedCritical": "Disabling %s because your inventory is full, and couldn't to be cleaned.",
@@ -105,6 +107,7 @@
   "message.sbutils.autoCrate.closeGui": "Disabling Auto Crate because you closed the crate gui.",
 
   "message.sbutils.autoKit.invFull": "Your inventory doesn't have enough space for kit %s. Waiting...",
+  "message.sbutils.autoKit.claimFail": "Disabling Auto Kit because a response was not received after claiming a kit.",
   "message.sbutils.autoKit.info": "Current kit queue:",
   "message.sbutils.autoKit.infoFormat": "%s | %s",
 

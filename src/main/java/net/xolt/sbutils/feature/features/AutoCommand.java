@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.argument.AutoCommandEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig.AutoCommandConfig.AutoCommandEntry;
 import net.xolt.sbutils.config.ModConfig;
@@ -156,6 +157,6 @@ public class AutoCommand extends Feature {
             return;
         if (command.startsWith("/"))
             command = command.substring(1);
-        MC.getConnection().sendCommand(command);
+        SbUtils.COMMAND_SENDER.sendCommand(command);
     }
 }

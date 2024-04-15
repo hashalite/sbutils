@@ -16,6 +16,7 @@ public class ConnectionMixin {
     private void onHandleDisconnection(CallbackInfo ci) {
         SbUtils.SERVER_DETECTOR.onDisconnect();
         SbUtils.TPS_ESTIMATOR.onDisconnect();
+        SbUtils.COMMAND_SENDER.onDisconnect();
         SbUtils.FEATURES.get(EnchantAll.class).onDisconnect();
         SbUtils.FEATURES.get(JoinCommands.class).onDisconnect();
         SbUtils.FEATURES.get(AutoSilk.class).onDisconnect();

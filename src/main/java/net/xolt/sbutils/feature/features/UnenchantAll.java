@@ -12,7 +12,6 @@ import net.xolt.sbutils.feature.Feature;
 
 import java.util.List;
 
-// FIXME Unenchantall creates its own ConfigBindings since it extends EnchantAll. If listeners were to be added for one feature, changes made by the other wont be heard. This could by fixed by making bindings static.
 public class UnenchantAll extends EnchantAll {
 
     public UnenchantAll() {

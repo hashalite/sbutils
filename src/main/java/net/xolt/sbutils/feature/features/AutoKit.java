@@ -5,6 +5,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -152,8 +153,16 @@ public class AutoKit extends Feature {
         reset();
     }
 
-    public void processMessage(Component message) {
+    public void onKitResponse(Component message) {
         if (!ModConfig.HANDLER.instance().autoKit.enabled || !awaitingResponse || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null) {
+            return;
+        }
+
+        awaitingResponse = false;
+
+        if (message == null) {
+            ChatUtils.printMessage("message.sbutils.autoKit.claimFail");
+            enabled.set(ModConfig.HANDLER.instance(), false);
             return;
         }
 
@@ -161,8 +170,6 @@ public class AutoKit extends Feature {
         Matcher kitSuccessMatcher = RegexFilters.kitSuccessFilter.matcher(messageString);
         Matcher kitFailMatcher = RegexFilters.kitFailFilter.matcher(messageString);
         Matcher kitNoPermsMatcher = RegexFilters.kitNoPermsFilter.matcher(messageString);
-        if (!kitSuccessMatcher.matches() && !kitFailMatcher.matches() && !kitNoPermsMatcher.matches())
-            return;
 
         if (kitNoPermsMatcher.matches()) {
             kitQueue.poll();
@@ -215,8 +222,7 @@ public class AutoKit extends Feature {
         if (MC.getConnection() == null) {
             return;
         }
-
-        MC.getConnection().sendCommand("kit " + kit.getSerializedName());
+        SbUtils.COMMAND_SENDER.sendCommand("kit " + kit.getSerializedName(), this::onKitResponse, RegexFilters.kitFailFilter, RegexFilters.kitSuccessFilter, RegexFilters.kitNoPermsFilter);
         lastCommandSentAt = System.currentTimeMillis();
         awaitingResponse = true;
     }

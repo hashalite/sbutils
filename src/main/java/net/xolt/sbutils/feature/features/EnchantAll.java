@@ -28,10 +28,13 @@ import net.xolt.sbutils.util.RegexFilters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class EnchantAll extends Feature {
+    private static final Pattern[] enchantResponses = {RegexFilters.enchantError, RegexFilters.enchantAllSuccess, RegexFilters.enchantSingleSuccess, RegexFilters.unenchantSuccess, RegexFilters.noPermission};
+
     private final OptionBinding<ModConfig.EnchantMode> mode = new OptionBinding<>("enchantAll.mode", ModConfig.EnchantMode.class, (config) -> config.enchantAll.mode, (config, value) -> config.enchantAll.mode = value);
     protected final OptionBinding<Boolean> tpsSync = new OptionBinding<>("enchantAll.tpsSync", Boolean.class, (config) -> config.enchantAll.tpsSync, (config, value) -> config.enchantAll.tpsSync = value);
     protected final OptionBinding<Double> delay = new OptionBinding<>("enchantAll.delay", Double.class, (config) -> config.enchantAll.delay, (config, value) -> config.enchantAll.delay = value);
@@ -172,19 +175,20 @@ public class EnchantAll extends Feature {
         reset();
     }
 
-    public void processMessage(Component message) {
+    private void onEnchantResponse(Component response) {
         if ((!enchanting && !unenchanting) || !awaitingResponse)
             return;
 
-        String messageString = message.getString();
-        if (RegexFilters.enchantSingleSuccess.matcher(messageString).matches() ||
-                RegexFilters.enchantAllSuccess.matcher(messageString).matches() ||
-                RegexFilters.unenchantSuccess.matcher(messageString).matches() ||
-                RegexFilters.enchantError.matcher(messageString).matches()) {
-            awaitingResponse = false;
-        } else if (RegexFilters.noPermission.matcher(messageString).matches()) {
+        awaitingResponse = false;
+
+        if (response == null) {
+            reset();
+            return;
+        }
+
+        String messageString = response.getString();
+        if (RegexFilters.noPermission.matcher(messageString).matches()) {
             noPermission = true;
-            awaitingResponse = false;
         }
     }
 
@@ -295,7 +299,7 @@ public class EnchantAll extends Feature {
         return enchanting || unenchanting;
     }
 
-    private static void sendNextEnchant(List<Enchantment> enchants, boolean unenchant) {
+    private void sendNextEnchant(List<Enchantment> enchants, boolean unenchant) {
         if (!unenchant && ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL) {
             sendEnchantAllCommand();
             return;
@@ -304,19 +308,19 @@ public class EnchantAll extends Feature {
         sendEnchantCommand(enchants.iterator().next(), unenchant);
     }
 
-    private static void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
+    private void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
         ResourceLocation enchant = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
         if (enchant == null || MC.getConnection() == null)
             return;
         String enchantName = enchant.getPath().replaceAll("_", "");
-        MC.getConnection().sendCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()));
+        SbUtils.COMMAND_SENDER.sendCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()), this::onEnchantResponse, enchantResponses);
     }
 
-    private static void sendEnchantAllCommand() {
+    private void sendEnchantAllCommand() {
         if (MC.getConnection() == null)
             return;
 
-        MC.getConnection().sendCommand("enchantall");
+        SbUtils.COMMAND_SENDER.sendCommand("enchantall", this::onEnchantResponse, enchantResponses);
     }
 
     private static int findEnchantableSlot(boolean unenchant) {

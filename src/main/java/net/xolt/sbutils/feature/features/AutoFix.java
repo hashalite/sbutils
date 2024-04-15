@@ -83,21 +83,18 @@ public class AutoFix extends Feature {
             findMostDamaged = false;
         }
 
-        if (waitingForResponse && currentTime - lastActionPerformedAt > ModConfig.HANDLER.instance().autoFix.retryDelay * 1000) {
-            waitingForResponse = false;
-            if (tries > ModConfig.HANDLER.instance().autoFix.maxRetries) {
-                ChatUtils.printWithPlaceholders("message.sbutils.autoFix.maxTriesReached", tries);
-                if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
-                    returnAndSwapBack();
-                }
-                ModConfig.HANDLER.instance().autoFix.enabled = false;
-                ModConfig.HANDLER.save();
-                reset();
-            }
-        }
-
         if (waitingForResponse)
             return;
+
+        if (tries > ModConfig.HANDLER.instance().autoFix.maxRetries) {
+            ChatUtils.printWithPlaceholders("message.sbutils.autoFix.maxTriesReached", tries);
+            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
+                returnAndSwapBack();
+            }
+            ModConfig.HANDLER.instance().autoFix.enabled = false;
+            ModConfig.HANDLER.save();
+            reset();
+        }
 
         if (delayLeft() > 0)
             return;
@@ -167,9 +164,15 @@ public class AutoFix extends Feature {
         sendFixCommand();
     }
 
-    public void processMessage(Component message) {
+    private void onFixResponse(Component message) {
         if (!waitingForResponse)
             return;
+
+        waitingForResponse = false;
+
+        if (message == null) {
+            return;
+        }
 
         String messageString = message.getString();
 
@@ -210,7 +213,7 @@ public class AutoFix extends Feature {
         if (MC.getConnection() == null)
             return;
         String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
-        MC.getConnection().sendCommand(command);
+        SbUtils.COMMAND_SENDER.sendCommand(command, this::onFixResponse, ModConfig.HANDLER.instance().autoFix.retryDelay, RegexFilters.noPermission, RegexFilters.fixFailFilter, RegexFilters.fixSuccessFilter);
         tries++;
         lastActionPerformedAt = System.currentTimeMillis();
         waitingForResponse = true;

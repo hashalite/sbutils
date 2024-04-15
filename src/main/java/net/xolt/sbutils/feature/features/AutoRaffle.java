@@ -112,7 +112,7 @@ public class AutoRaffle extends Feature {
 
         int buyAmount = Math.min(numTickets, grassCount);
         ChatUtils.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
-        MC.getConnection().sendCommand("raffle buy " + buyAmount);
+        SbUtils.COMMAND_SENDER.sendCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
     }
 
@@ -122,7 +122,7 @@ public class AutoRaffle extends Feature {
 
         int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.ecoTickets, 1), 5);
         ChatUtils.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
-        MC.getConnection().sendCommand("raffle buy " + buyAmount);
+        SbUtils.COMMAND_SENDER.sendCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
     }
 

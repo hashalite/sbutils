@@ -145,6 +145,6 @@ public class JoinCommands extends Feature {
         if (command.startsWith("/"))
             command = command.substring(1);
 
-        MC.getConnection().sendCommand(command);
+        SbUtils.COMMAND_SENDER.sendCommand(command);
     }
 }
