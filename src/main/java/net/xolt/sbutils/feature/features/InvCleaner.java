@@ -27,6 +27,7 @@ import net.xolt.sbutils.util.RegexFilters;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -167,6 +168,7 @@ public class InvCleaner extends Feature {
     }
 
     private static List<Item> itemsFromStrings(List<String> strings) {
-        return strings.stream().map((item) -> BuiltInRegistries.ITEM.get(new ResourceLocation(item))).toList();
+        List<String> validItems = strings.stream().filter(string -> BuiltInRegistries.ITEM.containsKey(new ResourceLocation(string))).toList();
+        return validItems.stream().map((item) -> BuiltInRegistries.ITEM.get(new ResourceLocation(item))).toList();
     }
 }
