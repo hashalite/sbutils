@@ -58,7 +58,8 @@ public class RegexFilters {
     // Auto Fix
     
     public static final Pattern fixSuccessFilter = Pattern.compile("You have successfully repaired your: .*\\.");
-    public static final Pattern fixFailFilter = Pattern.compile("You cannot type that command for(( ([0-9]+) (minutes|minute))?( ([0-9]+) (seconds|second))?| now)\\.|Error: This item cannot be repaired\\.");
+    public static final Pattern fixTimeoutFilter = Pattern.compile("You cannot type that command for(( ([0-9]+) (minutes|minute))?( ([0-9]+) (seconds|second))?| now)\\.");
+    public static final Pattern fixFailedFilter = Pattern.compile("Error: This item cannot be repaired\\.");
 
     
     // Auto Raffle

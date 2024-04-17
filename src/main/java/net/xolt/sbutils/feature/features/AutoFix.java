@@ -178,7 +178,7 @@ public class AutoFix extends Feature {
 
         Matcher fixNoPermsMatcher = RegexFilters.noPermission.matcher(messageString);
         if (fixNoPermsMatcher.matches()) {
-            ChatUtils.printMessage(ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "message.sbutils.autoFix.noFixPermission" : "message.sbutils.autoFix.noFixAllPermission");
+            ChatUtils.printMessage("message.sbutils.autoFix.noFixPermission");
             ModConfig.HANDLER.instance().autoFix.enabled = false;
             ModConfig.HANDLER.save();
             if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
@@ -187,16 +187,26 @@ public class AutoFix extends Feature {
             return;
         }
 
-        Matcher fixFailMatcher = RegexFilters.fixFailFilter.matcher(messageString);
+        Matcher fixFailMatcher = RegexFilters.fixFailedFilter.matcher(messageString);
         if (fixFailMatcher.matches()) {
-            String minutesText = fixFailMatcher.group(3);
-            String secondsText = fixFailMatcher.group(6);
+            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL) {
+                ChatUtils.printMessage("message.sbutils.autoFix.noFixAllPermission");
+                ModConfig.HANDLER.instance().autoFix.enabled = false;
+                ModConfig.HANDLER.save();
+            }
+            reset();
+        }
+
+        Matcher fixTimeoutMatcher = RegexFilters.fixTimeoutFilter.matcher(messageString);
+        if (fixTimeoutMatcher.matches()) {
+            String minutesText = fixTimeoutMatcher.group(3);
+            String secondsText = fixTimeoutMatcher.group(6);
             int minutes = minutesText == null || minutesText.isEmpty() ? 0 : Integer.parseInt(minutesText);
             int seconds = secondsText == null || secondsText.isEmpty() ? 0 : Integer.parseInt(secondsText);
             if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
                 returnAndSwapBack();
             reset();
-            lastActionPerformedAt = calculateLastCommandSentAt((((long)minutes * 60000) + ((long)seconds * 1000) + 2000));
+            lastActionPerformedAt = calculateLastCommandSentAt(((long)minutes * 60000) + ((long)seconds * 1000) + 2000);
             return;
         }
 
@@ -213,7 +223,7 @@ public class AutoFix extends Feature {
         if (MC.getConnection() == null)
             return;
         String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
-        SbUtils.COMMAND_SENDER.sendCommand(command, false, this::onFixResponse, ModConfig.HANDLER.instance().autoFix.retryDelay, RegexFilters.noPermission, RegexFilters.fixFailFilter, RegexFilters.fixSuccessFilter);
+        SbUtils.COMMAND_SENDER.sendCommand(command, false, this::onFixResponse, ModConfig.HANDLER.instance().autoFix.retryDelay, RegexFilters.noPermission, RegexFilters.fixFailedFilter, RegexFilters.fixTimeoutFilter, RegexFilters.fixSuccessFilter);
         tries++;
         lastActionPerformedAt = System.currentTimeMillis();
         waitingForResponse = true;
@@ -232,7 +242,7 @@ public class AutoFix extends Feature {
     }
 
     private int delayLeft() {
-        long delay = fixing ? 250L : delay();
+        long delay = fixing ? 250L : delay() + 2000;
         return (int)Math.max((delay - (System.currentTimeMillis() - lastActionPerformedAt)), 0L);
     }
 
@@ -280,11 +290,11 @@ public class AutoFix extends Feature {
     }
 
     private static int delay() {
-        return (int)(ModConfig.HANDLER.instance().autoFix.delay * 1000.0) + 2000;
+        return (int)(ModConfig.HANDLER.instance().autoFix.delay * 1000.0);
     }
 
     private static long calculateLastCommandSentAt(long timeLeft) {
-        long timeElapsed = (delay() + 2000) - timeLeft;
+        long timeElapsed = delay() - timeLeft;
         return System.currentTimeMillis() - timeElapsed;
     }
 }

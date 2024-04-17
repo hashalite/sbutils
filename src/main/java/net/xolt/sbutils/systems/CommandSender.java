@@ -60,7 +60,6 @@ public class CommandSender {
     }
 
     public void onContainerSetData(ClientboundContainerSetContentPacket packet) {
-        SbUtils.LOGGER.info("Title is \"" + MC.screen.getTitle().getString() + "\"");
         if (!awaitingResponse || entries.isEmpty() || !entries.getFirst().opensScreen)
             return;
         if (!(MC.screen instanceof AbstractContainerScreen<?> screen) || screen.getMenu().containerId != packet.getContainerId())
