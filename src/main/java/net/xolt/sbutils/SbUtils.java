@@ -55,7 +55,7 @@ public class SbUtils implements ClientModInitializer {
         IOHandler.createAll();
         ModConfig.HANDLER.load();
         initializeFeatures();
-        ClientCommandRegistrationCallback.EVENT.register(SbUtils::registerCommands);
+        ClientCommandRegistrationCallback.EVENT.register(FEATURES::registerCommands);
         registerKeybindings();
     }
 
@@ -90,10 +90,6 @@ public class SbUtils implements ClientModInitializer {
                 new ToolSaver(),
                 new UnenchantAll()
         );
-    }
-
-    private static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        FEATURES.getAll().forEach((feature) -> feature.registerCommands(dispatcher, registryAccess));
     }
 
     private static void registerKeybindings() {

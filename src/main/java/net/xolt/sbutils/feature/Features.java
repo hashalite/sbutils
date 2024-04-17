@@ -1,5 +1,9 @@
 package net.xolt.sbutils.feature;
 
+import com.mojang.brigadier.CommandDispatcher;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.commands.CommandBuildContext;
+
 import java.util.*;
 
 public class Features {
@@ -22,5 +26,9 @@ public class Features {
 
     public Collection<Feature> getAll() {
         return ordered;
+    }
+
+    public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
+        ordered.forEach((feature) -> feature.registerCommands(dispatcher, registryAccess));
     }
 }
