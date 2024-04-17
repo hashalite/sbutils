@@ -57,7 +57,7 @@ public class AutoFix extends Feature {
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(
                 CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.runnable("info", () -> ChatUtils.printAutoFixInfo(ModConfig.HANDLER.instance().autoFix.enabled, fixing, findMostDamaged(), delayLeft())))
+                    .then(CommandHelper.runnable("info", this::onInfoCommand))
                     .then(CommandHelper.runnable("reset", () -> {reset(); ChatUtils.printMessage("message.sbutils.autoFix.reset");}))
                     .then(CommandHelper.genericEnum("mode", "mode", mode))
                     .then(CommandHelper.doubl("percent", "percent", percent))
@@ -66,6 +66,34 @@ public class AutoFix extends Feature {
                     .then(CommandHelper.integer("maxRetries", "retries", maxRetries))
         );
         registerAlias(dispatcher, autoFixNode);
+    }
+
+    private void onInfoCommand() {
+        if (!ModConfig.HANDLER.instance().autoFix.enabled) {
+            ChatUtils.printSetting("text.sbutils.config.category.autoFix", false);
+            return;
+        }
+
+        if (fixing) {
+            ChatUtils.printMessage("message.sbutils.autoFix.currentlyFixing");
+            return;
+        }
+
+        int remainingDelay = delayLeft();
+
+        if (remainingDelay == 0 && findMostDamaged() == -1) {
+            ChatUtils.printMessage("message.sbutils.autoFix.waiting");
+            return;
+        }
+
+        int minutes = remainingDelay / 60000;
+        double seconds = Math.round((remainingDelay % 60000) / 100.0) / 10.0;
+
+        if (minutes != 0) {
+            ChatUtils.printWithPlaceholders("message.sbutils.autoFix.infoWithMinutes", minutes, seconds);
+        } else {
+            ChatUtils.printWithPlaceholders("message.sbutils.autoFix.infoJustSeconds", seconds);
+        }
     }
 
     public void tick() {

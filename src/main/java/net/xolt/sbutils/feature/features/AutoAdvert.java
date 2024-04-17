@@ -59,7 +59,7 @@ public class AutoAdvert extends Feature {
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(
                 CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.runnable("info", () -> ChatUtils.printAutoAdvertInfo(ModConfig.HANDLER.instance().autoAdvert.enabled, SbUtils.SERVER_DETECTOR.isOnSkyblock(), getUpdatedAdIndex(getAdList(), prevAdList, adIndex), delayLeft(), userWhitelisted(), ModConfig.HANDLER.instance().autoAdvert.useWhitelist)))
+                    .then(CommandHelper.runnable("info", this::onInfoCommand))
                     .then(CommandHelper.string("sbFile", "filename", sbFile))
                     .then(CommandHelper.string("ecoFile", "filename", ecoFile))
                     .then(CommandHelper.string("classicFile", "filename", classicFile))
@@ -85,6 +85,40 @@ public class AutoAdvert extends Feature {
                     }))
         );
         registerAlias(dispatcher, autoAdvertNode);
+    }
+
+    private void onInfoCommand() {
+        if (!ModConfig.HANDLER.instance().autoAdvert.enabled) {
+            ChatUtils.printSetting("text.sbutils.config.category.autoAdvert", false);
+            return;
+        }
+
+        if (!SbUtils.SERVER_DETECTOR.isOnSkyblock()) {
+            ChatUtils.printMessage("message.sbutils.autoAdvert.notOnSkyblock");
+            return;
+        }
+
+        if (ModConfig.HANDLER.instance().autoAdvert.useWhitelist && !userWhitelisted()) {
+            ChatUtils.printMessage("message.sbutils.autoAdvert.notWhitelisted");
+            return;
+        }
+
+        int remainingDelay = delayLeft();
+        int delayMinutes = remainingDelay / 60000;
+        double delaySeconds = Math.round((double)(remainingDelay % 60000) / 100.0) / 10.0;
+
+        MutableComponent message;
+        MutableComponent index = Component.literal("#" + (adIndex + 1));
+        MutableComponent seconds = Component.literal(String.valueOf(delaySeconds));
+
+        if (delayMinutes > 0) {
+            message = Component.translatable("message.sbutils.autoAdvert.infoWithMinutes");
+            MutableComponent minutes = Component.literal(String.valueOf(delayMinutes));
+            ChatUtils.printWithPlaceholders(message, index, minutes, seconds);
+        } else {
+            message = Component.translatable("message.sbutils.autoAdvert.infoJustSeconds");
+            ChatUtils.printWithPlaceholders(message, index, seconds);
+        }
     }
 
     private static void onAddCommand(String advert) {

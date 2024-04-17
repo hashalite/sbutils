@@ -20,6 +20,7 @@ import net.minecraft.world.item.Items;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.AutoCommand;
 import net.xolt.sbutils.util.ChatUtils;
+import net.xolt.sbutils.util.TextUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -93,9 +94,9 @@ public class ModConfig {
                 } else {
                     long delayLeftMillis = (long)(delay * 1000.0) - (System.currentTimeMillis() - cmdLastSentAt);
                     double delayLeft = (double)Math.max(delayLeftMillis, 0) / 1000.0;
-                    delayLeftText = Component.literal(ChatUtils.formatTime(delayLeft));
+                    delayLeftText = Component.literal(TextUtils.formatTime(delayLeft));
                 }
-                return ChatUtils.insertPlaceholders("message.sbutils.autoCommand.commandEntry", command, ChatUtils.formatTime(delay), enabled, delayLeftText);
+                return TextUtils.insertPlaceholders("message.sbutils.autoCommand.commandEntry", command, TextUtils.formatTime(delay), enabled, delayLeftText);
             }
 
             @Override public String toString() {
@@ -208,7 +209,7 @@ public class ModConfig {
 
             @Override
             public MutableComponent format() {
-                return ChatUtils.insertPlaceholders("message.sbutils.chatFilter.filterEntry", regex, enabled);
+                return TextUtils.insertPlaceholders("message.sbutils.chatFilter.filterEntry", regex, enabled);
             }
         }
     }
@@ -278,7 +279,7 @@ public class ModConfig {
             }
 
             @Override public MutableComponent format() {
-                return ChatUtils.insertPlaceholders("message.sbutils.joinCommands.commandEntry", command, formatAccounts());
+                return TextUtils.insertPlaceholders("message.sbutils.joinCommands.commandEntry", command, formatAccounts());
             }
 
             public List<String> getAccounts() {

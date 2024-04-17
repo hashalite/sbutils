@@ -52,7 +52,7 @@ public class ChatLogger extends Feature {
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> chatLoggerNode = dispatcher.register(
-                CommandHelper.runnable(command, () -> ChatUtils.printEnabledFilters("message.sbutils.chatLogger.status", getFilters()))
+                CommandHelper.runnable(command, () -> ChatFilters.showEnabledFilters("message.sbutils.chatLogger.status", getFilters()))
                     .then(CommandHelper.bool("incomingShop", shopIncoming))
                     .then(CommandHelper.bool("outgoingShop", shopOutgoing))
                     .then(CommandHelper.bool("incomingMsg", msgIncoming))

@@ -170,4 +170,8 @@ public class InvCleaner extends Feature {
         List<String> validItems = strings.stream().filter(string -> BuiltInRegistries.ITEM.containsKey(new ResourceLocation(string))).toList();
         return validItems.stream().map((item) -> BuiltInRegistries.ITEM.get(new ResourceLocation(item))).toList();
     }
+
+    public static void showCleanFailedCritical(String dependantFeatureName) {
+        ChatUtils.printWithPlaceholders("message.sbutils.invCleaner.cleanFailedCritical", Component.translatable(dependantFeatureName));
+    }
 }

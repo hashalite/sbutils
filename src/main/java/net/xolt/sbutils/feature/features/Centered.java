@@ -42,13 +42,19 @@ public class Centered extends Feature {
         BlockPos pos = MC.player.blockPosition();
         if (isCentered(pos, 149)) {
             int[] extraSpace = findExtraSpace(pos, 149);
-            ChatUtils.printMapArtSuitability(149, extraSpace);
+            showMapArtSuitability(149, extraSpace);
         } else if (isCentered(pos, 199)) {
             int[] extraSpace = findExtraSpace(pos, 199);
-            ChatUtils.printMapArtSuitability(199, extraSpace);
+            showMapArtSuitability(199, extraSpace);
         } else {
             ChatUtils.printMessage("message.sbutils.centered.notSuitable");
         }
+    }
+
+    private static void showMapArtSuitability(int size, int[] extraSpace) {
+        String expansion = size + "x" + size;
+        ChatUtils.printWithPlaceholders("message.sbutils.centered.suitable", expansion);
+        ChatUtils.printWithPlaceholders("message.sbutils.centered.extraSpace", extraSpace[3], extraSpace[2], extraSpace[0], extraSpace[1]);
     }
 
     private static boolean isCentered(BlockPos pos, int islandSize) {

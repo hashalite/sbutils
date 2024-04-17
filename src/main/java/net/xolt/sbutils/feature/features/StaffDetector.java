@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -13,6 +15,7 @@ import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
+import net.xolt.sbutils.util.TextUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +54,7 @@ public class StaffDetector extends Feature {
         if (!ModConfig.HANDLER.instance().staffDetector.detectLeave || !isStaff(player))
             return;
 
-        ChatUtils.printStaffNotification(player, false);
+        showStaffNotification(player, false);
 
         if (!staffOnline())
             ChatUtils.printMessage("message.sbutils.staffDetector.noStaff");
@@ -76,9 +79,16 @@ public class StaffDetector extends Feature {
         if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player))
             return;
 
-        ChatUtils.printStaffNotification(player, true);
+        showStaffNotification(player, true);
         if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
             MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
+    }
+
+    private static void showStaffNotification(PlayerInfo player, boolean joined) {
+        MutableComponent message = Component.translatable("message.sbutils.staffDetector.notification");
+        MutableComponent staff = Component.literal(player.getProfile().getName());
+        MutableComponent status = TextUtils.formatOnlineOffline(joined);
+        ChatUtils.printWithPlaceholders(message, staff, status);
     }
 
     private static boolean isStaff(PlayerInfo player) {

@@ -54,6 +54,7 @@
   "message.sbutils.enchantAll.noEnchantPermission": "You don't have access to the '/enchant' command.",
 
   "message.sbutils.chatFilter.status": "Chat filter status:",
+  "message.sbutils.chatFilter.statusFormat": "%s: %s",
   "message.sbutils.chatFilter.filterEntry": "%s | Enabled: %s",
   "message.sbutils.chatFilter.filterSetSuccess": "Filter changed from %s to %s.",
   "message.sbutils.chatFilter.filterToggleSuccess": "Filter %s has been %s.",

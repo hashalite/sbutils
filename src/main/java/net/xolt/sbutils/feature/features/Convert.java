@@ -7,10 +7,13 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
+import net.xolt.sbutils.util.TextUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,41 +50,33 @@ public class Convert extends Feature {
 
     public static int processCommand(String input) {
         Double parsed = parseInput(input);
-        ChatUtils.printConversions(input, calculateItems(parsed), calculateStacks(parsed), calculateDcs(parsed), calculateStacksAndRemainder(parsed), calculateDcsAndRemainder(parsed));
+        printConversions(input, calculateItems(parsed), calculateStacks(parsed), calculateDcs(parsed), calculateStacksAndRemainder(parsed), calculateDcsAndRemainder(parsed));
         return Command.SINGLE_SUCCESS;
     }
 
     private static String calculateItems(Double input) {
-        return formatDouble(Math.round(input * 10.0) / 10.0);
+        return TextUtils.formatDouble(Math.round(input * 10.0) / 10.0);
     }
 
     private static String calculateStacks(Double input) {
-        return formatDouble(Math.round((input / 64.0) * 100.0) / 100.0) + "s";
+        return TextUtils.formatDouble(Math.round((input / 64.0) * 100.0) / 100.0) + "s";
     }
 
     private static String calculateDcs(Double input) {
-        return formatDouble(Math.round((input / 3456.0) * 1000.0) / 1000.0) + "dc";
+        return TextUtils.formatDouble(Math.round((input / 3456.0) * 1000.0) / 1000.0) + "dc";
     }
 
     private static String calculateStacksAndRemainder(Double input) {
         int stacks = (int)(input / 64);
         double items = input % 64.0;
-        return stacks + "s + " + formatDouble(Math.round(items * 10.0) / 10.0);
+        return stacks + "s + " + TextUtils.formatDouble(Math.round(items * 10.0) / 10.0);
     }
 
     private static String calculateDcsAndRemainder(Double input) {
         double dcs = (int)(input / 864) / 4.0;
         int stacks = (int)(input % 864) / 64;
         double items = (input % 864.0) % 64.0;
-        return formatDouble(dcs) + "dc + " + stacks + "s + " + formatDouble(Math.round(items * 10.0) / 10.0);
-    }
-
-    private static String formatDouble(double input) {
-        if (input == (long)input) {
-            return String.format("%d", (long)input);
-        } else {
-            return String.format("%s", input);
-        }
+        return TextUtils.formatDouble(dcs) + "dc + " + stacks + "s + " + TextUtils.formatDouble(Math.round(items * 10.0) / 10.0);
     }
 
     private static Double parseInput(String input) {
@@ -91,5 +86,21 @@ public class Convert extends Feature {
         return new ExpressionBuilder(input)
                 .build()
                 .evaluate();
+    }
+
+    private static void printConversions(String input, String items, String stacks, String dcs, String stacksAndRemainer, String dcsAndRemainder) {
+        MutableComponent message = Component.translatable("message.sbutils.convert.header");
+        ChatUtils.printWithPlaceholders(message, Component.literal(input));
+
+        MutableComponent itemsText = Component.literal("- " + items);
+        ChatUtils.printMessage(itemsText, false);
+        MutableComponent stacksText = Component.literal("- " + stacks);
+        ChatUtils.printMessage(stacksText, false);
+        MutableComponent dcsText = Component.literal("- " + dcs);
+        ChatUtils.printMessage(dcsText, false);
+        MutableComponent stacksAndRemainderText = Component.literal("- " + stacksAndRemainer);
+        ChatUtils.printMessage(stacksAndRemainderText, false);
+        MutableComponent dcsAndRemainderText = Component.literal("- " + dcsAndRemainder);
+        ChatUtils.printMessage(dcsAndRemainderText, false);
     }
 }

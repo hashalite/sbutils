@@ -172,7 +172,7 @@ public class AutoSilk extends Feature {
     private void onCleanCallback(boolean result) {
         cleaning = false;
         if (!result) {
-            ChatUtils.printInvCleanFailedCritical("text.sbutils.config.category.autoSilk");
+            InvCleaner.showCleanFailedCritical("text.sbutils.config.category.autoSilk");
             disable();
             return;
         }

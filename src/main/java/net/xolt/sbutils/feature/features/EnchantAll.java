@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.AirItem;
@@ -152,7 +153,7 @@ public class EnchantAll extends Feature {
 
         if (commandCount >= ModConfig.HANDLER.instance().enchantAll.cooldownFrequency) {
             cooldown = true;
-            ChatUtils.printEnchantCooldown(ModConfig.HANDLER.instance().enchantAll.cooldownTime);
+            ChatUtils.printWithPlaceholders("message.sbutils.enchantAll.cooldown", ModConfig.HANDLER.instance().enchantAll.cooldownTime);
             commandCount = 0;
         }
 

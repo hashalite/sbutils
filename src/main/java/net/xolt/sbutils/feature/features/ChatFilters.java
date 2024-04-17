@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.xolt.sbutils.command.argument.FilterEntryArgumentType;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -69,7 +70,7 @@ public class ChatFilters extends Feature {
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> chatFilterNode = dispatcher.register(
-                CommandHelper.runnable(command, () -> ChatUtils.printEnabledFilters("message.sbutils.chatFilter.status", builtInFilters))
+                CommandHelper.runnable(command, () -> showEnabledFilters("message.sbutils.chatFilter.status", builtInFilters))
                     .then(CommandHelper.bool("tips", tipsFilter))
                     .then(CommandHelper.bool("advancements", advancementsFilter))
                     .then(CommandHelper.bool("welcome", welcomeFilter))
@@ -151,5 +152,11 @@ public class ChatFilters extends Feature {
                 return true;
 
         return false;
+    }
+
+    public static void showEnabledFilters(String message, List<ChatFilter> filters) {
+        ChatUtils.printMessage(Component.translatable(message));
+        List<MutableComponent> formatted = filters.stream().map(ChatFilter::format).toList();
+        ChatUtils.printList(formatted, false);
     }
 }

@@ -7,6 +7,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PickaxeItem;
 import net.xolt.sbutils.SbUtils;
@@ -18,6 +19,7 @@ import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
+import net.xolt.sbutils.util.TextUtils;
 
 import java.util.List;
 
@@ -45,19 +47,29 @@ public class AutoMine extends Feature {
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(
                 CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.runnable("timer", () -> ChatUtils.printAutoMineTime(disableAt))
+                    .then(CommandHelper.runnable("timer", this::onTimerCommand)
                             .then(ClientCommandManager.argument("duration", TimeArgumentType.time())
-                                    .executes(context -> onTimerCommand(DoubleArgumentType.getDouble(context, "duration")))))
+                                    .executes(context -> onTimerSetCommand(DoubleArgumentType.getDouble(context, "duration")))))
                     .then(CommandHelper.bool("switch", autoSwitch))
                     .then(CommandHelper.integer("durability", "durability", switchDurability))
         );
         registerAlias(dispatcher, autoMineNode);
     }
 
-    private int onTimerCommand(double time) {
+    private void onTimerCommand() {
+        if (disableAt == -1) {
+            ChatUtils.printMessage("message.sbutils.autoMine.timerNotSet");
+            return;
+        }
+
+        long timeLeft = disableAt - System.currentTimeMillis();
+        ChatUtils.printWithPlaceholders("message.sbutils.autoMine.disabledIn", Component.translatable("text.sbutils.config.category.autoMine"), TextUtils.formatTime(timeLeft));
+    }
+
+    private int onTimerSetCommand(double time) {
         disableAt = System.currentTimeMillis() + (long)(time * 1000.0);
         ModConfig.HANDLER.instance().autoMine.enabled = true;
-        ChatUtils.printAutoMineEnabledFor(disableAt);
+        ChatUtils.printWithPlaceholders("message.sbutils.autoMine.enabledFor", Component.translatable("text.sbutils.config.category.autoMine"), TextUtils.formatTime(time));
         return Command.SINGLE_SUCCESS;
     }
 

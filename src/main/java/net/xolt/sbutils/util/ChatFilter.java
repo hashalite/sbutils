@@ -33,4 +33,8 @@ public class ChatFilter {
     public boolean isEnabled() {
         return option.get(ModConfig.HANDLER.instance());
     }
+
+    public MutableComponent format() {
+        return TextUtils.insertPlaceholders("message.sbutils.chatFilter.statusFormat", getName(), isEnabled());
+    }
 }

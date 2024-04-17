@@ -3,6 +3,7 @@ package net.xolt.sbutils.feature.features;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.nbt.CompoundTag;
@@ -74,9 +75,36 @@ public class AutoKit extends Feature {
                         .then(CommandHelper.enumList("sbKits", "kit", sbKits))
                         .then(CommandHelper.enumList("ecoKits", "kit", ecoKits))
                         .then(CommandHelper.enumList("classicKits", "kit", classicKits))
-                        .then(CommandHelper.runnable("info", () -> ChatUtils.printAutoKitInfo(kitQueue, invFullList)))
+                        .then(CommandHelper.runnable("info", this::onInfoCommand))
         );
         registerAlias(dispatcher, autoKitNode);
+    }
+
+    private void onInfoCommand() {
+        if (MC.player == null) {
+            return;
+        }
+
+        ChatUtils.printMessage("message.sbutils.autoKit.info");
+
+        List<AutoKit.KitQueueEntry> kitList = new ArrayList<>(kitQueue);
+        kitList.sort(kitQueue.comparator());
+        List<MutableComponent> formatted = new ArrayList<>();
+        for (int i = 0; i < invFullList.size(); i++) {
+            AutoKit.KitQueueEntry kit = invFullList.get(i);
+            formatted.add(TextUtils.insertPlaceholders(Component.translatable("message.sbutils.autoKit.infoFormat"),
+                    Component.literal(kit.kit.getSerializedName()),
+                    Component.literal("INV FULL").withStyle(ChatFormatting.RED)));
+        }
+        for (int i = 0; i < kitList.size(); i++) {
+            AutoKit.KitQueueEntry kit = kitList.get(i);
+
+            double timeLeft = Math.max(0, (kit.claimAt - System.currentTimeMillis())) / 1000.0;
+            formatted.add(TextUtils.insertPlaceholders(Component.translatable("message.sbutils.autoKit.infoFormat"),
+                    Component.literal(kit.kit.getSerializedName()),
+                    Component.literal(TextUtils.formatTime(timeLeft))));
+        }
+        ChatUtils.printList(formatted, true);
     }
 
     public void tick() {

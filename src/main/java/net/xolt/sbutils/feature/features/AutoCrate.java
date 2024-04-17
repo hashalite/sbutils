@@ -120,7 +120,7 @@ public class AutoCrate extends Feature {
         cleaning = false;
         if (result)
             return;
-        ChatUtils.printInvCleanFailedCritical("text.sbutils.config.category.autoCrate");
+        InvCleaner.showCleanFailedCritical("text.sbutils.config.category.autoCrate");
         disable();
     }
 
