@@ -58,7 +58,14 @@ public class MapSaver extends Feature {
         MapItemSavedData mapData = MapItem.getSavedData(mapId, MC.level);
         MapRenderer.MapInstance mapInstance = MC.gameRenderer.getMapRenderer().getOrCreateMapInstance(mapId, mapData);
         NativeImage image = ((MapInstanceAccessor)mapInstance).getTexture().getPixels();
-        if (!IOHandler.saveMapImage(mapId, image)) {
+        String servername = null;
+        if (MC.getConnection() != null && MC.getConnection().getServerData() != null)
+            servername = MC.getConnection().getServerData().ip;
+        else if (MC.getSingleplayerServer() != null)
+            servername = MC.getSingleplayerServer().getWorldData().getLevelName() + " (Singleplayer)";
+        else
+            servername = "unknown";
+        if (!IOHandler.saveMapImage(mapId, servername, image)) {
             ChatUtils.printMessage("message.sbutils.mapSaver.saveFailed");
             return;
         }

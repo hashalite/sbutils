@@ -162,12 +162,14 @@ public class IOHandler {
         }
     }
 
-    public static boolean saveMapImage(int mapId, NativeImage image) {
-        File imagePath = null;
-        int suffix = 1;
-        while (imagePath == null || imagePath.exists())
-            imagePath = new File(mapSaverDir + File.separator + mapId + "-" + suffix++ + ".png");
+    public static boolean saveMapImage(int mapId, String servername, NativeImage image) {
+        File serverDir = new File(mapSaverDir + File.separator + servername);
+        File imagePath = new File(serverDir + File.separator + servername + "-" + mapId + ".png");
+        int suffix = 2;
+        while (imagePath.exists())
+            imagePath = new File(serverDir + File.separator + servername + "-" + mapId + "-" + suffix++ + ".png");
         try {
+            serverDir.mkdir();
             image.writeToFile(imagePath);
         } catch (IOException e) {
             return false;
