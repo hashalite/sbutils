@@ -1,6 +1,11 @@
 package net.xolt.sbutils.systems;
 
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.util.ChatUtils;
 
 import java.util.*;
@@ -10,7 +15,7 @@ import java.util.regex.Pattern;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class CommandSender {
-    private LinkedList<CommandQueueEntry> entries = new LinkedList<>();
+    private final LinkedList<CommandQueueEntry> entries = new LinkedList<>();
     private long lastCommandSentAt;
     private boolean awaitingResponse;
 
@@ -18,20 +23,12 @@ public class CommandSender {
         entries.add(new CommandQueueEntry(command));
     }
 
-    public void sendCommand(String command, Runnable callback, Pattern ... responseMatchers) {
-        sendCommand(command, callback, 5.0, responseMatchers);
+    public void sendCommand(String command, boolean opensScreen, Consumer<Component> callback, Pattern ... responseMatchers) {
+        sendCommand(command, opensScreen, callback, 5.0, responseMatchers);
     }
 
-    public void sendCommand(String command, Runnable callback, double expiryTime, Pattern ... responseMatchers) {
-        entries.add(new CommandQueueEntry(command, (response) -> callback.run(), expiryTime, responseMatchers));
-    }
-
-    public void sendCommand(String command, Consumer<Component> callback, Pattern ... responseMatchers) {
-        sendCommand(command, callback, 5.0, responseMatchers);
-    }
-
-    public void sendCommand(String command, Consumer<Component> callback, double expiryTime, Pattern ... responseMatchers) {
-        entries.add(new CommandQueueEntry(command, callback, expiryTime, responseMatchers));
+    public void sendCommand(String command, boolean opensScreen, Consumer<Component> callback, double expiryTime, Pattern ... responseMatchers) {
+        entries.add(new CommandQueueEntry(command, opensScreen, callback, expiryTime, responseMatchers));
     }
 
     public void tick() {
@@ -62,8 +59,27 @@ public class CommandSender {
         reset();
     }
 
+    public void onContainerSetData(ClientboundContainerSetContentPacket packet) {
+        SbUtils.LOGGER.info("Title is \"" + MC.screen.getTitle().getString() + "\"");
+        if (!awaitingResponse || entries.isEmpty() || !entries.getFirst().opensScreen)
+            return;
+        if (!(MC.screen instanceof AbstractContainerScreen<?> screen) || screen.getMenu().containerId != packet.getContainerId())
+            return;
+
+        String stringTitle = screen.getTitle().getString();
+        CommandQueueEntry entry = entries.getFirst();
+        for (Pattern responseMatcher : entry.responseMatchers) {
+            if (responseMatcher.matcher(stringTitle).matches()) {
+                entry.callback.accept(screen.getTitle());
+                entries.poll();
+                awaitingResponse = false;
+                return;
+            }
+        }
+    }
+
     public void processMessage(Component message) {
-        if (!awaitingResponse || entries.isEmpty())
+        if (!awaitingResponse || entries.isEmpty() || entries.getFirst().opensScreen)
             return;
         String stringMessage = message.getString();
         CommandQueueEntry entry = entries.getFirst();
@@ -72,6 +88,7 @@ public class CommandSender {
                 entry.callback.accept(message);
                 entries.poll();
                 awaitingResponse = false;
+                return;
             }
         }
     }
@@ -87,16 +104,20 @@ public class CommandSender {
         private final List<Pattern> responseMatchers = new ArrayList<>();
         private final Consumer<Component> callback;
         private final boolean needsResponse;
+        private final boolean opensScreen;
         private double expiryTime;
+
 
         public CommandQueueEntry(String command) {
             this.command = command;
             this.callback = (response) -> {};
             this.needsResponse = false;
+            this.opensScreen = false;
         }
 
-        public CommandQueueEntry(String command, Consumer<Component> callback, double expiryTime, Pattern ... responseMatchers) {
+        public CommandQueueEntry(String command, boolean opensScreen, Consumer<Component> callback, double expiryTime, Pattern ... responseMatchers) {
             this.command = command;
+            this.opensScreen = opensScreen;
             this.responseMatchers.addAll(Arrays.asList(responseMatchers));
             this.callback = callback;
             this.needsResponse = true;

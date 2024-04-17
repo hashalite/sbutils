@@ -87,6 +87,11 @@ public abstract class ClientPacketListenerMixin {
         }
     }
 
+    @Inject(method = "handleContainerContent", at = @At("TAIL"))
+    private void onSetContainerContents(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
+        SbUtils.COMMAND_SENDER.onContainerSetData(packet);
+    }
+
     @Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
     private void onScreenHandlerSlotUpdate(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
         SbUtils.FEATURES.get(AutoFix.class).onUpdateInventory();

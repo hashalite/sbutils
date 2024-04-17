@@ -23,13 +23,12 @@ import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.mixins.ContainerScreenAccessor;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
-import net.xolt.sbutils.util.RegexFilters;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -129,8 +128,8 @@ public class InvCleaner extends Feature {
         ChatUtils.printMessage("message.sbutils.invCleaner.cleaning");
     }
 
-    private void onDisposalResponse(Component response) {
-        if (response == null)
+    private void onDisposalOpened(Component title) {
+        if (title == null)
             reset();
     }
 
@@ -146,7 +145,7 @@ public class InvCleaner extends Feature {
     private void openDisposal() {
         if (MC.getConnection() == null)
             return;
-        SbUtils.COMMAND_SENDER.sendCommand("disposal", this::onDisposalResponse, RegexFilters.openingDisposal);
+        SbUtils.COMMAND_SENDER.sendCommand("disposal", true, this::onDisposalOpened, Pattern.compile("Disposal"));
     }
 
     private static boolean isDisposalScreen(Screen screen) {

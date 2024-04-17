@@ -313,14 +313,14 @@ public class EnchantAll extends Feature {
         if (enchant == null || MC.getConnection() == null)
             return;
         String enchantName = enchant.getPath().replaceAll("_", "");
-        SbUtils.COMMAND_SENDER.sendCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()), this::onEnchantResponse, enchantResponses);
+        SbUtils.COMMAND_SENDER.sendCommand("enchant " + enchantName + " " + (unenchant ? 0 : enchantment.getMaxLevel()), false, this::onEnchantResponse, enchantResponses);
     }
 
     private void sendEnchantAllCommand() {
         if (MC.getConnection() == null)
             return;
 
-        SbUtils.COMMAND_SENDER.sendCommand("enchantall", this::onEnchantResponse, enchantResponses);
+        SbUtils.COMMAND_SENDER.sendCommand("enchantall", false, this::onEnchantResponse, enchantResponses);
     }
 
     private static int findEnchantableSlot(boolean unenchant) {

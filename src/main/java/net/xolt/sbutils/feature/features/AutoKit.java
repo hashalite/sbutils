@@ -3,8 +3,16 @@ package net.xolt.sbutils.feature.features;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
@@ -22,6 +30,7 @@ import static net.xolt.sbutils.SbUtils.MC;
 import static net.xolt.sbutils.SbUtils.SERVER_DETECTOR;
 
 public class AutoKit extends Feature {
+    private static final int DAILY_CLAIM_BUTTON_SLOT = 22;
     private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoKit.enabled", Boolean.class, (config) -> config.autoKit.enabled, (config, value) -> config.autoKit.enabled = value);
     private final OptionBinding<Double> commandDelay = new OptionBinding<>("autoKit.commandDelay", Double.class, (config) -> config.autoKit.commandDelay, (config, value) -> config.autoKit.commandDelay = value);
     private final OptionBinding<Double> claimDelay = new OptionBinding<>("autoKit.claimDelay", Double.class, (config) -> config.autoKit.claimDelay, (config, value) -> config.autoKit.claimDelay = value);
@@ -32,7 +41,7 @@ public class AutoKit extends Feature {
     private final PriorityQueue<KitQueueEntry> kitQueue;
     private final List<KitQueueEntry> invFullList;
     private final Map<String, Map<String, Map<String, Long>>> kitData;
-
+    private boolean awaitingDailyMenu;
     private boolean awaitingResponse;
     private long lastCommandSentAt;
     private long joinedAt;
@@ -166,6 +175,10 @@ public class AutoKit extends Feature {
             return;
         }
 
+        KitQueueEntry kitEntry = kitQueue.peek();
+        if (kitEntry == null)
+            return;
+
         String messageString = message.getString();
         Matcher kitSuccessMatcher = RegexFilters.kitSuccessFilter.matcher(messageString);
         Matcher kitFailMatcher = RegexFilters.kitFailFilter.matcher(messageString);
@@ -174,7 +187,6 @@ public class AutoKit extends Feature {
         if (kitNoPermsMatcher.matches()) {
             kitQueue.poll();
             // Error message for no perms
-            awaitingResponse = false;
             return;
         }
 
@@ -186,11 +198,6 @@ public class AutoKit extends Feature {
         String player = MC.player.getName().getString();
         if (!serverKitData.containsKey(player)) {
             serverKitData.put(player, new HashMap<>());
-        }
-        KitQueueEntry kitEntry = kitQueue.peek();
-        if (kitEntry == null) {
-            awaitingResponse = false;
-            return;
         }
 
         long currentTime = System.currentTimeMillis();
@@ -207,7 +214,6 @@ public class AutoKit extends Feature {
             int minutes =  minutesText == null || minutesText.isEmpty() ? 0 : Integer.parseInt(minutesText);
             int seconds =  secondsText == null || secondsText.isEmpty() ? 0 : Integer.parseInt(secondsText);
             long resetTime = ((long)days * 86400000) + ((long)hours * 3600000) + ((long)minutes * 60000) + ((long)seconds * 1000);
-            // 10s buffer needed due to
             lastClaimed = currentTime - (((long)kitEntry.kit.getCooldown() * 3600000) - resetTime);
         }
 
@@ -215,16 +221,98 @@ public class AutoKit extends Feature {
         IOHandler.writeAutoKitData(kitData);
         kitQueue.poll();
         queueKit(kitEntry.kit);
-        awaitingResponse = false;
+    }
+
+    public void onDailyRewardsMenu(Component title) {
+        if (!ModConfig.HANDLER.instance().autoKit.enabled || !awaitingDailyMenu || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null || MC.gameMode == null) {
+            return;
+        }
+
+        awaitingDailyMenu = false;
+
+        if (title == null || !(MC.screen instanceof AbstractContainerScreen<?> screen)) {
+            kitQueue.poll();
+            return;
+        }
+
+        KitQueueEntry kitEntry = kitQueue.peek();
+        if (kitEntry == null)
+            return;
+
+        String server = SERVER_DETECTOR.getCurrentServer().getName();
+        if (!kitData.containsKey(server))
+            kitData.put(server, new HashMap<>());
+
+        Map<String, Map<String, Long>> serverKitData = kitData.get(server);
+        String player = MC.player.getName().getString();
+        if (!serverKitData.containsKey(player)) {
+            serverKitData.put(player, new HashMap<>());
+        }
+
+        ItemStack claimButton = screen.getMenu().getSlot(DAILY_CLAIM_BUTTON_SLOT).getItem();
+
+        long currentTime = System.currentTimeMillis();
+        if (claimButton.getItem().equals(Items.CHEST_MINECART)) {
+            MC.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, DAILY_CLAIM_BUTTON_SLOT, 0, ClickType.PICKUP, MC.player);
+            MC.player.closeContainer();
+            serverKitData.get(player).put(kitEntry.kit.getSerializedName(), currentTime);
+            IOHandler.writeAutoKitData(kitData);
+            kitQueue.poll();
+            queueKit(kitEntry.kit);
+            return;
+        }
+
+        // Daily is not available
+
+        CompoundTag nbt = claimButton.getTag();
+        if (nbt == null || !nbt.contains(ItemStack.TAG_DISPLAY))
+            return;
+
+        CompoundTag displayNbt = nbt.getCompound(ItemStack.TAG_DISPLAY);
+        if (!displayNbt.contains(ItemStack.TAG_LORE))
+            return;
+
+        ListTag nbtList = displayNbt.getList(ItemStack.TAG_LORE, Tag.TAG_STRING);
+        MutableComponent lastLine = Component.Serializer.fromJson(nbtList.getString(nbtList.size() - 1));
+        if (lastLine == null)
+            return;
+
+        Matcher matcher = RegexFilters.dailyTimeLeft.matcher(lastLine.getString());
+        if (!matcher.matches())
+            return;
+
+
+        // FIXME Copied from onKitResponse, should probably be in a separate function - along with some of the stuff above
+        String daysText = matcher.group(3);
+        String hoursText = matcher.group(6);
+        String minutesText = matcher.group(9);
+        String secondsText = matcher.group(13);
+        int days = daysText == null || daysText.isEmpty() ? 0 : Integer.parseInt(daysText);
+        int hours =  hoursText == null || hoursText.isEmpty() ? 0 : Integer.parseInt(hoursText);
+        int minutes =  minutesText == null || minutesText.isEmpty() ? 0 : Integer.parseInt(minutesText);
+        int seconds =  secondsText == null || secondsText.isEmpty() ? 0 : Integer.parseInt(secondsText);
+        long resetTime = ((long)days * 86400000) + ((long)hours * 3600000) + ((long)minutes * 60000) + ((long)seconds * 1000);
+        long lastClaimed = currentTime - (((long)kitEntry.kit.getCooldown() * 3600000) - resetTime);
+
+        MC.player.closeContainer();
+        serverKitData.get(player).put(kitEntry.kit.getSerializedName(), lastClaimed);
+        IOHandler.writeAutoKitData(kitData);
+        kitQueue.poll();
+        queueKit(kitEntry.kit);
     }
 
     private void claimKit(ModConfig.Kit kit) {
         if (MC.getConnection() == null) {
             return;
         }
-        SbUtils.COMMAND_SENDER.sendCommand("kit " + kit.getSerializedName(), this::onKitResponse, RegexFilters.kitFailFilter, RegexFilters.kitSuccessFilter, RegexFilters.kitNoPermsFilter);
+        if (kit == ModConfig.SkyblockKit.DAILY || kit == ModConfig.EconomyKit.DAILY) {
+            SbUtils.COMMAND_SENDER.sendCommand("daily", true, this::onDailyRewardsMenu, RegexFilters.dailyMenuTitle);
+            awaitingDailyMenu = true;
+        } else {
+            SbUtils.COMMAND_SENDER.sendCommand("kit " + kit.getSerializedName(), false, this::onKitResponse, RegexFilters.kitFailFilter, RegexFilters.kitSuccessFilter, RegexFilters.kitNoPermsFilter);
+            awaitingResponse = true;
+        }
         lastCommandSentAt = System.currentTimeMillis();
-        awaitingResponse = true;
     }
 
     private void queueKits() {
@@ -257,13 +345,14 @@ public class AutoKit extends Feature {
         kitQueue.clear();
         invFullList.clear();
         awaitingResponse = false;
+        awaitingDailyMenu = false;
         lastCommandSentAt = 0;
     }
 
     private static long kitCooldownLeft(ModConfig.Kit kit, long lastClaim) {
         long currentTime = System.currentTimeMillis();
-        // 24-hour cooldown kits reset at 12:00 AM UTC every day
-        if (kit.getCooldown() == 24) {
+        // 24-hour cooldown kits reset at 12:00 AM UTC every day (except for /daily)
+        if (kit.getCooldown() == 24 && !(kit == ModConfig.SkyblockKit.DAILY || kit == ModConfig.EconomyKit.DAILY)) {
             long lastReset = currentTime - (currentTime % 86400000);
             // If lastClaim plus buffer is before last reset and more than claimDelay seconds have elapsed since the last reset, return 0
             if (lastClaim + (ModConfig.HANDLER.instance().autoKit.systemDelay * 1000) < lastReset && currentTime > lastReset + (ModConfig.HANDLER.instance().autoKit.systemDelay * 1000)) {

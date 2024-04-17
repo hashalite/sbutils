@@ -534,7 +534,8 @@ public class ModConfig {
                 )),
         COBBLE("Cobble", 24, List.of(
                 new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64), new ItemStack(Items.COBBLESTONE, 64)
-        ));
+        )),
+        DAILY("Daily", 24, List.of(new ItemStack(Items.GRASS_BLOCK, 1)));
 
         private final String name;
         private final int cooldown;
@@ -576,7 +577,8 @@ public class ModConfig {
         IRON(SkyblockKit.IRON),
         WOOL(SkyblockKit.WOOL),
         WOOD(SkyblockKit.WOOD),
-        COBBLE(SkyblockKit.COBBLE);
+        COBBLE(SkyblockKit.COBBLE),
+        DAILY("Daily", 24, List.of());
 
         private final String name;
         private final int cooldown;

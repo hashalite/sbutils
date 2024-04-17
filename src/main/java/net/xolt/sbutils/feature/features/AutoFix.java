@@ -213,7 +213,7 @@ public class AutoFix extends Feature {
         if (MC.getConnection() == null)
             return;
         String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
-        SbUtils.COMMAND_SENDER.sendCommand(command, this::onFixResponse, ModConfig.HANDLER.instance().autoFix.retryDelay, RegexFilters.noPermission, RegexFilters.fixFailFilter, RegexFilters.fixSuccessFilter);
+        SbUtils.COMMAND_SENDER.sendCommand(command, false, this::onFixResponse, ModConfig.HANDLER.instance().autoFix.retryDelay, RegexFilters.noPermission, RegexFilters.fixFailFilter, RegexFilters.fixSuccessFilter);
         tries++;
         lastActionPerformedAt = System.currentTimeMillis();
         waitingForResponse = true;

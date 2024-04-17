@@ -85,6 +85,8 @@ public class RegexFilters {
     public static final Pattern kitSuccessFilter = Pattern.compile("Received kit .*\\.");
     public static final Pattern kitFailFilter = Pattern.compile("You can't use that kit again for another(( ([0-9]+) (days|day))?( ([0-9]+) (hours|hour))?( ([0-9]+) (minutes|minute))?( ([0-9]+) (seconds|second))?| now)\\.");
     public static final Pattern kitNoPermsFilter = Pattern.compile("Error: You need the .* permission to use that kit\\.");
+    public static final Pattern dailyMenuTitle = Pattern.compile("(Skyblock|Economy) \\| Daily Rewards");
+    public static final Pattern dailyTimeLeft = Pattern.compile("((([0-9]+) (days|day),? ?)?(([0-9]+) (hrs|hr),? ?)?(([0-9]+) (mins|min) ?)?(and )?(([0-9]+) (secs|sec))?|now)");
 
 
     // Staff Detector
