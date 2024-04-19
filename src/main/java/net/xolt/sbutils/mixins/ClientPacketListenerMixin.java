@@ -51,7 +51,7 @@ public abstract class ClientPacketListenerMixin {
         }
 
         if (receivedEntry.listed()) {
-            StaffDetector.onPlayerJoin(currentEntry);
+            SbUtils.FEATURES.get(StaffDetector.class).onPlayerJoin(currentEntry);
         } else {
             SbUtils.FEATURES.get(StaffDetector.class).onPlayerLeave(currentEntry);
         }

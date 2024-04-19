@@ -13,12 +13,11 @@ import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
+import net.xolt.sbutils.util.ApiUtils;
 import net.xolt.sbutils.util.ChatUtils;
-import net.xolt.sbutils.util.RegexFilters;
 import net.xolt.sbutils.util.TextUtils;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -28,10 +27,12 @@ public class StaffDetector extends Feature {
     private final OptionBinding<Boolean> playSound = new OptionBinding<>("staffDetector.playSound", Boolean.class, (config) -> config.staffDetector.playSound, (config, value) -> config.staffDetector.playSound = value);
     private final OptionBinding<ModConfig.NotifSound> sound = new OptionBinding<>("staffDetector.sound", ModConfig.NotifSound.class, (config) -> config.staffDetector.sound, (config, value) -> config.staffDetector.sound = value);
 
+    private final Map<UUID, String> staffList = new HashMap<>();
     private boolean checkForNoStaff = false;
 
     public StaffDetector() {
         super("staffDetector", "staffdetect", "sd");
+        ApiUtils.getStaffList(staffList::putAll);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class StaffDetector extends Feature {
         checkForNoStaff = false;
     }
 
-    public static void onPlayerJoin(PlayerInfo player) {
+    public void onPlayerJoin(PlayerInfo player) {
         if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player))
             return;
 
@@ -84,27 +85,19 @@ public class StaffDetector extends Feature {
             MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
     }
 
-    private static void showStaffNotification(PlayerInfo player, boolean joined) {
+    private void showStaffNotification(PlayerInfo player, boolean joined) {
         MutableComponent message = Component.translatable("message.sbutils.staffDetector.notification");
-        MutableComponent staff = Component.literal(player.getProfile().getName());
+        String position = staffList.get(player.getProfile().getId());
+        MutableComponent staff = Component.literal(player.getProfile().getName() + (position.isEmpty() ? "" : " (" + position + ")"));
         MutableComponent status = TextUtils.formatOnlineOffline(joined);
         ChatUtils.printWithPlaceholders(message, staff, status);
     }
 
-    private static boolean isStaff(PlayerInfo player) {
-        if (player == null)
-            return false;
-
-        // Special Noobcrew case
-        if (player.getProfile().getId().equals(UUID.fromString("1ba2d16f-3d11-4a1f-b214-09e83906e6b5")))
-            return true;
-
-        String displayName = MC.gui.getTabList().getNameForDisplay(player).getString();
-
-        return RegexFilters.staffFilter.matcher(displayName).matches();
+    private boolean isStaff(PlayerInfo player) {
+        return staffList.containsKey(player.getProfile().getId());
     }
 
-    public static boolean staffOnline() {
+    public boolean staffOnline() {
         if (MC.getConnection() == null)
             return false;
 
