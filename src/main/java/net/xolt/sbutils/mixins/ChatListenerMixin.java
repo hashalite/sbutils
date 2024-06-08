@@ -53,7 +53,6 @@ public class ChatListenerMixin {
         SbUtils.FEATURES.get(AutoRaffle.class).processMessage(message);
         SbUtils.FEATURES.get(AutoReply.class).processMessage(message);
         SbUtils.FEATURES.get(Notifier.class).processMessage(message);
-        SbUtils.FEATURES.get(AutoKit.class).onKitResponse(message);
         SbUtils.COMMAND_SENDER.processMessage(message);
     }
 
