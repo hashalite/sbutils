@@ -88,6 +88,7 @@ public class RegexFilters {
     public static final Pattern kitNoPermsFilter = Pattern.compile("Error: You need the .* permission to use that kit\\.");
     public static final Pattern dailyMenuTitle = Pattern.compile("(Skyblock|Economy) \\| Daily Rewards");
     public static final Pattern dailyTimeLeft = Pattern.compile("((([0-9]+) (days|day),? ?)?(([0-9]+) (hrs|hr),? ?)?(([0-9]+) (mins|min) ?)?(and )?(([0-9]+) (secs|sec))?|now)");
+    public static final Pattern dailyError = Pattern.compile("You can't do this just yet, your profile hasn't been loaded, Check back soon");
 
 
     // No GMT

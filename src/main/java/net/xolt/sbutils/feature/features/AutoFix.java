@@ -13,6 +13,7 @@ import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
+import net.xolt.sbutils.systems.CommandSender;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
@@ -198,10 +199,6 @@ public class AutoFix extends Feature {
 
         waitingForResponse = false;
 
-        if (message == null) {
-            return;
-        }
-
         String messageString = message.getString();
 
         Matcher fixNoPermsMatcher = RegexFilters.noPermission.matcher(messageString);
@@ -251,7 +248,7 @@ public class AutoFix extends Feature {
         if (MC.getConnection() == null)
             return;
         String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
-        SbUtils.COMMAND_SENDER.sendCommand(command, false, this::onFixResponse, ModConfig.HANDLER.instance().autoFix.retryDelay, RegexFilters.noPermission, RegexFilters.fixFailedFilter, RegexFilters.fixTimeoutFilter, RegexFilters.fixSuccessFilter);
+        SbUtils.COMMAND_SENDER.sendCommand(command, () -> {}, ModConfig.HANDLER.instance().autoFix.retryDelay, new CommandSender.CommandResponseMatcher(this::onFixResponse, RegexFilters.noPermission, RegexFilters.fixFailedFilter, RegexFilters.fixTimeoutFilter, RegexFilters.fixSuccessFilter));
         tries++;
         lastActionPerformedAt = System.currentTimeMillis();
         waitingForResponse = true;

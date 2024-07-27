@@ -108,7 +108,8 @@
   "message.sbutils.autoCrate.closeGui": "Disabling Auto Crate because you closed the crate gui.",
 
   "message.sbutils.autoKit.invFull": "Your inventory doesn't have enough space for kit %s. Waiting...",
-  "message.sbutils.autoKit.claimFail": "Disabling Auto Kit because a response was not received after claiming a kit.",
+  "message.sbutils.autoKit.claimTimeout": "Disabling Auto Kit because a response was not received after claiming a kit.",
+  "message.sbutils.autoKit.dailyFail": "Failed to claim daily kit due to server-side bug. Please relog to try again.",
   "message.sbutils.autoKit.info": "Current kit queue:",
   "message.sbutils.autoKit.infoFormat": "%s | %s",
 

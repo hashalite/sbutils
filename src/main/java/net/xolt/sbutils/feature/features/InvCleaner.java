@@ -21,6 +21,7 @@ import net.xolt.sbutils.config.binding.constraints.ListConstraints;
 import net.xolt.sbutils.config.binding.constraints.StringConstraints;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.mixins.ContainerScreenAccessor;
+import net.xolt.sbutils.systems.CommandSender;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import org.jetbrains.annotations.Nullable;
@@ -128,9 +129,8 @@ public class InvCleaner extends Feature {
         ChatUtils.printMessage("message.sbutils.invCleaner.cleaning");
     }
 
-    private void onDisposalOpened(Component title) {
-        if (title == null)
-            reset();
+    private void onDisposalTimeout() {
+        reset();
     }
 
     private void reset() {
@@ -145,7 +145,7 @@ public class InvCleaner extends Feature {
     private void openDisposal() {
         if (MC.getConnection() == null)
             return;
-        SbUtils.COMMAND_SENDER.sendCommand("disposal", true, this::onDisposalOpened, Pattern.compile("Disposal"));
+        SbUtils.COMMAND_SENDER.sendCommand("disposal", this::onDisposalTimeout, new CommandSender.CommandResponseMatcher(true, (response) -> {}, Pattern.compile("Disposal")));
     }
 
     private static boolean isDisposalScreen(Screen screen) {

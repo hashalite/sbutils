@@ -21,6 +21,7 @@ import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.ListOptionBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
+import net.xolt.sbutils.systems.CommandSender;
 import net.xolt.sbutils.systems.ServerDetector;
 import net.xolt.sbutils.util.*;
 
@@ -197,12 +198,6 @@ public class AutoKit extends Feature {
 
         awaitingResponse = false;
 
-        if (message == null) {
-            ChatUtils.printMessage("message.sbutils.autoKit.claimFail");
-            enabled.set(ModConfig.HANDLER.instance(), false);
-            return;
-        }
-
         KitQueueEntry kitEntry = kitQueue.peek();
         if (kitEntry == null)
             return;
@@ -258,7 +253,7 @@ public class AutoKit extends Feature {
 
         awaitingDailyMenu = false;
 
-        if (title == null || !(MC.screen instanceof AbstractContainerScreen<?> screen)) {
+        if (!(MC.screen instanceof AbstractContainerScreen<?> screen)) {
             kitQueue.poll();
             return;
         }
@@ -329,15 +324,25 @@ public class AutoKit extends Feature {
         queueKit(kitEntry.kit);
     }
 
+    private void onDailyFailed(Component message) {
+        ChatUtils.printMessage("message.sbutils.autoKit.dailyFail");
+        kitQueue.poll();
+    }
+
+    private void onKitTimeout() {
+        ChatUtils.printMessage("message.sbutils.autoKit.claimTimeout");
+        enabled.set(ModConfig.HANDLER.instance(), false);
+    }
+
     private void claimKit(ModConfig.Kit kit) {
         if (MC.getConnection() == null) {
             return;
         }
         if (kit == ModConfig.SkyblockKit.DAILY || kit == ModConfig.EconomyKit.DAILY) {
-            SbUtils.COMMAND_SENDER.sendCommand("daily", true, this::onDailyRewardsMenu, RegexFilters.dailyMenuTitle);
+            SbUtils.COMMAND_SENDER.sendCommand("daily", this::onKitTimeout, new CommandSender.CommandResponseMatcher(true, this::onDailyRewardsMenu, RegexFilters.dailyMenuTitle), new CommandSender.CommandResponseMatcher(this::onDailyFailed, RegexFilters.dailyError));
             awaitingDailyMenu = true;
         } else {
-            SbUtils.COMMAND_SENDER.sendCommand("kit " + kit.getSerializedName(), false, this::onKitResponse, RegexFilters.kitFailFilter, RegexFilters.kitSuccessFilter, RegexFilters.kitNoPermsFilter);
+            SbUtils.COMMAND_SENDER.sendCommand("kit " + kit.getSerializedName(), this::onKitTimeout, new CommandSender.CommandResponseMatcher(this::onKitResponse, RegexFilters.kitFailFilter, RegexFilters.kitSuccessFilter, RegexFilters.kitNoPermsFilter));
             awaitingResponse = true;
         }
         lastCommandSentAt = System.currentTimeMillis();
