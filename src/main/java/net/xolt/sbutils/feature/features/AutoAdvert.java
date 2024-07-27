@@ -29,14 +29,17 @@ import net.xolt.sbutils.util.RegexFilters;
 import java.util.*;
 
 import static net.xolt.sbutils.SbUtils.MC;
+import static net.xolt.sbutils.SbUtils.SERVER_DETECTOR;
 
 public class AutoAdvert extends Feature {
 
     private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoAdvert.enabled", Boolean.class, (config) -> config.autoAdvert.enabled, (config, value) -> config.autoAdvert.enabled = value);
     private final OptionBinding<String> sbFile = new OptionBinding<>("autoAdvert.sbFile", String.class, (config) -> config.autoAdvert.sbFile, (config, value) -> config.autoAdvert.sbFile = value);
+    private final OptionBinding<Double> sbDelay = new OptionBinding<>("autoAdvert.sbDelay", Double.class, (config) -> config.autoAdvert.sbDelay, (config, value) -> config.autoAdvert.sbDelay = value);
     private final OptionBinding<String> ecoFile = new OptionBinding<>("autoAdvert.ecoFile", String.class, (config) -> config.autoAdvert.ecoFile, (config, value) -> config.autoAdvert.ecoFile = value);
+    private final OptionBinding<Double> ecoDelay = new OptionBinding<>("autoAdvert.ecoDelay", Double.class, (config) -> config.autoAdvert.ecoDelay, (config, value) -> config.autoAdvert.ecoDelay = value);
     private final OptionBinding<String> classicFile = new OptionBinding<>("autoAdvert.classicFile", String.class, (config) -> config.autoAdvert.classicFile, (config, value) -> config.autoAdvert.classicFile = value);
-    private final OptionBinding<Double> delay = new OptionBinding<>("autoAdvert.delay", Double.class, (config) -> config.autoAdvert.delay, (config, value) -> config.autoAdvert.delay = value);
+    private final OptionBinding<Double> classicDelay = new OptionBinding<>("autoAdvert.classicDelay", Double.class, (config) -> config.autoAdvert.classicDelay, (config, value) -> config.autoAdvert.classicDelay = value);
     private final OptionBinding<Double> initialDelay = new OptionBinding<>("autoAdvert.initialDelay", Double.class, (config) -> config.autoAdvert.initialDelay, (config, value) -> config.autoAdvert.initialDelay = value);
     private final OptionBinding<Boolean> useWhitelist = new OptionBinding<>("autoAdvert.useWhitelist", Boolean.class, (config) -> config.autoAdvert.useWhitelist, (config, value) -> config.autoAdvert.useWhitelist = value);
     private final ListOptionBinding<String> whitelist = new ListOptionBinding<>("autoAdvert.whitelist", "", String.class, (config) -> config.autoAdvert.whitelist, (config, value) -> config.autoAdvert.whitelist = value, new ListConstraints<>(false, null, new StringConstraints(false)));
@@ -52,7 +55,7 @@ public class AutoAdvert extends Feature {
 
     @Override
     public List<? extends ConfigBinding<?>> getConfigBindings() {
-        return List.of(enabled, sbFile, ecoFile, classicFile, delay, initialDelay, useWhitelist, whitelist);
+        return List.of(enabled, sbFile, sbDelay, ecoFile, ecoDelay, classicFile, classicDelay, initialDelay, useWhitelist, whitelist);
     }
 
     @Override
@@ -75,7 +78,9 @@ public class AutoAdvert extends Feature {
                                             .executes(context ->
                                                     onToggleCommand(IntegerArgumentType.getInteger(context, "index"))
                                             ))))
-                    .then(CommandHelper.doubl("delay", "seconds", delay))
+                    .then(CommandHelper.doubl("sbDelay", "seconds", sbDelay))
+                    .then(CommandHelper.doubl("ecoDelay", "seconds", ecoDelay))
+                    .then(CommandHelper.doubl("classicDelay", "seconds", classicDelay))
                     .then(CommandHelper.doubl("initialDelay", "seconds", initialDelay))
                     .then(CommandHelper.stringList("whitelist", "user", whitelist)
                             .then(CommandHelper.bool("enabled", useWhitelist)))
@@ -254,13 +259,21 @@ public class AutoAdvert extends Feature {
     }
 
     private int delayLeft() {
-        long delay = (long)(ModConfig.HANDLER.instance().autoAdvert.delay * 1000.0);
+        long delay = (long)(delay() * 1000.0);
         long initialDelay = (long)(ModConfig.HANDLER.instance().autoAdvert.initialDelay * 1000.0);
 
         int delayLeft = (int)Math.max(delay - (System.currentTimeMillis() - lastAdSentAt), 0L);
         int initialDelayLeft = (int)Math.max(initialDelay - (System.currentTimeMillis() - joinedAt), 0L);
 
         return Math.max(delayLeft, initialDelayLeft);
+    }
+
+    private double delay() {
+        return switch(SERVER_DETECTOR.getCurrentServer()) {
+            case ECONOMY -> ecoDelay.get(ModConfig.HANDLER.instance());
+            case CLASSIC -> classicDelay.get(ModConfig.HANDLER.instance());
+            default -> sbDelay.get(ModConfig.HANDLER.instance());
+        };
     }
 
     private void refreshPrevAdlist() {

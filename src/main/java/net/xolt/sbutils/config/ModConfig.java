@@ -55,9 +55,11 @@ public class ModConfig {
     public static class AutoAdvertConfig {
         @SerialEntry public boolean enabled = false;
         @SerialEntry public String sbFile = "skyblock";
+        @SerialEntry public double sbDelay = 300.0;
         @SerialEntry public String ecoFile = "economy";
+        @SerialEntry public double ecoDelay = 600.0;
         @SerialEntry public String classicFile = "classic";
-        @SerialEntry public double delay = 300.0;
+        @SerialEntry public double classicDelay = 300.0;
         @SerialEntry public double initialDelay = 10.0;
         @SerialEntry public boolean useWhitelist = false;
         @SerialEntry public List<String> whitelist = new ArrayList<>();
