@@ -68,7 +68,7 @@ public class CommandSender {
         CommandQueueEntry entry = entries.getFirst();
         boolean hasScreenMatcher = false;
         for (CommandResponseMatcher responseMatcher : entry.responseMatchers) {
-            if (!responseMatcher.matchScreenTitle) {
+            if (responseMatcher.matchScreenTitle) {
                 hasScreenMatcher = true;
                 break;
             }
