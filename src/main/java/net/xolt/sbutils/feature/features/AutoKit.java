@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -14,6 +15,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.ModConfig;
@@ -287,18 +289,12 @@ public class AutoKit extends Feature {
 
         // Daily is not available
 
-        CompoundTag nbt = claimButton.getTag();
-        if (nbt == null || !nbt.contains(ItemStack.TAG_DISPLAY))
+        ItemLore lore = claimButton.get(DataComponents.LORE);
+
+        if (lore == null)
             return;
 
-        CompoundTag displayNbt = nbt.getCompound(ItemStack.TAG_DISPLAY);
-        if (!displayNbt.contains(ItemStack.TAG_LORE))
-            return;
-
-        ListTag nbtList = displayNbt.getList(ItemStack.TAG_LORE, Tag.TAG_STRING);
-        MutableComponent lastLine = Component.Serializer.fromJson(nbtList.getString(nbtList.size() - 1));
-        if (lastLine == null)
-            return;
+        Component lastLine = lore.lines().get(lore.lines().size() - 1);
 
         Matcher matcher = RegexFilters.dailyTimeLeft.matcher(lastLine.getString());
         if (!matcher.matches())

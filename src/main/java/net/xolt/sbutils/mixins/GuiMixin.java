@@ -1,5 +1,6 @@
 package net.xolt.sbutils.mixins;
 
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.xolt.sbutils.SbUtils;
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class GuiMixin {
 
     @Inject(method = "render", at = @At("TAIL"))
-    public void render(GuiGraphics guiGraphics, float partialTick, CallbackInfo ci) {
+    public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         SbUtils.FEATURES.get(Notifier.class).onRenderGui(guiGraphics);
     }
 }

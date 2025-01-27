@@ -4,12 +4,14 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.gui.MapRenderer;
+import net.minecraft.client.resources.MapTextureManager;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.EntityHitResult;
 import net.xolt.sbutils.command.CommandHelper;
@@ -19,7 +21,6 @@ import net.xolt.sbutils.mixins.MapInstanceAccessor;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.IOHandler;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
@@ -50,13 +51,13 @@ public class MapSaver extends Feature {
             ChatUtils.printMessage("message.sbutils.mapSaver.notHoldingOrInFrame");
             return;
         }
-        Integer mapId = MapItem.getMapId(map);
+        MapId mapId = map.get(DataComponents.MAP_ID);
         if (mapId == null) {
             ChatUtils.printMessage("message.sbutils.mapSaver.saveFailed");
             return;
         }
-        MapItemSavedData mapData = MapItem.getSavedData(mapId, MC.level);
-        MapRenderer.MapInstance mapInstance = MC.gameRenderer.getMapRenderer().getOrCreateMapInstance(mapId, mapData);
+        MapItemSavedData mapData = MapItem.getSavedData(map, MC.level);
+        MapTextureManager.MapInstance mapInstance = MC.getMapTextureManager().getOrCreateMapInstance(mapId, mapData);
         NativeImage image = ((MapInstanceAccessor)mapInstance).getTexture().getPixels();
         String servername = null;
         if (MC.getConnection() != null && MC.getConnection().getServerData() != null)

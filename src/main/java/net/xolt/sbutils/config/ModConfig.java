@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.AutoCommand;
-import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.TextUtils;
 
 import java.awt.*;
@@ -30,7 +29,7 @@ import java.util.List;
 public class ModConfig {
 
     public static final ConfigClassHandler<ModConfig> HANDLER = ConfigClassHandler.createBuilder(ModConfig.class)
-            .id(new ResourceLocation("sbutils", "config"))
+            .id(ResourceLocation.fromNamespaceAndPath("sbutils", "config"))
             .serializer(config -> GsonConfigSerializerBuilder.create(config)
                     .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
                     .appendGsonBuilder(builder -> builder.setFieldNamingPolicy(FieldNamingPolicy.IDENTITY))
@@ -452,7 +451,7 @@ public class ModConfig {
         }
 
         public String getSerializedName() {
-            return sound.getLocation().toShortLanguageKey();
+            return sound.location().toShortLanguageKey();
         }
 
         public Component getDisplayName() {

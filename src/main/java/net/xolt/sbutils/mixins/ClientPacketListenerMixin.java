@@ -70,7 +70,7 @@ public abstract class ClientPacketListenerMixin {
 
     @Inject(method = "handleTabListCustomisation", at = @At("HEAD"))
     private void onPlayerListHeader(ClientboundTabListPacket packet, CallbackInfo ci) {
-        SbUtils.SERVER_DETECTOR.onPlayerListHeader(packet.getHeader().getString());
+        SbUtils.SERVER_DETECTOR.onPlayerListHeader(packet.header().getString());
     }
 
     @Inject(method = "handleOpenSignEditor", at = @At("HEAD"), cancellable = true)

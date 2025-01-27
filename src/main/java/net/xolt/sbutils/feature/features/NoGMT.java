@@ -2,9 +2,10 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -12,9 +13,10 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.item.BookItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WritableBookItem;
+import net.minecraft.world.item.component.ItemLore;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -75,31 +77,27 @@ public class NoGMT extends Feature {
     }
 
     public static ItemStack replaceTimeInLore(ItemStack stack) {
-        if (!(stack.getItem() instanceof BookItem) && !(stack.getItem() instanceof WritableBookItem))
+        if (!(stack.getItem().equals(Items.BOOK)) && !(stack.getItem().equals(Items.WRITABLE_BOOK)))
             return stack;
 
-        CompoundTag nbt = stack.getTag();
-        if (nbt == null || !nbt.contains(ItemStack.TAG_DISPLAY))
+        ItemLore lore = stack.get(DataComponents.LORE);
+
+        if (lore == null)
             return stack;
 
-        CompoundTag displayNbt = nbt.getCompound(ItemStack.TAG_DISPLAY);
-        if (!displayNbt.contains(ItemStack.TAG_LORE))
-            return stack;
-
-        ListTag nbtList = displayNbt.getList(ItemStack.TAG_LORE, Tag.TAG_STRING);
-        for (int j = 0; j < nbtList.size(); ++j) {
-            MutableComponent loreLine = Component.Serializer.fromJson(nbtList.getString(j));
+        for (int j = 0; j < lore.lines().size(); ++j) {
+            Component loreLine = lore.lines().get(j);
             if (loreLine == null)
                 continue;
             Matcher matcher = RegexFilters.mailLoreFilter.matcher(loreLine.getString());
             if (matcher.matches()) {
                 Component newLoreLine = replaceGmtTime(loreLine, matcher.group(1), MAIL_DATE_FORMAT);
-                nbtList.set(j, StringTag.valueOf(Component.Serializer.toJson(newLoreLine)));
+                lore.lines().set(j, newLoreLine);
             }
         }
 
         ItemStack result = stack.copy();
-        result.addTagElement(ItemStack.TAG_LORE, nbtList);
+        result.set(DataComponents.LORE, lore);
         return result;
     }
 
