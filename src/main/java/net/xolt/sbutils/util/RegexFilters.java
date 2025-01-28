@@ -95,5 +95,5 @@ public class RegexFilters {
 
     public static final Pattern emailFilter = Pattern.compile("\\[[0-9]+\\] \\[([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+)\\] .*");
     public static final Pattern mailGuiFilter = Pattern.compile("Skyblock Mail");
-    public static final Pattern mailLoreFilter = Pattern.compile("Sent at ([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+ (AM|PM)).*");
+    public static final Pattern mailLoreFilter = Pattern.compile("Sent at ([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+ (?i)(am|pm)(?-i)).*");
 }
