@@ -214,18 +214,14 @@ public class AutoSilk extends Feature {
         if (screenHandler == null)
             return;
 
-        LocalPlayer player = MC.player;
-        MultiPlayerGameMode interactionManager = MC.gameMode;
-        if (player == null || interactionManager == null)
-            return;
-
         state = nextState;
 
         if (screenHandler.getSlot(0).getItem().isEmpty())
             // Item already taken
             return;
 
-        interactionManager.handleInventoryMouseClick(screenHandler.containerId, 0, 0, ClickType.QUICK_MOVE, MC.player);
+        assert MC.gameMode != null;
+        MC.gameMode.handleInventoryMouseClick(screenHandler.containerId, 0, 0, ClickType.QUICK_MOVE, MC.player);
     }
 
     private void insertLapis() {
