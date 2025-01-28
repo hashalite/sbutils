@@ -15,11 +15,11 @@ import java.util.List;
 public class UnenchantAll extends EnchantAll {
 
     public UnenchantAll() {
-        super("unenchantAll", "unenchall", "ueall");
+        super("sbutils", "unenchantAll", "unenchall", "ueall");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return null;
     }
 
@@ -28,10 +28,10 @@ public class UnenchantAll extends EnchantAll {
         final LiteralCommandNode<FabricClientCommandSource> unenchantAllNode = dispatcher.register(
                 CommandHelper.runnable(command, () -> SbUtils.FEATURES.get(EnchantAll.class).onEnchantAllCommand(true, false))
                         .then(CommandHelper.runnable("inv", () -> SbUtils.FEATURES.get(EnchantAll.class).onEnchantAllCommand(true, true)))
-                        .then(CommandHelper.doubl("delay", "seconds", delay))
-                        .then(CommandHelper.integer("cooldownFrequency", "frequency", cooldownFrequency))
-                        .then(CommandHelper.doubl("cooldownTime", "seconds", cooldownTime))
-                        .then(CommandHelper.bool("tpsSync", tpsSync))
+                        .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
+                        .then(CommandHelper.integer("cooldownFrequency", "frequency", cooldownFrequency, ModConfig.HANDLER))
+                        .then(CommandHelper.doubl("cooldownTime", "seconds", cooldownTime, ModConfig.HANDLER))
+                        .then(CommandHelper.bool("tpsSync", tpsSync, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, unenchantAllNode);
     }

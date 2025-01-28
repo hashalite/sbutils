@@ -38,18 +38,18 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoSilk extends Feature {
+public class AutoSilk extends Feature<ModConfig> {
     public static final int BUTTON_WIDTH = 100;
     public static final int BUTTON_HEIGHT = 20;
 
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoSilk.enabled", Boolean.class, (config) -> config.autoSilk.enabled, (config, value) -> config.autoSilk.enabled = value);
-    private final OptionBinding<ModConfig.SilkTarget> targetTool = new OptionBinding<>("autoSilk.targetTool", ModConfig.SilkTarget.class, (config) -> config.autoSilk.targetTool, (config, value) -> config.autoSilk.targetTool = value);
-    private final OptionBinding<Boolean> bookPriority = new OptionBinding<>("autoSilk.bookPriority", Boolean.class, (config) -> config.autoSilk.bookPriority, (config, value) -> config.autoSilk.bookPriority = value);
-    private final OptionBinding<Boolean> booksOnly = new OptionBinding<>("autoSilk.booksOnly", Boolean.class, (config) -> config.autoSilk.booksOnly, (config, value) -> config.autoSilk.booksOnly = value);
-    private final OptionBinding<Boolean> cleaner = new OptionBinding<>("autoSilk.cleaner", Boolean.class, (config) -> config.autoSilk.cleaner, (config, value) -> config.autoSilk.cleaner = value);
-    private final OptionBinding<Double> delay = new OptionBinding<>("autoSilk.delay", Double.class, (config) -> config.autoSilk.delay, (config, value) -> config.autoSilk.delay = value);
-    private final OptionBinding<Boolean> showButton = new OptionBinding<>("autoSilk.showButton", Boolean.class, (config) -> config.autoSilk.showButton, (config, value) -> config.autoSilk.showButton = value);
-    private final OptionBinding<ModConfig.CornerButtonPos> buttonPos = new OptionBinding<>("autoSilk.buttonPos", ModConfig.CornerButtonPos.class, (config) -> config.autoSilk.buttonPos, (config, value) -> config.autoSilk.buttonPos = value);
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoSilk.enabled", Boolean.class, (config) -> config.autoSilk.enabled, (config, value) -> config.autoSilk.enabled = value);
+    private final OptionBinding<ModConfig, ModConfig.SilkTarget> targetTool = new OptionBinding<>("sbutils", "autoSilk.targetTool", ModConfig.SilkTarget.class, (config) -> config.autoSilk.targetTool, (config, value) -> config.autoSilk.targetTool = value);
+    private final OptionBinding<ModConfig, Boolean> bookPriority = new OptionBinding<>("sbutils", "autoSilk.bookPriority", Boolean.class, (config) -> config.autoSilk.bookPriority, (config, value) -> config.autoSilk.bookPriority = value);
+    private final OptionBinding<ModConfig, Boolean> booksOnly = new OptionBinding<>("sbutils", "autoSilk.booksOnly", Boolean.class, (config) -> config.autoSilk.booksOnly, (config, value) -> config.autoSilk.booksOnly = value);
+    private final OptionBinding<ModConfig, Boolean> cleaner = new OptionBinding<>("sbutils", "autoSilk.cleaner", Boolean.class, (config) -> config.autoSilk.cleaner, (config, value) -> config.autoSilk.cleaner = value);
+    private final OptionBinding<ModConfig, Double> delay = new OptionBinding<>("sbutils", "autoSilk.delay", Double.class, (config) -> config.autoSilk.delay, (config, value) -> config.autoSilk.delay = value);
+    private final OptionBinding<ModConfig, Boolean> showButton = new OptionBinding<>("sbutils", "autoSilk.showButton", Boolean.class, (config) -> config.autoSilk.showButton, (config, value) -> config.autoSilk.showButton = value);
+    private final OptionBinding<ModConfig, ModConfig.CornerButtonPos> buttonPos = new OptionBinding<>("sbutils", "autoSilk.buttonPos", ModConfig.CornerButtonPos.class, (config) -> config.autoSilk.buttonPos, (config, value) -> config.autoSilk.buttonPos = value);
 
     private EnchantState state;
     private long lastActionPerformedAt;
@@ -59,26 +59,26 @@ public class AutoSilk extends Feature {
     public CycleButton<Boolean> autoSilkButton;
 
     public AutoSilk() {
-        super("autoSilk", "autosilk", "silk");
+        super("sbutils", "autoSilk", "autosilk", "silk");
         reset();
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, targetTool, bookPriority, booksOnly, cleaner, delay, showButton, buttonPos);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoSilkNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.genericEnum("target", "tool", targetTool))
-                    .then(CommandHelper.bool("bookPriority", bookPriority))
-                    .then(CommandHelper.bool("booksOnly", booksOnly))
-                    .then(CommandHelper.doubl("delay", "seconds", delay))
-                    .then(CommandHelper.bool("showButton", showButton))
-                    .then(CommandHelper.genericEnum("buttonPos", "position", buttonPos))
-                    .then(CommandHelper.bool("cleaner", cleaner))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                    .then(CommandHelper.genericEnum("target", "tool", targetTool, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("bookPriority", bookPriority, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("booksOnly", booksOnly, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("showButton", showButton, ModConfig.HANDLER))
+                    .then(CommandHelper.genericEnum("buttonPos", "position", buttonPos, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("cleaner", cleaner, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, autoSilkNode);
     }

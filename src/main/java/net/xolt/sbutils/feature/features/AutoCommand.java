@@ -27,30 +27,30 @@ import java.util.*;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoCommand extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoCommand.enabled", Boolean.class, (config) -> config.autoCommand.enabled, (config, value) -> config.autoCommand.enabled = value);
-    private final OptionBinding<Double> minDelay = new OptionBinding<>("autoCommand.minDelay", Double.class, (config) -> config.autoCommand.minDelay, (config, value) -> config.autoCommand.minDelay = value);
-    private final ListOptionBinding<AutoCommandEntry> commands = new ListOptionBinding<>("autoCommand.commands", new AutoCommandEntry("", 1.0, false), AutoCommandEntry.class, (config) -> config.autoCommand.commands, (config, value) -> config.autoCommand.commands = value, new ListConstraints<>(true, null, null));
+public class AutoCommand extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoCommand.enabled", Boolean.class, (config) -> config.autoCommand.enabled, (config, value) -> config.autoCommand.enabled = value);
+    private final OptionBinding<ModConfig, Double> minDelay = new OptionBinding<>("sbutils", "autoCommand.minDelay", Double.class, (config) -> config.autoCommand.minDelay, (config, value) -> config.autoCommand.minDelay = value);
+    private final ListOptionBinding<ModConfig, AutoCommandEntry> commands = new ListOptionBinding<>("sbutils", "autoCommand.commands", new AutoCommandEntry("", 1.0, false), AutoCommandEntry.class, (config) -> config.autoCommand.commands, (config, value) -> config.autoCommand.commands = value, new ListConstraints<>(true, null, null));
     private final Map<AutoCommandEntry, Long> cmdsLastSentAt;
     private final Queue<AutoCommandEntry> cmdQueue;
     private long lastCommandSentAt;
 
     public AutoCommand() {
-        super("autoCommand", "autocmd", "acmd");
+        super("sbutils", "autoCommand", "autocmd", "acmd");
         cmdsLastSentAt = new HashMap<>();
         cmdQueue = new LinkedList<>();
     }
 
-    @Override public List<? extends ConfigBinding<?>> getConfigBindings() {
+    @Override public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, minDelay, commands);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoCommandNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                        .then(CommandHelper.doubl("minDelay", "seconds", minDelay))
-                        .then(CommandHelper.genericList("commands", "command", commands, true, AutoCommandEntryArgumentType.commandEntry(), AutoCommandEntryArgumentType::getCommandEntry)
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                        .then(CommandHelper.doubl("minDelay", "seconds", minDelay, ModConfig.HANDLER))
+                        .then(CommandHelper.genericList("commands", "command", commands, ModConfig.HANDLER, true, AutoCommandEntryArgumentType.commandEntry(), AutoCommandEntryArgumentType::getCommandEntry)
                                 .then(ClientCommandManager.literal("toggle")
                                         .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
                                                 .executes(context -> onToggleCommand(IntegerArgumentType.getInteger(context, "index")))))

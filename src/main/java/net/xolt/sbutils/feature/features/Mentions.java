@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.ClickEvent;
@@ -27,40 +26,40 @@ import java.util.regex.Matcher;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class Mentions extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("mentions.enabled", Boolean.class, (config) -> config.mentions.enabled, (config, value) -> config.mentions.enabled = value);
-    private final OptionBinding<Boolean> playSound = new OptionBinding<>("mentions.playSound", Boolean.class, (config) -> config.mentions.playSound, (config, value) -> config.mentions.playSound = value);
-    private final OptionBinding<ModConfig.NotifSound> sound = new OptionBinding<>("mentions.sound", ModConfig.NotifSound.class, (config) -> config.mentions.sound, (config, value) -> config.mentions.sound = value);
-    private final OptionBinding<Boolean> highlight = new OptionBinding<>("mentions.highlight", Boolean.class, (config) -> config.mentions.highlight, (config, value) -> config.mentions.highlight = value);
-    private final OptionBinding<Color> highlightColor = new OptionBinding<>("mentions.highlightColor", Color.class, (config) -> config.mentions.highlightColor, (config, value) -> config.mentions.highlightColor = value);
-    private final OptionBinding<Boolean> excludeServerMsgs = new OptionBinding<>("mentions.excludeServerMsgs", Boolean.class, (config) -> config.mentions.excludeServerMsgs, (config, value) -> config.mentions.excludeServerMsgs = value);
-    private final OptionBinding<Boolean> excludeSelfMsgs = new OptionBinding<>("mentions.excludeSelfMsgs", Boolean.class, (config) -> config.mentions.excludeSelfMsgs, (config, value) -> config.mentions.excludeSelfMsgs = value);
-    private final OptionBinding<Boolean> excludeSender = new OptionBinding<>("mentions.excludeSender", Boolean.class, (config) -> config.mentions.excludeSender, (config, value) -> config.mentions.excludeSender = value);
-    private final OptionBinding<Boolean> currentAccount = new OptionBinding<>("mentions.currentAccount", Boolean.class, (config) -> config.mentions.currentAccount, (config, value) -> config.mentions.currentAccount = value);
-    private final ListOptionBinding<String> aliases = new ListOptionBinding<>("mentions.aliases", "", String.class, (config) -> config.mentions.aliases, (config, value) -> config.mentions.aliases = value);
+public class Mentions extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "mentions.enabled", Boolean.class, (config) -> config.mentions.enabled, (config, value) -> config.mentions.enabled = value);
+    private final OptionBinding<ModConfig, Boolean> playSound = new OptionBinding<>("sbutils", "mentions.playSound", Boolean.class, (config) -> config.mentions.playSound, (config, value) -> config.mentions.playSound = value);
+    private final OptionBinding<ModConfig, ModConfig.NotifSound> sound = new OptionBinding<>("sbutils", "mentions.sound", ModConfig.NotifSound.class, (config) -> config.mentions.sound, (config, value) -> config.mentions.sound = value);
+    private final OptionBinding<ModConfig, Boolean> highlight = new OptionBinding<>("sbutils", "mentions.highlight", Boolean.class, (config) -> config.mentions.highlight, (config, value) -> config.mentions.highlight = value);
+    private final OptionBinding<ModConfig, Color> highlightColor = new OptionBinding<>("sbutils", "mentions.highlightColor", Color.class, (config) -> config.mentions.highlightColor, (config, value) -> config.mentions.highlightColor = value);
+    private final OptionBinding<ModConfig, Boolean> excludeServerMsgs = new OptionBinding<>("sbutils", "mentions.excludeServerMsgs", Boolean.class, (config) -> config.mentions.excludeServerMsgs, (config, value) -> config.mentions.excludeServerMsgs = value);
+    private final OptionBinding<ModConfig, Boolean> excludeSelfMsgs = new OptionBinding<>("sbutils", "mentions.excludeSelfMsgs", Boolean.class, (config) -> config.mentions.excludeSelfMsgs, (config, value) -> config.mentions.excludeSelfMsgs = value);
+    private final OptionBinding<ModConfig, Boolean> excludeSender = new OptionBinding<>("sbutils", "mentions.excludeSender", Boolean.class, (config) -> config.mentions.excludeSender, (config, value) -> config.mentions.excludeSender = value);
+    private final OptionBinding<ModConfig, Boolean> currentAccount = new OptionBinding<>("sbutils", "mentions.currentAccount", Boolean.class, (config) -> config.mentions.currentAccount, (config, value) -> config.mentions.currentAccount = value);
+    private final ListOptionBinding<ModConfig, String> aliases = new ListOptionBinding<>("sbutils", "mentions.aliases", "", String.class, (config) -> config.mentions.aliases, (config, value) -> config.mentions.aliases = value);
 
     public Mentions() {
-        super("mentions", "mentions", "ment");
+        super("sbutils", "mentions", "mentions", "ment");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, playSound, sound, highlight, highlightColor, excludeServerMsgs, excludeSelfMsgs, excludeSender, currentAccount, aliases);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> mentionsNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.bool("playSound", playSound))
-                    .then(CommandHelper.bool("excludeServer", excludeServerMsgs))
-                    .then(CommandHelper.bool("excludeSelf", excludeSelfMsgs))
-                    .then(CommandHelper.bool("excludeSender", excludeSender))
-                    .then(CommandHelper.bool("currentAccount", currentAccount))
-                    .then(CommandHelper.stringList("aliases", "alias", aliases))
-                    .then(CommandHelper.genericEnum("sound", "sound", sound))
-                    .then(CommandHelper.bool("highlight", highlight)
-                            .then(CommandHelper.getterSetter("color", "color", highlightColor, ColorArgumentType.color(), ColorArgumentType::getColor))));
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                    .then(CommandHelper.bool("playSound", playSound, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("excludeServer", excludeServerMsgs, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("excludeSelf", excludeSelfMsgs, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("excludeSender", excludeSender, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("currentAccount", currentAccount, ModConfig.HANDLER))
+                    .then(CommandHelper.stringList("aliases", "alias", aliases, ModConfig.HANDLER))
+                    .then(CommandHelper.genericEnum("sound", "sound", sound, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("highlight", highlight, ModConfig.HANDLER)
+                            .then(CommandHelper.getterSetter("color", "color", highlightColor, ModConfig.HANDLER, ColorArgumentType.color(), ColorArgumentType::getColor))));
         registerAlias(dispatcher, mentionsNode);
     }
 

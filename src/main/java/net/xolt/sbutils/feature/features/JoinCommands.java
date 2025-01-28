@@ -26,31 +26,31 @@ import java.util.*;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class JoinCommands extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("joinCommands.enabled", Boolean.class, (config) -> config.joinCommands.enabled, (config, value) -> config.joinCommands.enabled = value);
-    private final OptionBinding<Double> initialDelay = new OptionBinding<>("joinCommands.initialDelay", Double.class, (config) -> config.joinCommands.initialDelay, (config, value) -> config.joinCommands.initialDelay = value);
-    private final OptionBinding<Double> delay = new OptionBinding<>("joinCommands.delay", Double.class, (config) -> config.joinCommands.delay, (config, value) -> config.joinCommands.delay = value);
-    private final ListOptionBinding<JoinCommandsEntry> commands = new ListOptionBinding<>("joinCommands.commands", new JoinCommandsEntry("", ""), JoinCommandsEntry.class, (config) -> config.joinCommands.commands, (config, value) -> config.joinCommands.commands = value, new ListConstraints<>(true, null, null));
+public class JoinCommands extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "joinCommands.enabled", Boolean.class, (config) -> config.joinCommands.enabled, (config, value) -> config.joinCommands.enabled = value);
+    private final OptionBinding<ModConfig, Double> initialDelay = new OptionBinding<>("sbutils", "joinCommands.initialDelay", Double.class, (config) -> config.joinCommands.initialDelay, (config, value) -> config.joinCommands.initialDelay = value);
+    private final OptionBinding<ModConfig, Double> delay = new OptionBinding<>("sbutils", "joinCommands.delay", Double.class, (config) -> config.joinCommands.delay, (config, value) -> config.joinCommands.delay = value);
+    private final ListOptionBinding<ModConfig, JoinCommandsEntry> commands = new ListOptionBinding<>("sbutils", "joinCommands.commands", new JoinCommandsEntry("", ""), JoinCommandsEntry.class, (config) -> config.joinCommands.commands, (config, value) -> config.joinCommands.commands = value, new ListConstraints<>(true, null, null));
 
     private long joinedAt;
     private long lastCommandSentAt;
     private Queue<String> commandQueue;
 
     public JoinCommands() {
-        super("joinCommands", "joincmds", "jc");
+        super("sbutils", "joinCommands", "joincmds", "jc");
         commandQueue = new LinkedList<>();
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, initialDelay, delay, commands);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> joinCommandsNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.genericList("commands", "command", commands, true, JoinCommandsEntryArgumentType.commandEntry(), JoinCommandsEntryArgumentType::getCommandEntry)
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                    .then(CommandHelper.genericList("commands", "command", commands, ModConfig.HANDLER, true, JoinCommandsEntryArgumentType.commandEntry(), JoinCommandsEntryArgumentType::getCommandEntry)
                             .then(ClientCommandManager.literal("set")
                                     .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
                                             .then(ClientCommandManager.literal("command")
@@ -59,8 +59,8 @@ public class JoinCommands extends Feature {
                                             .then(ClientCommandManager.literal("accounts")
                                                     .then(ClientCommandManager.argument("accounts", StringArgumentType.greedyString())
                                                             .executes(context -> onSetAccountsCommand(IntegerArgumentType.getInteger(context, "index"), StringArgumentType.getString(context, "accounts"))))))))
-                    .then(CommandHelper.doubl("delay", "seconds", delay))
-                    .then(CommandHelper.doubl("initialDelay", "seconds", initialDelay))
+                    .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("initialDelay", "seconds", initialDelay, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, joinCommandsNode);
     }

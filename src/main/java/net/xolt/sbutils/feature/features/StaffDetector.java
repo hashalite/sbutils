@@ -21,32 +21,32 @@ import java.util.*;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class StaffDetector extends Feature {
-    private final OptionBinding<Boolean> detectJoin = new OptionBinding<>("staffDetector.detectJoin", Boolean.class, (config) -> config.staffDetector.detectJoin, (config, value) -> config.staffDetector.detectJoin = value);
-    private final OptionBinding<Boolean> detectLeave = new OptionBinding<>("staffDetector.detectLeave", Boolean.class, (config) -> config.staffDetector.detectLeave, (config, value) -> config.staffDetector.detectLeave = value);
-    private final OptionBinding<Boolean> playSound = new OptionBinding<>("staffDetector.playSound", Boolean.class, (config) -> config.staffDetector.playSound, (config, value) -> config.staffDetector.playSound = value);
-    private final OptionBinding<ModConfig.NotifSound> sound = new OptionBinding<>("staffDetector.sound", ModConfig.NotifSound.class, (config) -> config.staffDetector.sound, (config, value) -> config.staffDetector.sound = value);
+public class StaffDetector extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> detectJoin = new OptionBinding<>("sbutils", "staffDetector.detectJoin", Boolean.class, (config) -> config.staffDetector.detectJoin, (config, value) -> config.staffDetector.detectJoin = value);
+    private final OptionBinding<ModConfig, Boolean> detectLeave = new OptionBinding<>("sbutils", "staffDetector.detectLeave", Boolean.class, (config) -> config.staffDetector.detectLeave, (config, value) -> config.staffDetector.detectLeave = value);
+    private final OptionBinding<ModConfig, Boolean> playSound = new OptionBinding<>("sbutils", "staffDetector.playSound", Boolean.class, (config) -> config.staffDetector.playSound, (config, value) -> config.staffDetector.playSound = value);
+    private final OptionBinding<ModConfig, ModConfig.NotifSound> sound = new OptionBinding<>("sbutils", "staffDetector.sound", ModConfig.NotifSound.class, (config) -> config.staffDetector.sound, (config, value) -> config.staffDetector.sound = value);
 
     private final Map<UUID, String> staffList = new HashMap<>();
     private boolean checkForNoStaff = false;
 
     public StaffDetector() {
-        super("staffDetector", "staffdetect", "sd");
+        super("sbutils", "staffDetector", "staffdetect", "sd");
         ApiUtils.getStaffList(staffList::putAll);
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(detectJoin, detectLeave, playSound, sound);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> staffDetectorNode = dispatcher.register(ClientCommandManager.literal(command)
-                .then(CommandHelper.bool("detectJoin", detectJoin))
-                .then(CommandHelper.bool("detectLeave", detectLeave))
-                .then(CommandHelper.bool("playSound", playSound))
-                .then(CommandHelper.genericEnum("sound", "sound", sound))
+                .then(CommandHelper.bool("detectJoin", detectJoin, ModConfig.HANDLER))
+                .then(CommandHelper.bool("detectLeave", detectLeave, ModConfig.HANDLER))
+                .then(CommandHelper.bool("playSound", playSound, ModConfig.HANDLER))
+                .then(CommandHelper.genericEnum("sound", "sound", sound, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, staffDetectorNode);
     }

@@ -33,9 +33,9 @@ import java.util.regex.Pattern;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class InvCleaner extends Feature {
-    private final OptionBinding<Double> clickDelay = new OptionBinding<>("invCleaner.clickDelay", Double.class, (config) -> config.invCleaner.clickDelay, (config, value) -> config.invCleaner.clickDelay = value);
-    private final ListOptionBinding<String> itemsToClean = new ListOptionBinding<>("invCleaner.itemsToClean", "", String.class, (config) -> config.invCleaner.itemsToClean, (config, value) -> config.invCleaner.itemsToClean = value, new ListConstraints<>(null, null, new StringConstraints(false)));
+public class InvCleaner extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Double> clickDelay = new OptionBinding<>("sbutils", "invCleaner.clickDelay", Double.class, (config) -> config.invCleaner.clickDelay, (config, value) -> config.invCleaner.clickDelay = value);
+    private final ListOptionBinding<ModConfig, String> itemsToClean = new ListOptionBinding<>("sbutils", "invCleaner.itemsToClean", "", String.class, (config) -> config.invCleaner.itemsToClean, (config, value) -> config.invCleaner.itemsToClean = value, new ListConstraints<>(null, null, new StringConstraints(false)));
 
     private boolean cleaning;
     private boolean openedDisposal;
@@ -45,11 +45,11 @@ public class InvCleaner extends Feature {
     private int stacksCleaned;
 
     public InvCleaner() {
-        super("invCleaner", "invcleaner", "ic");
+        super("sbutils", "invCleaner", "invcleaner", "ic");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(clickDelay, itemsToClean);
     }
 
@@ -57,8 +57,8 @@ public class InvCleaner extends Feature {
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> invCleanerNode = dispatcher.register(
                 CommandHelper.runnable(command, () -> clean(ModConfig.HANDLER.instance().invCleaner.itemsToClean, null))
-                        .then(CommandHelper.stringList("items", "item", itemsToClean))
-                        .then(CommandHelper.doubl("clickDelay", "seconds", clickDelay))
+                        .then(CommandHelper.stringList("items", "item", itemsToClean, ModConfig.HANDLER))
+                        .then(CommandHelper.doubl("clickDelay", "seconds", clickDelay, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, invCleanerNode);
     }

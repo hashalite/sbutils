@@ -22,31 +22,31 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoRaffle extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoRaffle.enabled", Boolean.class, (config) -> config.autoRaffle.enabled, (config, value) -> config.autoRaffle.enabled = value);
-    private final OptionBinding<Integer> sbTickets = new OptionBinding<>("autoRaffle.sbTickets", Integer.class, (config) -> config.autoRaffle.sbTickets, (config, value) -> config.autoRaffle.sbTickets = value, new NumberConstraints<>(1, 2));
-    private final OptionBinding<Integer> ecoTickets = new OptionBinding<>("autoRaffle.ecoTickets", Integer.class, (config) -> config.autoRaffle.ecoTickets, (config, value) -> config.autoRaffle.ecoTickets = value, new NumberConstraints<>(1, 5));
+public class AutoRaffle extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoRaffle.enabled", Boolean.class, (config) -> config.autoRaffle.enabled, (config, value) -> config.autoRaffle.enabled = value);
+    private final OptionBinding<ModConfig, Integer> sbTickets = new OptionBinding<>("sbutils", "autoRaffle.sbTickets", Integer.class, (config) -> config.autoRaffle.sbTickets, (config, value) -> config.autoRaffle.sbTickets = value, new NumberConstraints<>(1, 2));
+    private final OptionBinding<ModConfig, Integer> ecoTickets = new OptionBinding<>("sbutils", "autoRaffle.ecoTickets", Integer.class, (config) -> config.autoRaffle.ecoTickets, (config, value) -> config.autoRaffle.ecoTickets = value, new NumberConstraints<>(1, 5));
 
     private boolean waitingToBuy;
     private boolean checkForGrass;
     private boolean shouldSendErrorMessage;
 
     public AutoRaffle() {
-        super("autoRaffle", "autoraffle", "autoraf");
+        super("sbutils", "autoRaffle", "autoraffle", "autoraf");
         enabled.addListener(this::onToggle);
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, sbTickets, ecoTickets);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoRaffleNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.integer("sbTickets", "amount", sbTickets))
-                    .then(CommandHelper.integer("ecoTickets", "amount", ecoTickets))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                    .then(CommandHelper.integer("sbTickets", "amount", sbTickets, ModConfig.HANDLER))
+                    .then(CommandHelper.integer("ecoTickets", "amount", ecoTickets, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, autoRaffleNode);
     }

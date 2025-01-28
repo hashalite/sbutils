@@ -37,15 +37,15 @@ import java.util.regex.Pattern;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class EnchantAll extends Feature {
+public class EnchantAll extends Feature<ModConfig> {
     private static final Pattern[] enchantResponses = {RegexFilters.enchantError, RegexFilters.enchantAllSuccess, RegexFilters.enchantSingleSuccess, RegexFilters.unenchantSuccess, RegexFilters.noPermission};
 
-    private final OptionBinding<ModConfig.EnchantMode> mode = new OptionBinding<>("enchantAll.mode", ModConfig.EnchantMode.class, (config) -> config.enchantAll.mode, (config, value) -> config.enchantAll.mode = value);
-    protected final OptionBinding<Boolean> tpsSync = new OptionBinding<>("enchantAll.tpsSync", Boolean.class, (config) -> config.enchantAll.tpsSync, (config, value) -> config.enchantAll.tpsSync = value);
-    protected final OptionBinding<Double> delay = new OptionBinding<>("enchantAll.delay", Double.class, (config) -> config.enchantAll.delay, (config, value) -> config.enchantAll.delay = value);
-    protected final OptionBinding<Integer> cooldownFrequency = new OptionBinding<>("enchantAll.cooldownFrequency", Integer.class, (config) -> config.enchantAll.cooldownFrequency, (config, value) -> config.enchantAll.cooldownFrequency = value);
-    protected final OptionBinding<Double> cooldownTime = new OptionBinding<>("enchantAll.cooldownTime", Double.class, (config) -> config.enchantAll.cooldownTime, (config, value) -> config.enchantAll.cooldownTime = value);
-    private final OptionBinding<Boolean> excludeFrost = new OptionBinding<>("enchantAll.excludeFrost", Boolean.class, (config) -> config.enchantAll.excludeFrost, (config, value) -> config.enchantAll.excludeFrost = value);
+    private final OptionBinding<ModConfig, ModConfig.EnchantMode> mode = new OptionBinding<>("sbutils", "enchantAll.mode", ModConfig.EnchantMode.class, (config) -> config.enchantAll.mode, (config, value) -> config.enchantAll.mode = value);
+    protected final OptionBinding<ModConfig, Boolean> tpsSync = new OptionBinding<>("sbutils", "enchantAll.tpsSync", Boolean.class, (config) -> config.enchantAll.tpsSync, (config, value) -> config.enchantAll.tpsSync = value);
+    protected final OptionBinding<ModConfig, Double> delay = new OptionBinding<>("sbutils", "enchantAll.delay", Double.class, (config) -> config.enchantAll.delay, (config, value) -> config.enchantAll.delay = value);
+    protected final OptionBinding<ModConfig, Integer> cooldownFrequency = new OptionBinding<>("sbutils", "enchantAll.cooldownFrequency", Integer.class, (config) -> config.enchantAll.cooldownFrequency, (config, value) -> config.enchantAll.cooldownFrequency = value);
+    protected final OptionBinding<ModConfig, Double> cooldownTime = new OptionBinding<>("sbutils", "enchantAll.cooldownTime", Double.class, (config) -> config.enchantAll.cooldownTime, (config, value) -> config.enchantAll.cooldownTime = value);
+    private final OptionBinding<ModConfig, Boolean> excludeFrost = new OptionBinding<>("sbutils", "enchantAll.excludeFrost", Boolean.class, (config) -> config.enchantAll.excludeFrost, (config, value) -> config.enchantAll.excludeFrost = value);
 
     private boolean enchanting;
     private boolean unenchanting;
@@ -60,16 +60,16 @@ public class EnchantAll extends Feature {
     private long lastActionPerformedAt;
 
     public EnchantAll() {
-        this("enchantAll", "enchall", "eall");
+        this("sbutils", "enchantAll", "enchall", "eall");
     }
 
-    protected EnchantAll(String path, String command, String commandAlias) {
-        super(path, command, commandAlias);
+    protected EnchantAll(String namespace, String path, String command, String commandAlias) {
+        super(namespace, path, command, commandAlias);
         reset();
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(mode, tpsSync, delay, cooldownFrequency, cooldownTime, excludeFrost);
     }
 
@@ -78,12 +78,12 @@ public class EnchantAll extends Feature {
         final LiteralCommandNode<FabricClientCommandSource> enchantAllNode = dispatcher.register(
                 CommandHelper.runnable(command, () -> onEnchantAllCommand(false, false))
                     .then(CommandHelper.runnable("inv", () -> onEnchantAllCommand(false, true)))
-                    .then(CommandHelper.genericEnum("mode", "mode", mode))
-                    .then(CommandHelper.doubl("delay", "seconds", delay))
-                    .then(CommandHelper.integer("cooldownFrequency", "frequency", cooldownFrequency))
-                    .then(CommandHelper.doubl("cooldownTime", "seconds", cooldownTime))
-                    .then(CommandHelper.bool("excludeFrost", excludeFrost))
-                    .then(CommandHelper.bool("tpsSync", tpsSync))
+                    .then(CommandHelper.genericEnum("mode", "mode", mode, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
+                    .then(CommandHelper.integer("cooldownFrequency", "frequency", cooldownFrequency, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("cooldownTime", "seconds", cooldownTime, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("excludeFrost", excludeFrost, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("tpsSync", tpsSync, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, enchantAllNode);
     }

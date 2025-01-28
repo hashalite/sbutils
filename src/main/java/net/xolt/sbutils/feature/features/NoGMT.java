@@ -4,18 +4,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.WritableBookItem;
 import net.minecraft.world.item.component.ItemLore;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -34,29 +28,29 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class NoGMT extends Feature {
+public class NoGMT extends Feature<ModConfig> {
     private static final DateTimeFormatter EMAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
     private static final DateTimeFormatter MAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
 
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("noGmt.enabled", Boolean.class, (config) -> config.noGmt.enabled, (config, value) -> config.noGmt.enabled = value);
-    private final OptionBinding<String> timeZone = new OptionBinding<>("noGmt.timeZone", String.class, (config) -> config.noGmt.timeZone, (config, value) -> config.noGmt.timeZone = value);
-    private final OptionBinding<Boolean> showTimeZone = new OptionBinding<>("noGmt.showTimeZone", Boolean.class, (config) -> config.noGmt.showTimeZone, (config, value) -> config.noGmt.showTimeZone = value);
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "noGmt.enabled", Boolean.class, (config) -> config.noGmt.enabled, (config, value) -> config.noGmt.enabled = value);
+    private final OptionBinding<ModConfig, String> timeZone = new OptionBinding<>("sbutils", "noGmt.timeZone", String.class, (config) -> config.noGmt.timeZone, (config, value) -> config.noGmt.timeZone = value);
+    private final OptionBinding<ModConfig, Boolean> showTimeZone = new OptionBinding<>("sbutils", "noGmt.showTimeZone", Boolean.class, (config) -> config.noGmt.showTimeZone, (config, value) -> config.noGmt.showTimeZone = value);
 
     public NoGMT() {
-        super("noGmt", "nogmt", "ng");
+        super("sbutils", "noGmt", "nogmt", "ng");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, timeZone, showTimeZone);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> noGMTNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                        .then(CommandHelper.string("timeZone", "zone", timeZone))
-                        .then(CommandHelper.bool("showTimeZone", showTimeZone))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                        .then(CommandHelper.string("timeZone", "zone", timeZone, ModConfig.HANDLER))
+                        .then(CommandHelper.bool("showTimeZone", showTimeZone, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, noGMTNode);
     }

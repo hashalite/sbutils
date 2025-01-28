@@ -22,26 +22,26 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoPrivate extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoPrivate.enabled", Boolean.class, (config) -> config.autoPrivate.enabled, (config, value) -> config.autoPrivate.enabled = value);
-    private final ListOptionBinding<String> names = new ListOptionBinding<>("autoPrivate.names", "", String.class, (config) -> config.autoPrivate.names, (config, value) -> config.autoPrivate.names = value, new ListConstraints<>(null, 2, new StringConstraints(false)));
+public class AutoPrivate extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoPrivate.enabled", Boolean.class, (config) -> config.autoPrivate.enabled, (config, value) -> config.autoPrivate.enabled = value);
+    private final ListOptionBinding<ModConfig, String> names = new ListOptionBinding<>("sbutils", "autoPrivate.names", "", String.class, (config) -> config.autoPrivate.names, (config, value) -> config.autoPrivate.names = value, new ListConstraints<>(null, 2, new StringConstraints(false)));
 
     private boolean sneaked;
 
     public AutoPrivate() {
-        super("autoPrivate", "autoprivate", "ap");
+        super("sbutils", "autoPrivate", "autoprivate", "ap");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, names);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoPrivateNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                        .then(CommandHelper.stringList("names", "name", names))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                        .then(CommandHelper.stringList("names", "name", names, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, autoPrivateNode);
     }

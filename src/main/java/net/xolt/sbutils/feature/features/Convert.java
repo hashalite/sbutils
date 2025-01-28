@@ -10,6 +10,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
@@ -19,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Convert extends Feature {
+public class Convert extends Feature<ModConfig> {
 
     private static final Map<String, Integer> units = new LinkedHashMap<>();
 
@@ -30,11 +31,11 @@ public class Convert extends Feature {
     }
 
     public Convert() {
-        super("convert", "convert", "cv");
+        super("sbutils", "convert", "convert", "cv");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return null;
     }
 

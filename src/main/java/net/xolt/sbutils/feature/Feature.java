@@ -11,22 +11,21 @@ import net.xolt.sbutils.config.binding.ConfigBinding;
 
 import java.util.List;
 
-public abstract class Feature {
+public abstract class Feature<C> {
 
-    private static final String CATEGORY_KEY = "text.sbutils.config.category.";
-    private static final String GROUP_KEY = "text.sbutils.config.group.";
-
+    private final String namespace;
     private final String path;
     protected final String command;
     protected final String commandAlias;
 
-    protected Feature(String path, String command, String commandAlias) {
+    protected Feature(String namespace, String path, String command, String commandAlias) {
+        this.namespace = namespace;
         this.path = path;
         this.command = command;
         this.commandAlias = commandAlias;
     }
 
-    public abstract List<? extends ConfigBinding<?>> getConfigBindings();
+    public abstract List<? extends ConfigBinding<C, ?>> getConfigBindings();
 
     public abstract void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess);
 
@@ -51,10 +50,10 @@ public abstract class Feature {
     }
 
     public String getNameTranslation() {
-        return CATEGORY_KEY + path;
+        return "text." + namespace + ".config.category." + path;
     }
 
     public String getGroupTranslation() {
-        return GROUP_KEY + path;
+        return "text." + namespace + ".config.group." + path;
     }
 }

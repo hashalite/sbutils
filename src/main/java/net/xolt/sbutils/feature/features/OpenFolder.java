@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.IOHandler;
@@ -13,14 +14,14 @@ import net.xolt.sbutils.util.ChatUtils;
 
 import java.util.List;
 
-public class OpenFolder extends Feature {
+public class OpenFolder extends Feature<ModConfig> {
 
     public OpenFolder() {
-        super("openFolder", "openfolder", "dir");
+        super("sbutils", "openFolder", "openfolder", "dir");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return null;
     }
 

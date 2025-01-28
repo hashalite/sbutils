@@ -7,6 +7,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
@@ -16,14 +17,14 @@ import java.util.Optional;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class DeathCoords extends Feature {
+public class DeathCoords extends Feature<ModConfig> {
 
     public DeathCoords() {
-        super("deathCoords", "deathcoords", "dcoords");
+        super("sbutils", "deathCoords", "deathcoords", "dcoords");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return null;
     }
 
