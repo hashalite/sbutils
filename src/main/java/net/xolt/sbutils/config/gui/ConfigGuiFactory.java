@@ -139,22 +139,17 @@ public class ConfigGuiFactory<C> {
     @SuppressWarnings("unchecked")
     private static <T> Function<Option<T>, Controller<T>> getControllerFor(Class<T> type, Constraints<T> constraints) {
         if (type.equals(Integer.class)) {
-            Number min;
-            Number max;
+            Number min = null;
+            Number max = null;
             if (constraints instanceof NumberConstraints<?> numConstraints) {
                 min = numConstraints.getMin();
                 max = numConstraints.getMax();
-            } else {
-                min = Integer.MIN_VALUE;
-                max = Integer.MAX_VALUE;
             }
-
             int minimum = min == null ? Integer.MIN_VALUE : min.intValue();
             int maximum = max == null ? Integer.MAX_VALUE : max.intValue();
-
             if (min != null && max != null)
                 return (option) -> (Controller<T>)IntegerSliderControllerBuilder.create((Option<Integer>)option).range(minimum, maximum).step(1).build();
-            return (option) -> (Controller<T>)IntegerFieldControllerBuilder.create((Option<Integer>)option).min(minimum).max(maximum).build();
+            return (option) -> (Controller<T>)IntegerFieldControllerBuilder.create((Option<Integer>)option).range(minimum, maximum).build();
         } else if (type.equals(Double.class)) {
             Number min = null;
             Number max = null;
@@ -162,11 +157,11 @@ public class ConfigGuiFactory<C> {
                 min = numConstraints.getMin();
                 max = numConstraints.getMax();
             }
-            double minimum = min == null ? Integer.MIN_VALUE : min.doubleValue();
-            double maximum = max == null ? Integer.MAX_VALUE : max.doubleValue();
+            double minimum = min == null ? Double.MIN_VALUE : min.doubleValue();
+            double maximum = max == null ? Double.MAX_VALUE : max.doubleValue();
             if (min != null && max != null)
                 return (option) -> (Controller<T>)DoubleSliderControllerBuilder.create((Option<Double>)option).range(minimum, maximum).step(0.1).build();
-            return (option) -> (Controller<T>)DoubleFieldControllerBuilder.create((Option<Double>)option).min(minimum).max(maximum).build();
+            return (option) -> (Controller<T>)DoubleFieldControllerBuilder.create((Option<Double>)option).range(minimum, maximum).build();
         } else if (type.equals(Boolean.class)) {
             return (option) -> (Controller<T>)TickBoxControllerBuilder.create((Option<Boolean>) option).build();
         }
