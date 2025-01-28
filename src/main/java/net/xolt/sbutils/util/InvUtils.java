@@ -130,8 +130,12 @@ public class InvUtils {
 
     public static Map<Enchantment, Integer> getEnchantments(ItemStack itemStack) {
         ItemEnchantments itemEnchantments = itemStack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        ItemEnchantments storedEnchantments = itemStack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
         Map<Enchantment, Integer> enchantments = new HashMap<>();
         itemEnchantments.keySet().forEach(enchantment -> {
+            enchantments.put(enchantment.value(), itemEnchantments.getLevel(enchantment));
+        });
+        storedEnchantments.keySet().forEach(enchantment -> {
             enchantments.put(enchantment.value(), itemEnchantments.getLevel(enchantment));
         });
         return enchantments;
