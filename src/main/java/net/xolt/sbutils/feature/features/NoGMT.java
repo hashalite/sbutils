@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
@@ -29,8 +30,14 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 
 public class NoGMT extends Feature<ModConfig> {
-    private static final DateTimeFormatter EMAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
-    private static final DateTimeFormatter MAIL_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+    private static final DateTimeFormatter EMAIL_DATE_FORMAT = new DateTimeFormatterBuilder()
+            .parseCaseInsensitive()
+            .appendPattern("yyyy/MM/dd HH:mm")
+            .toFormatter(Locale.US);
+    private static final DateTimeFormatter MAIL_DATE_FORMAT = new DateTimeFormatterBuilder()
+            .parseCaseInsensitive()
+            .appendPattern("MM/dd/yyyy hh:mm a")
+            .toFormatter(Locale.US);
 
     private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "noGmt.enabled", Boolean.class, (config) -> config.noGmt.enabled, (config, value) -> config.noGmt.enabled = value);
     private final OptionBinding<ModConfig, String> timeZone = new OptionBinding<>("sbutils", "noGmt.timeZone", String.class, (config) -> config.noGmt.timeZone, (config, value) -> config.noGmt.timeZone = value);
