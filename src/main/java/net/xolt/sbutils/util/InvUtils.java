@@ -1,14 +1,21 @@
 package net.xolt.sbutils.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -119,5 +126,27 @@ public class InvUtils {
         }
 
         return invItems.size() <= 36;
+    }
+
+    public static Map<Enchantment, Integer> getEnchantments(ItemStack itemStack) {
+        ItemEnchantments itemEnchantments = itemStack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        ItemEnchantments storedEnchantments = itemStack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+        Map<Enchantment, Integer> enchantments = new HashMap<>();
+        itemEnchantments.keySet().forEach(enchantment -> {
+            enchantments.put(enchantment.value(), itemEnchantments.getLevel(enchantment));
+        });
+        storedEnchantments.keySet().forEach(enchantment -> {
+            enchantments.put(enchantment.value(), itemEnchantments.getLevel(enchantment));
+        });
+        return enchantments;
+    }
+
+    public static Enchantment getEnchantment(ResourceKey<Enchantment> enchantment) {
+        assert MC.level != null;
+        Registry<Enchantment> registry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Optional<Holder.Reference<Enchantment>> optionalEnchantment = registry.get(enchantment);
+        if (optionalEnchantment.isEmpty())
+            return null;
+        return optionalEnchantment.get().value();
     }
 }

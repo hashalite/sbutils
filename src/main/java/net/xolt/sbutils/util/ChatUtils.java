@@ -44,14 +44,14 @@ public class ChatUtils {
             return;
 
         if (!showPrefix) {
-            MC.player.sendSystemMessage(message);
+            MC.player.displayClientMessage(message, false);
             return;
         }
 
         MutableComponent sbutilsText = Component.literal("sbutils").withColor(ModConfig.HANDLER.instance().sbutilsColor.getRGB());
         MutableComponent prefix = TextUtils.insertPlaceholders(Component.literal(ModConfig.HANDLER.instance().prefixFormat + " ").withColor(ModConfig.HANDLER.instance().prefixColor.getRGB()), sbutilsText);
 
-        MC.player.sendSystemMessage(prefix.append(message));
+        MC.player.displayClientMessage(prefix.append(message), false);
     }
 
     public static void sendTitle(String message) {

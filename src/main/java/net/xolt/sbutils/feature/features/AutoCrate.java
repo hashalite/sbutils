@@ -9,6 +9,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -208,32 +210,19 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     private static boolean isItemKey(ItemStack itemStack) {
-        if (!itemStack.getItem().equals(Items.TRIPWIRE_HOOK) || !itemStack.hasTag()) {
+        if (!itemStack.getItem().equals(Items.TRIPWIRE_HOOK))
+            return false;
+
+        ItemLore lore = itemStack.get(DataComponents.LORE);
+
+        if (lore == null)
+            return false;
+
+        if (lore.lines().isEmpty()) {
             return false;
         }
 
-        CompoundTag itemNbt = itemStack.getTag();
-        CompoundTag displayNbt;
-        if (itemNbt.contains(ItemStack.TAG_DISPLAY, Tag.TAG_COMPOUND)) {
-            displayNbt = itemNbt.getCompound(ItemStack.TAG_DISPLAY);
-        } else {
-            return false;
-        }
-
-        ListTag lore;
-        if (displayNbt.contains(ItemStack.TAG_LORE, Tag.TAG_LIST)) {
-            lore = displayNbt.getList(ItemStack.TAG_LORE, Tag.TAG_STRING);
-        } else {
-            return false;
-        }
-
-        if (lore.isEmpty()) {
-            return false;
-        }
-
-        MutableComponent loreText = Component.Serializer.fromJson(lore.getString(0));
-
-        return loreText != null && getKeyFilter().matcher(loreText.getString()).matches();
+        return getKeyFilter().matcher(lore.lines().get(0).getString()).matches();
     }
 
     private static boolean useKey(BlockPos cratePos) {

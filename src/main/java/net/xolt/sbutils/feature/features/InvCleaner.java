@@ -167,8 +167,8 @@ public class InvCleaner extends Feature<ModConfig> {
     }
 
     private static List<Item> itemsFromStrings(List<String> strings) {
-        List<String> validItems = strings.stream().filter(string -> BuiltInRegistries.ITEM.containsKey(new ResourceLocation(string))).toList();
-        return validItems.stream().map((item) -> BuiltInRegistries.ITEM.get(new ResourceLocation(item))).toList();
+        List<String> validItems = strings.stream().filter(string -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.withDefaultNamespace(string))).toList();
+        return validItems.stream().map((item) -> BuiltInRegistries.ITEM.get(ResourceLocation.withDefaultNamespace(item)).get().value()).toList();
     }
 
     public static void showCleanFailedCritical(String dependantFeatureName) {

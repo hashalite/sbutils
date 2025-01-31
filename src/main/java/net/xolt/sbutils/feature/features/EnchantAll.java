@@ -5,7 +5,10 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -208,7 +211,7 @@ public class EnchantAll extends Feature<ModConfig> {
 
         if (enchants.isEmpty()) {
             if (shouldRemoveFrost()) {
-                sendEnchantCommand(Enchantments.FROST_WALKER, true);
+                sendEnchantCommand(InvUtils.getEnchantment(Enchantments.FROST_WALKER), true);
                 afterSendCommand();
                 return;
             }
@@ -239,12 +242,11 @@ public class EnchantAll extends Feature<ModConfig> {
             return;
 
         ItemStack hand = MC.player.getMainHandItem();
-
         List<Enchantment> enchants = getEnchantsForItem(hand, unenchant);
 
         if (enchants.isEmpty()) {
             if (shouldRemoveFrost()) {
-                sendEnchantCommand(Enchantments.FROST_WALKER, true);
+                sendEnchantCommand(InvUtils.getEnchantment(Enchantments.FROST_WALKER), true);
                 afterSendCommand();
             }
             return;
@@ -307,7 +309,8 @@ public class EnchantAll extends Feature<ModConfig> {
     }
 
     private void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
-        ResourceLocation enchant = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
+        Registry<Enchantment> enchantmentRegistry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        ResourceLocation enchant = enchantmentRegistry.getKey(enchantment);
         if (enchant == null || MC.getConnection() == null)
             return;
         String enchantName = enchant.getPath().replaceAll("_", "");
@@ -342,13 +345,16 @@ public class EnchantAll extends Feature<ModConfig> {
     private static List<Enchantment> getEnchantsForItem(ItemStack itemStack, boolean unenchant) {
         Item item = itemStack.getItem();
 
-        if (!itemStack.getItem().isEnchantable(itemStack))
+
+        if (!itemStack.has(DataComponents.ENCHANTABLE))
             return new ArrayList<>();
 
-        Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.deserializeEnchantments(itemStack.getEnchantmentTags());
+        Map<Enchantment, Integer> itemsEnchants = InvUtils.getEnchantments(itemStack);
         List<Enchantment> enchantments = new ArrayList<>();
+        assert MC.level != null;
+        Registry<Enchantment> enchantmentRegistry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         if (!unenchant) {
-            for (Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
+            for (Enchantment enchantment : enchantmentRegistry) {
                 if (enchantment.canEnchant(new ItemStack(item)))
                     enchantments.add(enchantment);
             }
@@ -362,12 +368,12 @@ public class EnchantAll extends Feature<ModConfig> {
             enchantments.addAll(itemsEnchants.keySet());
         }
 
-        enchantments.remove(Enchantments.SILK_TOUCH);
-        enchantments.remove(Enchantments.BINDING_CURSE);
-        enchantments.remove(Enchantments.VANISHING_CURSE);
+        enchantments.remove(InvUtils.getEnchantment(Enchantments.SILK_TOUCH));
+        enchantments.remove(InvUtils.getEnchantment(Enchantments.BINDING_CURSE));
+        enchantments.remove(InvUtils.getEnchantment(Enchantments.VANISHING_CURSE));
 
         if (ModConfig.HANDLER.instance().enchantAll.excludeFrost && !unenchant)
-            enchantments.remove(Enchantments.FROST_WALKER);
+            enchantments.remove(InvUtils.getEnchantment(Enchantments.FROST_WALKER));
 
         return enchantments;
     }
@@ -377,6 +383,6 @@ public class EnchantAll extends Feature<ModConfig> {
             return false;
 
         return ModConfig.HANDLER.instance().enchantAll.excludeFrost &&
-                EnchantmentHelper.deserializeEnchantments(MC.player.getMainHandItem().getEnchantmentTags()).containsKey(Enchantments.FROST_WALKER);
+                InvUtils.getEnchantments(MC.player.getMainHandItem()).containsKey(InvUtils.getEnchantment(Enchantments.FROST_WALKER));
     }
 }

@@ -1,6 +1,7 @@
 package net.xolt.sbutils.util;
 
 import com.google.gson.*;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -39,7 +40,11 @@ public class ApiUtils {
                 JsonObject itemObject = itemElement.getAsJsonObject();
                 if (!itemObject.has("item"))
                     continue;
-                Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemObject.get("item").getAsString().toLowerCase()));
+                Optional<Holder.Reference<Item>> optionalItem = BuiltInRegistries.ITEM.get(ResourceLocation.withDefaultNamespace(itemObject.get("item").getAsString().toLowerCase()));
+                if (optionalItem.isEmpty())
+                    // Invalid item id supplied by API
+                    continue;
+                Item item = optionalItem.get().value();
                 ItemStack itemStack = new ItemStack(item);
                 result.add(itemStack);
             }

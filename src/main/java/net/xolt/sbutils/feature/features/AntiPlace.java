@@ -4,13 +4,18 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.mixin.item.client.ClientPlayerInteractionManagerMixin;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
@@ -64,8 +69,9 @@ public class AntiPlace extends Feature<ModConfig> {
 
     private static boolean shouldCancelBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
         assert MC.level != null;
-        InteractionResult actionResult = MC.level.getBlockState(hitResult.getBlockPos()).use(MC.level, player, hand, hitResult);
-        if ((actionResult == InteractionResult.CONSUME || actionResult == InteractionResult.SUCCESS) && !player.isShiftKeyDown())
+        InteractionResult actionResult = MC.level.getBlockState(hitResult.getBlockPos()).useWithoutItem(MC.level, player, hitResult);
+
+        if (actionResult.consumesAction())
             return false;
 
         ItemStack held = player.getItemInHand(hand);
@@ -78,7 +84,8 @@ public class AntiPlace extends Feature<ModConfig> {
     }
 
     private static boolean isNamedHead(ItemStack item) {
-        return item.getItem().equals(Items.PLAYER_HEAD) && item.hasCustomHoverName();
+        return item.getItem().equals(Items.PLAYER_HEAD) && item.getCustomName() != null;
+
     }
 
     private static boolean isGrass(ItemStack item) {
