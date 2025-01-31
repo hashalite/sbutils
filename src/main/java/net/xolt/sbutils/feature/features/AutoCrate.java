@@ -227,7 +227,7 @@ public class AutoCrate extends Feature<ModConfig> {
             return false;
         }
 
-        if (lore.size() < 1) {
+        if (lore.isEmpty()) {
             return false;
         }
 

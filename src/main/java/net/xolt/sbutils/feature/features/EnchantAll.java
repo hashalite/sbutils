@@ -240,10 +240,7 @@ public class EnchantAll extends Feature<ModConfig> {
 
         ItemStack hand = MC.player.getMainHandItem();
 
-        if (!hand.getItem().isEnchantable(hand))
-            return;
-
-        List<Enchantment> enchants = getEnchantsForItem(MC.player.getMainHandItem(), unenchant);
+        List<Enchantment> enchants = getEnchantsForItem(hand, unenchant);
 
         if (enchants.isEmpty()) {
             if (shouldRemoveFrost()) {

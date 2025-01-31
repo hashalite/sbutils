@@ -11,9 +11,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.item.BookItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.WritableBookItem;
+import net.minecraft.world.item.Items;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -81,7 +80,7 @@ public class NoGMT extends Feature<ModConfig> {
     }
 
     public static ItemStack replaceTimeInLore(ItemStack stack) {
-        if (!(stack.getItem() instanceof BookItem) && !(stack.getItem() instanceof WritableBookItem))
+        if (!(stack.getItem().equals(Items.BOOK)) && !(stack.getItem().equals(Items.WRITABLE_BOOK)))
             return stack;
 
         CompoundTag nbt = stack.getTag();
