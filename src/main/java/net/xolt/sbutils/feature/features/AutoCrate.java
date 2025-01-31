@@ -76,23 +76,23 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.HANDLER.instance().autoCrate.delay * 1000 || MC.player == null || cleaning) {
+        if (!ModConfig.HANDLER.getConfig().autoCrate.enabled || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.HANDLER.getConfig().autoCrate.delay * 1000 || MC.player == null || cleaning) {
             return;
         }
 
         BlockPos cratePos = findCrate();
 
-        if (cratePos == null || !cratePos.closerToCenterThan(MC.player.position(), ModConfig.HANDLER.instance().autoCrate.distance)) {
+        if (cratePos == null || !cratePos.closerToCenterThan(MC.player.position(), ModConfig.HANDLER.getConfig().autoCrate.distance)) {
             ChatUtils.printMessage("message.sbutils.autoCrate.crateTooFar");
             disable();
             return;
         }
 
         if (MC.player.getInventory().getFreeSlot() == -1) {
-            if (ModConfig.HANDLER.instance().autoCrate.cleaner) {
+            if (ModConfig.HANDLER.getConfig().autoCrate.cleaner) {
                 // cleaning must be set before clean() is called, in case callback is called immediately
                 cleaning = true;
-                SbUtils.FEATURES.get(InvCleaner.class).clean(ModConfig.HANDLER.instance().autoCrate.itemsToClean, this::onCleaningCallback);
+                SbUtils.FEATURES.get(InvCleaner.class).clean(ModConfig.HANDLER.getConfig().autoCrate.itemsToClean, this::onCleaningCallback);
                 return;
             }
             ChatUtils.printMessage("message.sbutils.autoCrate.inventoryFull");
@@ -125,7 +125,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     public void onServerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !waitingForCrate) {
+        if (!ModConfig.HANDLER.getConfig().autoCrate.enabled || !waitingForCrate) {
             return;
         }
         waitingForCrate = false;
@@ -133,7 +133,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     public void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !(MC.screen instanceof ContainerScreen) || cleaning) {
+        if (!ModConfig.HANDLER.getConfig().autoCrate.enabled || !(MC.screen instanceof ContainerScreen) || cleaning) {
             return;
         }
 
@@ -143,7 +143,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     private void disable() {
-        enabled.set(ModConfig.HANDLER.instance(), false);
+        enabled.set(ModConfig.HANDLER.getConfig(), false);
         ModConfig.HANDLER.save();
     }
 
@@ -246,7 +246,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     private static Pattern getKeyFilter() {
-        switch(ModConfig.HANDLER.instance().autoCrate.mode) {
+        switch(ModConfig.HANDLER.getConfig().autoCrate.mode) {
             case COMMON:
                 return RegexFilters.commonKeyFilter;
             case RARE:
@@ -261,7 +261,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     private static Pattern getCrateFilter() {
-        switch(ModConfig.HANDLER.instance().autoCrate.mode) {
+        switch(ModConfig.HANDLER.getConfig().autoCrate.mode) {
             case COMMON:
                 return RegexFilters.commonCrateFilter;
             case RARE:

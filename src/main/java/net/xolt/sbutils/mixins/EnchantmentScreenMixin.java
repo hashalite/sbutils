@@ -1,6 +1,6 @@
 package net.xolt.sbutils.mixins;
 
-import net.minecraft.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
@@ -25,10 +25,10 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
 
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
-        if (!ModConfig.HANDLER.instance().autoSilk.showButton) {
+        if (!ModConfig.HANDLER.getConfig().autoSilk.showButton) {
             return;
         }
-        ModConfig.CornerButtonPos buttonPos = ModConfig.HANDLER.instance().autoSilk.buttonPos;
+        ModConfig.CornerButtonPos buttonPos = ModConfig.HANDLER.getConfig().autoSilk.buttonPos;
         int y = switch (buttonPos) {
             case TOP_LEFT, TOP_RIGHT -> ((this.height - this.imageHeight) / 2) - AutoSilk.BUTTON_HEIGHT;
             case BOTTOM_LEFT, BOTTOM_RIGHT -> (this.height + this.imageHeight) / 2;
@@ -39,9 +39,9 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
         };
 
         SbUtils.FEATURES.get(AutoSilk.class).autoSilkButton = CycleButton.booleanBuilder(Component.translatable("message.sbutils.enabled"), Component.translatable("message.sbutils.disabled"))
-                .withInitialValue(ModConfig.HANDLER.instance().autoSilk.enabled)
+                .withInitialValue(ModConfig.HANDLER.getConfig().autoSilk.enabled)
                 .create(x, y, 100, 20, Component.translatable("text.sbutils.config.category.autoSilk"), (button, value) -> {
-                    ModConfig.HANDLER.instance().autoSilk.enabled = value;
+                    ModConfig.HANDLER.getConfig().autoSilk.enabled = value;
                     if (!value) {
                         ModConfig.HANDLER.save();
                     }
@@ -51,16 +51,16 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
     @Inject(method = "mouseClicked", at = @At("TAIL"))
     private void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         CycleButton<Boolean> autoSilkButton = SbUtils.FEATURES.get(AutoSilk.class).autoSilkButton;
-        if (ModConfig.HANDLER.instance().autoSilk.showButton && autoSilkButton != null) {
+        if (ModConfig.HANDLER.getConfig().autoSilk.showButton && autoSilkButton != null) {
             autoSilkButton.mouseClicked(mouseX, mouseY, button);
         }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void onRender(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void onRender(PoseStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         CycleButton<Boolean> autoSilkButton = SbUtils.FEATURES.get(AutoSilk.class).autoSilkButton;
-        if (ModConfig.HANDLER.instance().autoSilk.showButton && autoSilkButton != null) {
-            autoSilkButton.render(context, mouseX, mouseY, delta);
+        if (ModConfig.HANDLER.getConfig().autoSilk.showButton && autoSilkButton != null) {
+            autoSilkButton.render(matrices, mouseX, mouseY, delta);
         }
     }
 

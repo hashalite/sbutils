@@ -95,7 +95,7 @@ public class ChatFilters extends Feature<ModConfig> {
     }
 
     private int onSetRegexCommand(int index, String newRegex) {
-        List<ModConfig.ChatFiltersConfig.FilterEntry> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
+        List<ModConfig.ChatFiltersConfig.FilterEntry> filters = ModConfig.HANDLER.getConfig().chatFilters.customFilters;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= filters.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.chatFilters.customFilters"));
@@ -112,7 +112,7 @@ public class ChatFilters extends Feature<ModConfig> {
     }
 
     private int onToggleCommand(int index) {
-        List<ModConfig.ChatFiltersConfig.FilterEntry> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
+        List<ModConfig.ChatFiltersConfig.FilterEntry> filters = ModConfig.HANDLER.getConfig().chatFilters.customFilters;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= filters.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.chatFilters.customFilters"));
@@ -135,7 +135,7 @@ public class ChatFilters extends Feature<ModConfig> {
 
     public void recompileCustomRegex() {
         customRegex.clear();
-        for (FilterEntry filter : ModConfig.HANDLER.instance().chatFilters.customFilters)
+        for (FilterEntry filter : ModConfig.HANDLER.getConfig().chatFilters.customFilters)
             if (filter.enabled)
                 customRegex.add(Pattern.compile(filter.regex));
     }

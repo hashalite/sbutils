@@ -22,7 +22,7 @@ import net.minecraft.network.chat.Component;
 public class TimeArgumentType implements ArgumentType<Double> {
     private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0h", "0m", "0");
     private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("message.sbutils.timeArgumentType.invalidUnitException"));
-    private static final Dynamic2CommandExceptionType TIME_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Component.translatableEscape("message.sbutils.timeArgumentType.timeTooLowException", minimum, value));
+    private static final Dynamic2CommandExceptionType TIME_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Component.translatable("message.sbutils.timeArgumentType.timeTooLowException", minimum, value));
     private static final Object2DoubleMap<String> UNITS = new Object2DoubleOpenHashMap<>();
     final double minimum;
 

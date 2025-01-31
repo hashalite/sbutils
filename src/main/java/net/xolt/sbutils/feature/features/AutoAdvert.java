@@ -93,7 +93,7 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     private void onInfoCommand() {
-        if (!ModConfig.HANDLER.instance().autoAdvert.enabled) {
+        if (!ModConfig.HANDLER.getConfig().autoAdvert.enabled) {
             ChatUtils.printSetting("text.sbutils.config.category.autoAdvert", false);
             return;
         }
@@ -103,7 +103,7 @@ public class AutoAdvert extends Feature<ModConfig> {
             return;
         }
 
-        if (ModConfig.HANDLER.instance().autoAdvert.useWhitelist && !userWhitelisted()) {
+        if (ModConfig.HANDLER.getConfig().autoAdvert.useWhitelist && !userWhitelisted()) {
             ChatUtils.printMessage("message.sbutils.autoAdvert.notWhitelisted");
             return;
         }
@@ -213,13 +213,13 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoAdvert.enabled || MC.getConnection() == null)
+        if (!ModConfig.HANDLER.getConfig().autoAdvert.enabled || MC.getConnection() == null)
             return;
 
         if (MC.screen instanceof ReceivingLevelScreen)
             joinedAt = System.currentTimeMillis();
 
-        if (!SbUtils.SERVER_DETECTOR.isOnSkyblock() || (ModConfig.HANDLER.instance().autoAdvert.useWhitelist && !userWhitelisted()))
+        if (!SbUtils.SERVER_DETECTOR.isOnSkyblock() || (ModConfig.HANDLER.getConfig().autoAdvert.useWhitelist && !userWhitelisted()))
             return;
 
         if (delayLeft() > 0)
@@ -227,7 +227,7 @@ public class AutoAdvert extends Feature<ModConfig> {
 
         List<String> newAdList = getAdList();
         if (findNextAd(newAdList, -1) == -1) {
-            ModConfig.HANDLER.instance().autoAdvert.enabled = false;
+            ModConfig.HANDLER.getConfig().autoAdvert.enabled = false;
             ModConfig.HANDLER.save();
             reset();
             ChatUtils.printWithPlaceholders("message.sbutils.autoAdvert.noAds", getAdFile());
@@ -241,7 +241,7 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     public void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().autoAdvert.enabled)
+        if (!ModConfig.HANDLER.getConfig().autoAdvert.enabled)
             return;
 
         joinedAt = System.currentTimeMillis();
@@ -260,7 +260,7 @@ public class AutoAdvert extends Feature<ModConfig> {
 
     private int delayLeft() {
         long delay = (long)(delay() * 1000.0);
-        long initialDelay = (long)(ModConfig.HANDLER.instance().autoAdvert.initialDelay * 1000.0);
+        long initialDelay = (long)(ModConfig.HANDLER.getConfig().autoAdvert.initialDelay * 1000.0);
 
         int delayLeft = (int)Math.max(delay - (System.currentTimeMillis() - lastAdSentAt), 0L);
         int initialDelayLeft = (int)Math.max(initialDelay - (System.currentTimeMillis() - joinedAt), 0L);
@@ -270,9 +270,9 @@ public class AutoAdvert extends Feature<ModConfig> {
 
     private double delay() {
         return switch(SERVER_DETECTOR.getCurrentServer()) {
-            case ECONOMY -> ecoDelay.get(ModConfig.HANDLER.instance());
-            case CLASSIC -> classicDelay.get(ModConfig.HANDLER.instance());
-            default -> sbDelay.get(ModConfig.HANDLER.instance());
+            case ECONOMY -> ecoDelay.get(ModConfig.HANDLER.getConfig());
+            case CLASSIC -> classicDelay.get(ModConfig.HANDLER.getConfig());
+            default -> sbDelay.get(ModConfig.HANDLER.getConfig());
         };
     }
 
@@ -387,13 +387,13 @@ public class AutoAdvert extends Feature<ModConfig> {
         else
             switch (SbUtils.SERVER_DETECTOR.getCurrentServer()) {
                 case SKYBLOCK:
-                    adFile = ModConfig.HANDLER.instance().autoAdvert.sbFile;
+                    adFile = ModConfig.HANDLER.getConfig().autoAdvert.sbFile;
                     break;
                 case ECONOMY:
-                    adFile = ModConfig.HANDLER.instance().autoAdvert.ecoFile;
+                    adFile = ModConfig.HANDLER.getConfig().autoAdvert.ecoFile;
                     break;
                 case CLASSIC:
-                    adFile = ModConfig.HANDLER.instance().autoAdvert.classicFile;
+                    adFile = ModConfig.HANDLER.getConfig().autoAdvert.classicFile;
                     break;
                 default:
                     return null;
@@ -414,6 +414,6 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     private static List<String> getWhitelist() {
-        return ModConfig.HANDLER.instance().autoAdvert.whitelist;
+        return ModConfig.HANDLER.getConfig().autoAdvert.whitelist;
     }
 }

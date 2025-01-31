@@ -1,7 +1,7 @@
 package net.xolt.sbutils.feature;
 
 import com.mojang.brigadier.CommandDispatcher;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import dev.isxander.yacl3.config.ConfigInstance;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 
@@ -11,9 +11,9 @@ public class Features<C> {
 
     private final Map<Class<? extends Feature<C>>, Feature<C>> features = new IdentityHashMap<>();
     private final List<Feature<C>> ordered = new ArrayList<>();
-    private final ConfigClassHandler<C> configHandler;
+    private final ConfigInstance<C> configHandler;
 
-    public Features(ConfigClassHandler<C> configHandler) {
+    public Features(ConfigInstance<C> configHandler) {
         this.configHandler = configHandler;
     }
 
@@ -35,7 +35,7 @@ public class Features<C> {
         return ordered;
     }
 
-    public ConfigClassHandler<C> getConfigHandler() {
+    public ConfigInstance<C> getConfigHandler() {
         return configHandler;
     }
 

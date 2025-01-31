@@ -3,6 +3,7 @@ package net.xolt.sbutils.util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.xolt.sbutils.config.ModConfig;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class ChatUtils {
     }
 
     public static void printMessage(String message, int color, boolean showPrefix) {
-        printMessage(Component.translatable(message).withColor(color), showPrefix);
+        printMessage(Component.translatable(message).withStyle(style -> style.withColor(color)), showPrefix);
     }
 
     public static void printMessage(Component message) {
@@ -48,8 +49,8 @@ public class ChatUtils {
             return;
         }
 
-        MutableComponent sbutilsText = Component.literal("sbutils").withColor(ModConfig.HANDLER.instance().sbutilsColor.getRGB());
-        MutableComponent prefix = TextUtils.insertPlaceholders(Component.literal(ModConfig.HANDLER.instance().prefixFormat + " ").withColor(ModConfig.HANDLER.instance().prefixColor.getRGB()), sbutilsText);
+        MutableComponent sbutilsText = Component.literal("sbutils").withStyle(style -> style.withColor(ModConfig.HANDLER.getConfig().sbutilsColor.getRGB()));
+        MutableComponent prefix = TextUtils.insertPlaceholders(Component.literal(ModConfig.HANDLER.getConfig().prefixFormat + " ").withStyle(style -> style.withColor(ModConfig.HANDLER.getConfig().prefixColor.getRGB())), sbutilsText);
 
         MC.player.sendSystemMessage(prefix.append(message));
     }
@@ -59,11 +60,11 @@ public class ChatUtils {
     }
     
     public static void sendTitle(String message, int color) {
-        sendTitle(Component.translatable(message).withColor(color), 5, 30, 5);
+        sendTitle(Component.translatable(message).withStyle(style -> style.withColor(color)), 5, 30, 5);
     }
 
     public static void sendTitle(String message, int color, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        sendTitle(Component.translatable(message).withColor(color), fadeInTicks, stayTicks, fadeOutTicks);
+        sendTitle(Component.translatable(message).withStyle(style -> style.withColor(color)), fadeInTicks, stayTicks, fadeOutTicks);
     }
 
     public static void sendTitle(Component message) {
@@ -121,7 +122,7 @@ public class ChatUtils {
 
     public static <T> void printList(List<T> items, boolean numbered) {
         for (int i = 0; i < items.size(); i++) {
-            MutableComponent prefix = Component.literal(" " + (numbered ? (i + 1) + ". " : "- ")).withColor(TextUtils.getValueColor());
+            MutableComponent prefix = Component.literal(" " + (numbered ? (i + 1) + ". " : "- ")).withStyle(style -> style.withColor(TextUtils.getValueColor()));
             printMessage(prefix.append(TextUtils.format(items.get(i))), false);
         }
     }

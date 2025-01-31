@@ -3,14 +3,14 @@ package net.xolt.sbutils.config;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import dev.isxander.yacl3.api.NameableEnum;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
-import dev.isxander.yacl3.config.v2.api.SerialEntry;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
+import dev.isxander.yacl3.config.ConfigEntry;
+import dev.isxander.yacl3.config.ConfigInstance;
+import dev.isxander.yacl3.config.GsonConfigInstance;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.StringRepresentable;
@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.AutoCommand;
-import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.TextUtils;
 
 import java.awt.*;
@@ -29,52 +28,58 @@ import java.util.List;
 
 public class ModConfig {
 
-    public static final ConfigClassHandler<ModConfig> HANDLER = ConfigClassHandler.createBuilder(ModConfig.class)
-            .id(new ResourceLocation("sbutils", "config"))
-            .serializer(config -> GsonConfigSerializerBuilder.create(config)
-                    .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
-                    .appendGsonBuilder(builder -> builder.setFieldNamingPolicy(FieldNamingPolicy.IDENTITY))
-                    .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
-                    .build()).build();
+    private static final GsonBuilder gsonBuilder = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
+            .setPrettyPrinting()
+            .serializeNulls()
+            .registerTypeHierarchyAdapter(Component.class, new Component.Serializer())
+            .registerTypeHierarchyAdapter(Style .class, new Style.Serializer())
+            .registerTypeHierarchyAdapter(Color.class, new GsonConfigInstance.ColorTypeAdapter());
+
+    public static final ConfigInstance<ModConfig> HANDLER = GsonConfigInstance.createBuilder(ModConfig.class)
+            .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
+            .overrideGsonBuilder(gsonBuilder)
+            .build();
 
     // Mod Settings
 
-    @SerialEntry public String prefixFormat = "%s »";
-    @SerialEntry public Color sbutilsColor = new Color(Integer.valueOf("90e7fc", 16));
-    @SerialEntry public Color prefixColor = new Color(Integer.valueOf("002c47", 16));
-    @SerialEntry public Color messageColor = new Color(Integer.valueOf("b5b5b5", 16));
-    @SerialEntry public Color valueColor = new Color(Integer.valueOf("ccf5ff", 16));
+    @ConfigEntry public String prefixFormat = "%s »";
+    @ConfigEntry public Color sbutilsColor = new Color(Integer.valueOf("90e7fc", 16));
+    @ConfigEntry public Color prefixColor = new Color(Integer.valueOf("002c47", 16));
+    @ConfigEntry public Color messageColor = new Color(Integer.valueOf("b5b5b5", 16));
+    @ConfigEntry
+    public Color valueColor = new Color(Integer.valueOf("ccf5ff", 16));
 
-    @SerialEntry public AntiPlaceConfig antiPlace = new AntiPlaceConfig();
+    @ConfigEntry public AntiPlaceConfig antiPlace = new AntiPlaceConfig();
     public static class AntiPlaceConfig {
-        @SerialEntry public boolean heads = false;
-        @SerialEntry public boolean grass = false;
+        @ConfigEntry public boolean heads = false;
+        @ConfigEntry public boolean grass = false;
     }
 
-    @SerialEntry public AutoAdvertConfig autoAdvert = new AutoAdvertConfig();
+    @ConfigEntry public AutoAdvertConfig autoAdvert = new AutoAdvertConfig();
     public static class AutoAdvertConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public String sbFile = "skyblock";
-        @SerialEntry public double sbDelay = 300.0;
-        @SerialEntry public String ecoFile = "economy";
-        @SerialEntry public double ecoDelay = 600.0;
-        @SerialEntry public String classicFile = "classic";
-        @SerialEntry public double classicDelay = 300.0;
-        @SerialEntry public double initialDelay = 10.0;
-        @SerialEntry public boolean useWhitelist = false;
-        @SerialEntry public List<String> whitelist = new ArrayList<>();
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public String sbFile = "skyblock";
+        @ConfigEntry public double sbDelay = 300.0;
+        @ConfigEntry public String ecoFile = "economy";
+        @ConfigEntry public double ecoDelay = 600.0;
+        @ConfigEntry public String classicFile = "classic";
+        @ConfigEntry public double classicDelay = 300.0;
+        @ConfigEntry public double initialDelay = 10.0;
+        @ConfigEntry public boolean useWhitelist = false;
+        @ConfigEntry public List<String> whitelist = new ArrayList<>();
     }
 
-    @SerialEntry public AutoCommandConfig autoCommand = new AutoCommandConfig();
+    @ConfigEntry public AutoCommandConfig autoCommand = new AutoCommandConfig();
     public static class AutoCommandConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public double minDelay = 1.5;
-        @SerialEntry public List<AutoCommandEntry> commands = Arrays.asList(new AutoCommandEntry("", 1.0, false));
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public double minDelay = 1.5;
+        @ConfigEntry public List<AutoCommandEntry> commands = Arrays.asList(new AutoCommandEntry("", 1.0, false));
 
         public static class AutoCommandEntry implements MultiValue {
-            @SerialEntry public String command;
-            @SerialEntry public double delay;
-            @SerialEntry public boolean enabled;
+            @ConfigEntry public String command;
+            @ConfigEntry public double delay;
+            @ConfigEntry public boolean enabled;
 
             public AutoCommandEntry(String command, double delay, boolean enabled) {
                 this.command = command;
@@ -91,7 +96,7 @@ public class ModConfig {
             @Override public MutableComponent format() {
                 Long cmdLastSentAt = SbUtils.FEATURES.get(AutoCommand.class).getCmdLastSentAt(this);
                 MutableComponent delayLeftText;
-                if (!ModConfig.HANDLER.instance().autoCommand.enabled || !enabled || cmdLastSentAt == null) {
+                if (!ModConfig.HANDLER.getConfig().autoCommand.enabled || !enabled || cmdLastSentAt == null) {
                     delayLeftText = Component.literal("N/A");
                 } else {
                     long delayLeftMillis = (long)(delay * 1000.0) - (System.currentTimeMillis() - cmdLastSentAt);
@@ -107,102 +112,102 @@ public class ModConfig {
         }
     }
 
-    @SerialEntry public AutoCrateConfig autoCrate = new AutoCrateConfig();
+    @ConfigEntry public AutoCrateConfig autoCrate = new AutoCrateConfig();
     public static class AutoCrateConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public Crate mode = Crate.COMMON;
-        @SerialEntry public double delay = 0.25;
-        @SerialEntry public double distance = 4.0;
-        @SerialEntry public boolean cleaner = true;
-        @SerialEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public Crate mode = Crate.COMMON;
+        @ConfigEntry public double delay = 0.25;
+        @ConfigEntry public double distance = 4.0;
+        @ConfigEntry public boolean cleaner = true;
+        @ConfigEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
     }
 
-    @SerialEntry public AutoFixConfig autoFix = new AutoFixConfig();
+    @ConfigEntry public AutoFixConfig autoFix = new AutoFixConfig();
     public static class AutoFixConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public FixMode mode = FixMode.HAND;
-        @SerialEntry public double percent = 0.2;
-        @SerialEntry public double delay = 120.0;
-        @SerialEntry public double retryDelay = 3.0;
-        @SerialEntry public int maxRetries = 3;
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public FixMode mode = FixMode.HAND;
+        @ConfigEntry public double percent = 0.2;
+        @ConfigEntry public double delay = 120.0;
+        @ConfigEntry public double retryDelay = 3.0;
+        @ConfigEntry public int maxRetries = 3;
     }
 
-    @SerialEntry public AutoKitConfig autoKit = new AutoKitConfig();
+    @ConfigEntry public AutoKitConfig autoKit = new AutoKitConfig();
     public static class AutoKitConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public double commandDelay = 1.0;
-        @SerialEntry public double claimDelay = 10.0;
-        @SerialEntry public double systemDelay = 10.0;
-        @SerialEntry public List<SkyblockKit> sbKits = new ArrayList<>();
-        @SerialEntry public List<EconomyKit> ecoKits = new ArrayList<>();
-        @SerialEntry public List<ClassicKit> classicKits = new ArrayList<>();
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public double commandDelay = 1.0;
+        @ConfigEntry public double claimDelay = 10.0;
+        @ConfigEntry public double systemDelay = 10.0;
+        @ConfigEntry public List<SkyblockKit> sbKits = new ArrayList<>();
+        @ConfigEntry public List<EconomyKit> ecoKits = new ArrayList<>();
+        @ConfigEntry public List<ClassicKit> classicKits = new ArrayList<>();
     }
 
-    @SerialEntry public AutoMineConfig autoMine = new AutoMineConfig();
+    @ConfigEntry public AutoMineConfig autoMine = new AutoMineConfig();
     public static class AutoMineConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public boolean autoSwitch = true;
-        @SerialEntry public int switchDurability = 20;
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public boolean autoSwitch = true;
+        @ConfigEntry public int switchDurability = 20;
     }
 
-    @SerialEntry public AutoPrivateConfig autoPrivate = new AutoPrivateConfig();
+    @ConfigEntry public AutoPrivateConfig autoPrivate = new AutoPrivateConfig();
     public static class AutoPrivateConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public List<String> names = new ArrayList<>();
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public List<String> names = new ArrayList<>();
     }
 
-    @SerialEntry public AutoRaffleConfig autoRaffle = new AutoRaffleConfig();
+    @ConfigEntry public AutoRaffleConfig autoRaffle = new AutoRaffleConfig();
     public static class AutoRaffleConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public int sbTickets = 2;
-        @SerialEntry public int ecoTickets = 5;
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public int sbTickets = 2;
+        @ConfigEntry public int ecoTickets = 5;
     }
 
-    @SerialEntry public AutoReplyConfig autoReply = new AutoReplyConfig();
+    @ConfigEntry public AutoReplyConfig autoReply = new AutoReplyConfig();
     public static class AutoReplyConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public String response = "I am currently AFK. Please /mail me and I'll get back to you later!";
-        @SerialEntry public double delay = 1.0;
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public String response = "I am currently AFK. Please /mail me and I'll get back to you later!";
+        @ConfigEntry public double delay = 1.0;
     }
 
-    @SerialEntry public AutoSilkConfig autoSilk = new AutoSilkConfig();
+    @ConfigEntry public AutoSilkConfig autoSilk = new AutoSilkConfig();
     public static class AutoSilkConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
-        @SerialEntry public boolean bookPriority = false;
-        @SerialEntry public boolean booksOnly = false;
-        @SerialEntry public boolean cleaner = true;
-        @SerialEntry public double delay = 0.25;
-        @SerialEntry public boolean showButton = true;
-        @SerialEntry public CornerButtonPos buttonPos = CornerButtonPos.BOTTOM_LEFT;
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public SilkTarget targetTool = SilkTarget.DIAMOND_PICKAXE;
+        @ConfigEntry public boolean bookPriority = false;
+        @ConfigEntry public boolean booksOnly = false;
+        @ConfigEntry public boolean cleaner = true;
+        @ConfigEntry public double delay = 0.25;
+        @ConfigEntry public boolean showButton = true;
+        @ConfigEntry public CornerButtonPos buttonPos = CornerButtonPos.BOTTOM_LEFT;
     }
 
-    @SerialEntry public ChatAppendConfig chatAppend = new ChatAppendConfig();
+    @ConfigEntry public ChatAppendConfig chatAppend = new ChatAppendConfig();
     public static class ChatAppendConfig {
-        @SerialEntry public boolean addPrefix = false;
-        @SerialEntry public String prefix = "";
-        @SerialEntry public boolean addSuffix = false;
-        @SerialEntry public String suffix = "";
+        @ConfigEntry public boolean addPrefix = false;
+        @ConfigEntry public String prefix = "";
+        @ConfigEntry public boolean addSuffix = false;
+        @ConfigEntry public String suffix = "";
     }
 
-    @SerialEntry public ChatFiltersConfig chatFilters = new ChatFiltersConfig();
+    @ConfigEntry public ChatFiltersConfig chatFilters = new ChatFiltersConfig();
     public static class ChatFiltersConfig {
-        @SerialEntry public boolean tipsFilter = false;
-        @SerialEntry public boolean advancementsFilter = false;
-        @SerialEntry public boolean welcomeFilter = false;
-        @SerialEntry public boolean friendJoinFilter = false;
-        @SerialEntry public boolean motdFilter = false;
-        @SerialEntry public boolean voteFilter = false;
-        @SerialEntry public boolean voteRewardFilter = false;
-        @SerialEntry public boolean raffleFilter = false;
-        @SerialEntry public boolean cratesFilter = false;
-        @SerialEntry public boolean perishedInVoidFilter = false;
-        @SerialEntry public boolean skyChatFilter = false;
-        @SerialEntry public List<FilterEntry> customFilters = new ArrayList<>();
+        @ConfigEntry public boolean tipsFilter = false;
+        @ConfigEntry public boolean advancementsFilter = false;
+        @ConfigEntry public boolean welcomeFilter = false;
+        @ConfigEntry public boolean friendJoinFilter = false;
+        @ConfigEntry public boolean motdFilter = false;
+        @ConfigEntry public boolean voteFilter = false;
+        @ConfigEntry public boolean voteRewardFilter = false;
+        @ConfigEntry public boolean raffleFilter = false;
+        @ConfigEntry public boolean cratesFilter = false;
+        @ConfigEntry public boolean perishedInVoidFilter = false;
+        @ConfigEntry public boolean skyChatFilter = false;
+        @ConfigEntry public List<FilterEntry> customFilters = new ArrayList<>();
 
         public static class FilterEntry implements MultiValue {
-            @SerialEntry public String regex;
-            @SerialEntry public boolean enabled;
+            @ConfigEntry public String regex;
+            @ConfigEntry public boolean enabled;
 
             public FilterEntry(String regex, boolean enabled) {
                 this.regex = regex;
@@ -216,58 +221,58 @@ public class ModConfig {
         }
     }
 
-    @SerialEntry public ChatLoggerConfig chatLogger = new ChatLoggerConfig();
+    @ConfigEntry public ChatLoggerConfig chatLogger = new ChatLoggerConfig();
     public static class ChatLoggerConfig {
-        @SerialEntry public boolean shopIncoming = false;
-        @SerialEntry public boolean shopOutgoing = false;
-        @SerialEntry public boolean msgIncoming = false;
-        @SerialEntry public boolean msgOutgoing = false;
-        @SerialEntry public boolean visits = false;
-        @SerialEntry public boolean dp = false;
+        @ConfigEntry public boolean shopIncoming = false;
+        @ConfigEntry public boolean shopOutgoing = false;
+        @ConfigEntry public boolean msgIncoming = false;
+        @ConfigEntry public boolean msgOutgoing = false;
+        @ConfigEntry public boolean visits = false;
+        @ConfigEntry public boolean dp = false;
     }
 
-    @SerialEntry public EnchantAllConfig enchantAll = new EnchantAllConfig();
+    @ConfigEntry public EnchantAllConfig enchantAll = new EnchantAllConfig();
     public static class EnchantAllConfig {
-        @SerialEntry public EnchantMode mode = EnchantMode.ALL;
-        @SerialEntry public boolean tpsSync = true;
-        @SerialEntry public double delay = 0.55;
-        @SerialEntry public int cooldownFrequency = 12;
-        @SerialEntry public double cooldownTime = 6.0;
-        @SerialEntry public boolean excludeFrost = true;
+        @ConfigEntry public EnchantMode mode = EnchantMode.ALL;
+        @ConfigEntry public boolean tpsSync = true;
+        @ConfigEntry public double delay = 0.55;
+        @ConfigEntry public int cooldownFrequency = 12;
+        @ConfigEntry public double cooldownTime = 6.0;
+        @ConfigEntry public boolean excludeFrost = true;
     }
 
-    @SerialEntry public NotifierConfig notifier = new NotifierConfig();
+    @ConfigEntry public NotifierConfig notifier = new NotifierConfig();
     public static class NotifierConfig {
-        @SerialEntry public boolean showLlamaTitle = false;
-        @SerialEntry public boolean playLlamaSound = false;
-        @SerialEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
-        @SerialEntry public boolean showTraderTitle = false;
-        @SerialEntry public boolean showTraderItems = false;
-        @SerialEntry public boolean showTradesOnClick = false;
-        @SerialEntry public boolean playTraderSound = false;
-        @SerialEntry public NotifSound traderSound = NotifSound.BANJO;
-        @SerialEntry public boolean playShopSound = false;
-        @SerialEntry public NotifSound shopSound = NotifSound.DISPENSER;
-        @SerialEntry public boolean playVisitSound = false;
-        @SerialEntry public NotifSound visitSound = NotifSound.COW_BELL;
+        @ConfigEntry public boolean showLlamaTitle = false;
+        @ConfigEntry public boolean playLlamaSound = false;
+        @ConfigEntry public NotifSound llamaSound = NotifSound.DIDGERIDOO;
+        @ConfigEntry public boolean showTraderTitle = false;
+        @ConfigEntry public boolean showTraderItems = false;
+        @ConfigEntry public boolean showTradesOnClick = false;
+        @ConfigEntry public boolean playTraderSound = false;
+        @ConfigEntry public NotifSound traderSound = NotifSound.BANJO;
+        @ConfigEntry public boolean playShopSound = false;
+        @ConfigEntry public NotifSound shopSound = NotifSound.DISPENSER;
+        @ConfigEntry public boolean playVisitSound = false;
+        @ConfigEntry public NotifSound visitSound = NotifSound.COW_BELL;
     }
 
-    @SerialEntry public InvCleanerConfig invCleaner = new InvCleanerConfig();
+    @ConfigEntry public InvCleanerConfig invCleaner = new InvCleanerConfig();
     public static class InvCleanerConfig {
-        @SerialEntry public double clickDelay = 0.0;
-        @SerialEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
+        @ConfigEntry public double clickDelay = 0.0;
+        @ConfigEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
     }
 
-    @SerialEntry public JoinCommandsConfig joinCommands = new JoinCommandsConfig();
+    @ConfigEntry public JoinCommandsConfig joinCommands = new JoinCommandsConfig();
     public static class JoinCommandsConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public double initialDelay = 0.0;
-        @SerialEntry public double delay = 0.0;
-        @SerialEntry public List<JoinCommandsEntry> commands = new ArrayList<>();
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public double initialDelay = 0.0;
+        @ConfigEntry public double delay = 0.0;
+        @ConfigEntry public List<JoinCommandsEntry> commands = new ArrayList<>();
 
         public static class JoinCommandsEntry implements MultiValue {
-            @SerialEntry public String command;
-            @SerialEntry public String accounts;
+            @ConfigEntry public String command;
+            @ConfigEntry public String accounts;
 
             public JoinCommandsEntry(String command, String accounts) {
                 this.command = command;
@@ -301,39 +306,39 @@ public class ModConfig {
         }
     }
 
-    @SerialEntry public MentionsConfig mentions = new MentionsConfig();
+    @ConfigEntry public MentionsConfig mentions = new MentionsConfig();
     public static class MentionsConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public boolean playSound = true;
-        @SerialEntry public NotifSound sound = NotifSound.EXPERIENCE;
-        @SerialEntry public boolean highlight = true;
-        @SerialEntry public Color highlightColor = new Color(Integer.valueOf("fff700", 16));
-        @SerialEntry public boolean excludeServerMsgs = true;
-        @SerialEntry public boolean excludeSelfMsgs = true;
-        @SerialEntry public boolean excludeSender = false;
-        @SerialEntry public boolean currentAccount = true;
-        @SerialEntry public List<String> aliases = new ArrayList<>();
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public boolean playSound = true;
+        @ConfigEntry public NotifSound sound = NotifSound.EXPERIENCE;
+        @ConfigEntry public boolean highlight = true;
+        @ConfigEntry public Color highlightColor = new Color(Integer.valueOf("fff700", 16));
+        @ConfigEntry public boolean excludeServerMsgs = true;
+        @ConfigEntry public boolean excludeSelfMsgs = true;
+        @ConfigEntry public boolean excludeSender = false;
+        @ConfigEntry public boolean currentAccount = true;
+        @ConfigEntry public List<String> aliases = new ArrayList<>();
     }
 
-    @SerialEntry public NoGmtConfig noGmt = new NoGmtConfig();
+    @ConfigEntry public NoGmtConfig noGmt = new NoGmtConfig();
     public static class NoGmtConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public String timeZone = "";
-        @SerialEntry public boolean showTimeZone = true;
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public String timeZone = "";
+        @ConfigEntry public boolean showTimeZone = true;
     }
 
-    @SerialEntry public StaffDetectorConfig staffDetector = new StaffDetectorConfig();
+    @ConfigEntry public StaffDetectorConfig staffDetector = new StaffDetectorConfig();
     public static class StaffDetectorConfig {
-        @SerialEntry public boolean detectJoin = false;
-        @SerialEntry public boolean detectLeave = false;
-        @SerialEntry public boolean playSound = false;
-        @SerialEntry public NotifSound sound = NotifSound.BIT;
+        @ConfigEntry public boolean detectJoin = false;
+        @ConfigEntry public boolean detectLeave = false;
+        @ConfigEntry public boolean playSound = false;
+        @ConfigEntry public NotifSound sound = NotifSound.BIT;
     }
 
-    @SerialEntry public ToolSaverConfig toolSaver = new ToolSaverConfig();
+    @ConfigEntry public ToolSaverConfig toolSaver = new ToolSaverConfig();
     public static class ToolSaverConfig {
-        @SerialEntry public boolean enabled = false;
-        @SerialEntry public int durability = 20;
+        @ConfigEntry public boolean enabled = false;
+        @ConfigEntry public int durability = 20;
     }
 
     public enum FixMode implements NameableEnum, StringRepresentable {

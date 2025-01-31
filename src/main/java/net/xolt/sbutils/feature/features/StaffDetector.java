@@ -52,7 +52,7 @@ public class StaffDetector extends Feature<ModConfig> {
     }
 
     public void onPlayerLeave(PlayerInfo player) {
-        if (!ModConfig.HANDLER.instance().staffDetector.detectLeave || !isStaff(player))
+        if (!ModConfig.HANDLER.getConfig().staffDetector.detectLeave || !isStaff(player))
             return;
 
         showStaffNotification(player, false);
@@ -62,8 +62,8 @@ public class StaffDetector extends Feature<ModConfig> {
 
         checkForNoStaff = true;
 
-        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
-            MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
+        if (MC.player != null && ModConfig.HANDLER.getConfig().staffDetector.playSound)
+            MC.player.playSound(ModConfig.HANDLER.getConfig().staffDetector.sound.getSound(), 1, 1);
     }
 
     public void afterPlayerLeave() {
@@ -77,12 +77,12 @@ public class StaffDetector extends Feature<ModConfig> {
     }
 
     public void onPlayerJoin(PlayerInfo player) {
-        if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player))
+        if (!ModConfig.HANDLER.getConfig().staffDetector.detectJoin || !isStaff(player))
             return;
 
         showStaffNotification(player, true);
-        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
-            MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
+        if (MC.player != null && ModConfig.HANDLER.getConfig().staffDetector.playSound)
+            MC.player.playSound(ModConfig.HANDLER.getConfig().staffDetector.sound.getSound(), 1, 1);
     }
 
     private void showStaffNotification(PlayerInfo player, boolean joined) {

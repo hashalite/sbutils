@@ -49,7 +49,7 @@ public class AutoPrivate extends Feature<ModConfig> {
     public void onInteractBlock() {
         if (MC.player == null || MC.getConnection() == null)
             return;
-        if (!ModConfig.HANDLER.instance().autoPrivate.enabled || !(MC.player.getMainHandItem().getItem() instanceof SignItem))
+        if (!ModConfig.HANDLER.getConfig().autoPrivate.enabled || !(MC.player.getMainHandItem().getItem() instanceof SignItem))
             return;
         MC.getConnection().send(new ServerboundPlayerCommandPacket(MC.player, ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY));
         sneaked = true;
@@ -63,7 +63,7 @@ public class AutoPrivate extends Feature<ModConfig> {
     }
 
     public static boolean onSignEditorOpen(ClientboundOpenSignEditorPacket packet) {
-        if (!ModConfig.HANDLER.instance().autoPrivate.enabled || !packet.isFrontText())
+        if (!ModConfig.HANDLER.getConfig().autoPrivate.enabled)
             return false;
         return updateSign(packet);
     }
@@ -72,13 +72,13 @@ public class AutoPrivate extends Feature<ModConfig> {
         if (MC.getConnection() == null || MC.player == null)
             return false;
 
-        List<String> names = ModConfig.HANDLER.instance().autoPrivate.names;
+        List<String> names = ModConfig.HANDLER.getConfig().autoPrivate.names;
         String[] lines = {"", ""};
 
         for (int i = 0; i < Math.min(names.size(), lines.length); i++)
             lines[i] = names.get(i);
 
-        MC.getConnection().send(new ServerboundSignUpdatePacket(packet.getPos(), true, "[private]", MC.player.getName().getString(), lines[0], lines[1]));
+        MC.getConnection().send(new ServerboundSignUpdatePacket(packet.getPos(), "[private]", MC.player.getName().getString(), lines[0], lines[1]));
         return true;
     }
 }

@@ -72,7 +72,7 @@ public class NoGMT extends Feature<ModConfig> {
     }
 
     public static boolean shouldModify(Component message) {
-        return ModConfig.HANDLER.instance().noGmt.enabled && RegexFilters.emailFilter.matcher(message.getString()).matches();
+        return ModConfig.HANDLER.getConfig().noGmt.enabled && RegexFilters.emailFilter.matcher(message.getString()).matches();
     }
 
     public static List<ItemStack> replaceTimeInLores(List<ItemStack> stacks) {
@@ -109,7 +109,7 @@ public class NoGMT extends Feature<ModConfig> {
     }
 
     private static Component replaceGmtTime(Component text, String target, DateTimeFormatter format) {
-        String zoneStr = ModConfig.HANDLER.instance().noGmt.timeZone;
+        String zoneStr = ModConfig.HANDLER.getConfig().noGmt.timeZone;
         ZoneId localZone;
         try {
             localZone = ZoneId.of(zoneStr.replaceAll(" ", ""), ZoneId.SHORT_IDS);
@@ -119,7 +119,7 @@ public class NoGMT extends Feature<ModConfig> {
 
         ZonedDateTime gmtTime = LocalDateTime.parse(target, format).atZone(ZoneId.of("GMT"));
         String newTimeStr = format.format(gmtTime.withZoneSameInstant(localZone));
-        if (ModConfig.HANDLER.instance().noGmt.showTimeZone)
+        if (ModConfig.HANDLER.getConfig().noGmt.showTimeZone)
             newTimeStr += " (" + localZone.getDisplayName(TextStyle.SHORT, Locale.getDefault()) + ")";
         return replaceText(text, target, newTimeStr);
     }

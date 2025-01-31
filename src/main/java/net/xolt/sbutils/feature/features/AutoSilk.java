@@ -91,14 +91,14 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     public void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled || !(MC.screen instanceof EnchantmentScreen))
+        if (!ModConfig.HANDLER.getConfig().autoSilk.enabled || !(MC.screen instanceof EnchantmentScreen))
             return;
 
         reset();
     }
 
     public void onEnchantUpdate() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled)
+        if (!ModConfig.HANDLER.getConfig().autoSilk.enabled)
             return;
 
         if (state.equals(EnchantState.WAIT_FOR_TOOL_ENCHANTS)) {
@@ -111,7 +111,7 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     public void onUpdateInvSlot(ClientboundContainerSetSlotPacket packet) {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled)
+        if (!ModConfig.HANDLER.getConfig().autoSilk.enabled)
             return;
 
         if (state.equals(EnchantState.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && !EnchantmentHelper.getEnchantments(packet.getItem()).isEmpty())
@@ -119,10 +119,10 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled || MC.player == null || cleaning)
+        if (!ModConfig.HANDLER.getConfig().autoSilk.enabled || MC.player == null || cleaning)
             return;
 
-        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.instance().autoSilk.delay * 1000.0)
+        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.getConfig().autoSilk.delay * 1000.0)
             return;
 
         if (!(MC.screen instanceof EnchantmentScreen)) {
@@ -134,7 +134,7 @@ public class AutoSilk extends Feature<ModConfig> {
 
         if (state == EnchantState.INSERT_LAPIS) {
             if (countFreeSlots(screenHandler) < 1) {
-                if (ModConfig.HANDLER.instance().autoSilk.cleaner) {
+                if (ModConfig.HANDLER.getConfig().autoSilk.cleaner) {
                     // cleaning must be set before clean() is called, in case callback is called immediately
                     cleaning = true;
                     SbUtils.FEATURES.get(InvCleaner.class).cleanPredicate(AutoSilk::shouldCleanStack, this::onCleanCallback);
@@ -152,8 +152,8 @@ public class AutoSilk extends Feature<ModConfig> {
                 disable();
                 return;
             }
-            Item targetTool = ModConfig.HANDLER.instance().autoSilk.targetTool.getTool();
-            if (!ModConfig.HANDLER.instance().autoSilk.booksOnly && findInEnchantScreen(targetTool, true, screenHandler) == null) {
+            Item targetTool = ModConfig.HANDLER.getConfig().autoSilk.targetTool.getTool();
+            if (!ModConfig.HANDLER.getConfig().autoSilk.booksOnly && findInEnchantScreen(targetTool, true, screenHandler) == null) {
                 ChatUtils.printWithPlaceholders("message.sbutils.autoSilk.noTools", Component.translatable(targetTool.getDescriptionId()));
                 disable();
                 return;
@@ -196,7 +196,7 @@ public class AutoSilk extends Feature<ModConfig> {
                 enchantPickaxe();
                 break;
             case RETURN_ITEM_AND_CONTINUE:
-                returnItem(ModConfig.HANDLER.instance().autoSilk.bookPriority && !toolChecked ? EnchantState.INSERT_TOOL : EnchantState.INSERT_BOOK);
+                returnItem(ModConfig.HANDLER.getConfig().autoSilk.bookPriority && !toolChecked ? EnchantState.INSERT_TOOL : EnchantState.INSERT_BOOK);
                 break;
             case INSERT_BOOK:
                 insertBook();
@@ -229,7 +229,7 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     private void insertTool() {
-        insertItem(ModConfig.HANDLER.instance().autoSilk.targetTool.getTool());
+        insertItem(ModConfig.HANDLER.getConfig().autoSilk.targetTool.getTool());
     }
 
     private void enchantPickaxe() {
@@ -244,7 +244,7 @@ public class AutoSilk extends Feature<ModConfig> {
         if (screenHandler == null)
             return;
 
-        EnchantState startingItem = ModConfig.HANDLER.instance().autoSilk.bookPriority || ModConfig.HANDLER.instance().autoSilk.booksOnly ? EnchantState.INSERT_BOOK : EnchantState.INSERT_TOOL;
+        EnchantState startingItem = ModConfig.HANDLER.getConfig().autoSilk.bookPriority || ModConfig.HANDLER.getConfig().autoSilk.booksOnly ? EnchantState.INSERT_BOOK : EnchantState.INSERT_TOOL;
 
         if (item.equals(Items.LAPIS_LAZULI) && screenHandler.getGoldCount() >= 3) {
             state = startingItem;
@@ -315,7 +315,7 @@ public class AutoSilk extends Feature<ModConfig> {
             }
         }
 
-        if (!ModConfig.HANDLER.instance().autoSilk.booksOnly && silkIndex == -1 && (!book || (ModConfig.HANDLER.instance().autoSilk.bookPriority && !toolChecked))) {
+        if (!ModConfig.HANDLER.getConfig().autoSilk.booksOnly && silkIndex == -1 && (!book || (ModConfig.HANDLER.getConfig().autoSilk.bookPriority && !toolChecked))) {
             // Either tool has no Silk Touch, so we should return and continue to book
             // Or bookPriority is enabled and book has no Silk Touch, so we should return and continue to tool
             // Unless tool has already been checked
@@ -334,7 +334,7 @@ public class AutoSilk extends Feature<ModConfig> {
         if (MC.player.experienceLevel < screenHandler.costs[silkIndex]) {
             ChatUtils.printMessage("message.sbutils.autoSilk.notEnoughExperience");
             reset();
-            ModConfig.HANDLER.instance().autoSilk.enabled = false;
+            ModConfig.HANDLER.getConfig().autoSilk.enabled = false;
             ModConfig.HANDLER.save();
             return;
         }
@@ -344,7 +344,7 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     private void disable() {
-        ModConfig.HANDLER.instance().autoSilk.enabled = false;
+        ModConfig.HANDLER.getConfig().autoSilk.enabled = false;
         ModConfig.HANDLER.save();
         if (autoSilkButton != null)
             autoSilkButton.setValue(false);

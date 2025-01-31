@@ -56,7 +56,7 @@ public class InvCleaner extends Feature<ModConfig> {
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> invCleanerNode = dispatcher.register(
-                CommandHelper.runnable(command, () -> clean(ModConfig.HANDLER.instance().invCleaner.itemsToClean, null))
+                CommandHelper.runnable(command, () -> clean(ModConfig.HANDLER.getConfig().invCleaner.itemsToClean, null))
                         .then(CommandHelper.stringList("items", "item", itemsToClean, ModConfig.HANDLER))
                         .then(CommandHelper.doubl("clickDelay", "seconds", clickDelay, ModConfig.HANDLER))
         );
@@ -82,7 +82,7 @@ public class InvCleaner extends Feature<ModConfig> {
         if (openedDisposal)
             return;
 
-        if (System.currentTimeMillis() - lastClick < ModConfig.HANDLER.instance().invCleaner.clickDelay * 1000)
+        if (System.currentTimeMillis() - lastClick < ModConfig.HANDLER.getConfig().invCleaner.clickDelay * 1000)
             return;
 
         doClean();

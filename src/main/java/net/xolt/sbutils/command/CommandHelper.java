@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import dev.isxander.yacl3.config.ConfigInstance;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.chat.Component;
@@ -38,17 +38,17 @@ public class CommandHelper {
                 });
     }
 
-    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> toggle(String command, Feature<C> feature, OptionBinding<C, Boolean> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> toggle(String command, Feature<C> feature, OptionBinding<C, Boolean> optionBinding, ConfigInstance<C> configHandler) {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
-                    optionBinding.set(configHandler.instance(), !optionBinding.get(configHandler.instance()));
+                    optionBinding.set(configHandler.getConfig(), !optionBinding.get(configHandler.getConfig()));
                     ModConfig.HANDLER.save();
-                    ChatUtils.printChangedSetting(feature.getNameTranslation(), optionBinding.get(configHandler.instance()));
+                    ChatUtils.printChangedSetting(feature.getNameTranslation(), optionBinding.get(configHandler.getConfig()));
                     return Command.SINGLE_SUCCESS;
                 });
     }
 
-    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> string(String command, String unit, OptionBinding<C, String> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> string(String command, String unit, OptionBinding<C, String> optionBinding, ConfigInstance<C> configHandler) {
         boolean greedy = true;
         if (optionBinding.getConstraints() instanceof StringConstraints strConstraints)
             greedy = strConstraints.getSpacesAllowed() == null || strConstraints.getSpacesAllowed();
@@ -56,7 +56,7 @@ public class CommandHelper {
         return getter(command, optionBinding, configHandler)
                 .then(ClientCommandManager.literal("set")
                         .executes(context -> {
-                            optionBinding.set(configHandler.instance(), "");
+                            optionBinding.set(configHandler.getConfig(), "");
                             ModConfig.HANDLER.save();
                             ChatUtils.printChangedSetting(optionBinding.getTranslation(), "");
                             return Command.SINGLE_SUCCESS;
@@ -65,7 +65,7 @@ public class CommandHelper {
 
     }
 
-    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String unit, ListOptionBinding<C, String> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> stringList(String command, String unit, ListOptionBinding<C, String> optionBinding, ConfigInstance<C> configHandler) {
         boolean greedy = true;
         if (optionBinding.getConstraints() instanceof ListConstraints<String> listConstraints && listConstraints.getEntryConstraints() instanceof StringConstraints strConstraints)
             greedy = strConstraints.getSpacesAllowed() == null || strConstraints.getSpacesAllowed();
@@ -73,21 +73,21 @@ public class CommandHelper {
         return genericList(command, unit, optionBinding, configHandler, greedy, greedy ? StringArgumentType.greedyString() : StringArgumentType.string(), StringArgumentType::getString);
     }
 
-    public static <C, T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C, T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler) {
         return enumList(command, unit, optionBinding, configHandler, false);
     }
 
-    public static <C, T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler, boolean indexed) {
+    public static <C, T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> enumList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler, boolean indexed) {
         return genericList(command, unit, optionBinding, configHandler, indexed, GenericEnumArgumentType.genericEnum(optionBinding.getListType()), (context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, optionBinding.getListType()));
     }
 
 
 
-    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
         return genericList(command, unit, optionBinding, configHandler, false, argumentType, getArgument);
     }
 
-    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler, boolean indexed, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> genericList(String command, String unit, ListOptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler, boolean indexed, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
         final int maxSize;
         final boolean allowDupes;
         if (optionBinding.getConstraints() instanceof ListConstraints<T> listConstraints) {
@@ -99,7 +99,7 @@ public class CommandHelper {
         }
 
         Consumer<T> add = (value) -> {
-            ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+            ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.getConfig()));
 
             if (list.size() >= maxSize) {
                 ChatUtils.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Component.translatable(optionBinding.getTranslation()));
@@ -112,16 +112,16 @@ public class CommandHelper {
             }
 
             list.add(value);
-            optionBinding.set(configHandler.instance(), list);
+            optionBinding.set(configHandler.getConfig(), list);
             ModConfig.HANDLER.save();
             ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(optionBinding.getTranslation()));
             ChatUtils.printListSetting(optionBinding.getTranslation(), list, indexed);
         };
 
         if (indexed)
-            return customIndexedList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler.instance()), add,
+            return customIndexedList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler.getConfig()), add,
                     (index) -> {
-                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.getConfig()));
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
                             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(optionBinding.getTranslation()));
@@ -129,13 +129,13 @@ public class CommandHelper {
                         }
 
                         T removed = list.remove(adjustedIndex);
-                        optionBinding.set(configHandler.instance(), list);
+                        optionBinding.set(configHandler.getConfig(), list);
                         ModConfig.HANDLER.save();
                         ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Component.translatable(optionBinding.getTranslation()));
                         ChatUtils.printListSetting(optionBinding.getTranslation(), list, true);
                     },
                     (index, value) -> {
-                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.getConfig()));
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
                             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(optionBinding.getTranslation()));
@@ -153,18 +153,18 @@ public class CommandHelper {
                         }
 
                         list.add(index, value);
-                        optionBinding.set(configHandler.instance(), list);
+                        optionBinding.set(configHandler.getConfig(), list);
                         ModConfig.HANDLER.save();
                         ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(optionBinding.getTranslation()));
                         ChatUtils.printListSetting(optionBinding.getTranslation(), list, true);
                     }
             );
 
-        return customList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler.instance()), add,
+        return customList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler.getConfig()), add,
                 (value) -> {
-                    ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+                    ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.getConfig()));
                     boolean result = list.remove(value);
-                    optionBinding.set(configHandler.instance(), list);
+                    optionBinding.set(configHandler.getConfig(), list);
                     ModConfig.HANDLER.save();
                     if (result) {
                         ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", value, Component.translatable(optionBinding.getTranslation()));
@@ -215,11 +215,11 @@ public class CommandHelper {
                                         }))));
     }
 
-    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> bool(String command, OptionBinding<C, Boolean> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> bool(String command, OptionBinding<C, Boolean> optionBinding, ConfigInstance<C> configHandler) {
         return getterSetter(command, "enabled", optionBinding, configHandler, BoolArgumentType.bool(), BoolArgumentType::getBool);
     }
 
-    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> doubl(String command, String unit, OptionBinding<C, Double> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> doubl(String command, String unit, OptionBinding<C, Double> optionBinding, ConfigInstance<C> configHandler) {
         return getterSetter(command, unit, optionBinding, configHandler, getDoubleArgumentType(optionBinding.getConstraints()), DoubleArgumentType::getDouble);
     }
 
@@ -231,33 +231,33 @@ public class CommandHelper {
         return DoubleArgumentType.doubleArg(min == null ? Double.MIN_VALUE : min, max == null ? Double.MAX_VALUE : max);
     }
 
-    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> integer(String command, String unit, OptionBinding<C, Integer> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C> LiteralArgumentBuilder<FabricClientCommandSource> integer(String command, String unit, OptionBinding<C, Integer> optionBinding, ConfigInstance<C> configHandler) {
         return getterSetter(command, unit, optionBinding, configHandler, IntegerArgumentType.integer(), IntegerArgumentType::getInteger);
     }
 
-    public static <C, T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> genericEnum(String command, String unit, OptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C, T extends Enum<T> & StringRepresentable> LiteralArgumentBuilder<FabricClientCommandSource> genericEnum(String command, String unit, OptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler) {
         return getterSetter(command, unit, optionBinding, configHandler, GenericEnumArgumentType.genericEnum(optionBinding.getType()), ((context, id) -> GenericEnumArgumentType.getGenericEnum(context, id, optionBinding.getType())));
     }
 
-    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> getterSetter(String command, String unit, OptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> getterSetter(String command, String unit, OptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
         return getter(command, optionBinding, configHandler)
                 .then(setter(unit, optionBinding, configHandler, argumentType, getArgument));
     }
 
-    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> getter(String command, OptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler) {
+    public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> getter(String command, OptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler) {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
-                    ChatUtils.printSetting(optionBinding.getTranslation(), optionBinding.get(configHandler.instance()));
+                    ChatUtils.printSetting(optionBinding.getTranslation(), optionBinding.get(configHandler.getConfig()));
                     return Command.SINGLE_SUCCESS;
                 });
     }
 
-    public static <C, T> RequiredArgumentBuilder<FabricClientCommandSource, T> setter(String argument, OptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
+    public static <C, T> RequiredArgumentBuilder<FabricClientCommandSource, T> setter(String argument, OptionBinding<C, T> optionBinding, ConfigInstance<C> configHandler, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
         return ClientCommandManager.argument(argument, argumentType)
                 .executes(context -> {
-                    optionBinding.set(configHandler.instance(), getArgument.apply(context, argument));
+                    optionBinding.set(configHandler.getConfig(), getArgument.apply(context, argument));
                     ModConfig.HANDLER.save();
-                    ChatUtils.printChangedSetting(optionBinding.getTranslation(), optionBinding.get(configHandler.instance()));
+                    ChatUtils.printChangedSetting(optionBinding.getTranslation(), optionBinding.get(configHandler.getConfig()));
                     return Command.SINGLE_SUCCESS;
                 });
     }

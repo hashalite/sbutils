@@ -30,7 +30,7 @@ public abstract class ChatComponentMixin {
     @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V", at = @At("HEAD"), cancellable = true)
     public void onAddMessage(Component message, MessageSignature signature, GuiMessageTag indicator, CallbackInfo ci) {
         Component modified = message;
-        if (ModConfig.HANDLER.instance().mentions.enabled && ModConfig.HANDLER.instance().mentions.highlight && Mentions.isValidMessage(modified) && Mentions.mentioned(modified)) {
+        if (ModConfig.HANDLER.getConfig().mentions.enabled && ModConfig.HANDLER.getConfig().mentions.highlight && Mentions.isValidMessage(modified) && Mentions.mentioned(modified)) {
             ci.cancel();
             modified = Mentions.modifyMessage(modified);
         }

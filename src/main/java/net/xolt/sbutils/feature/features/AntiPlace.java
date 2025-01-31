@@ -69,9 +69,9 @@ public class AntiPlace extends Feature<ModConfig> {
             return false;
 
         ItemStack held = player.getItemInHand(hand);
-        if (ModConfig.HANDLER.instance().antiPlace.heads && isNamedHead(held))
+        if (ModConfig.HANDLER.getConfig().antiPlace.heads && isNamedHead(held))
             return true;
-        if (ModConfig.HANDLER.instance().antiPlace.grass && isGrass(held))
+        if (ModConfig.HANDLER.getConfig().antiPlace.grass && isGrass(held))
             return true;
 
         return false;

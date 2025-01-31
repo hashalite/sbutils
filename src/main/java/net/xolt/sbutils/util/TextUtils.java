@@ -47,11 +47,11 @@ public class TextUtils {
     }
 
     public static int getMessageColor() {
-        return ModConfig.HANDLER.instance().messageColor.getRGB();
+        return ModConfig.HANDLER.getConfig().messageColor.getRGB();
     }
 
     public static int getValueColor() {
-        return ModConfig.HANDLER.instance().valueColor.getRGB();
+        return ModConfig.HANDLER.getConfig().valueColor.getRGB();
     }
 
     public static int getBooleanColor(boolean bool) {
@@ -88,21 +88,21 @@ public class TextUtils {
         if (input instanceof MutableComponent text) {
             result = text;
             if (result.getStyle().isEmpty())
-                result = result.withColor(getValueColor());
+                result = result.withStyle(style -> style.withColor(getValueColor()));
         } else if (input instanceof Boolean bool) {
             result = formatEnabledDisabled(bool);
         } else if (input instanceof NameableEnum nameableEnum) {
-            result = nameableEnum.getDisplayName().copy().withColor(getValueColor());
+            result = nameableEnum.getDisplayName().copy().withStyle(style -> style.withColor(getValueColor()));
         } else if (input instanceof Number) {
-            result = Component.literal(String.valueOf(input)).withColor(getValueColor());
+            result = Component.literal(String.valueOf(input)).withStyle(style -> style.withColor(getValueColor()));
         } else if (input instanceof String string) {
-            result = Component.literal(!string.isEmpty() ? string : "nothing").withColor(!string.isEmpty() ? getValueColor() : getMessageColor());
+            result = Component.literal(!string.isEmpty() ? string : "nothing").withStyle(style -> style.withColor(!string.isEmpty() ? getValueColor() : getMessageColor()));
             if (((String) input).isEmpty())
                 result = result.withStyle(ChatFormatting.ITALIC);
         } else if (input instanceof Color color) {
-            result = Component.literal("#" + String.format("%06x", color.getRGB() & 0x00FFFFFF)).withColor(color.getRGB());
+            result = Component.literal("#" + String.format("%06x", color.getRGB() & 0x00FFFFFF)).withStyle(style -> style.withColor(color.getRGB()));
         } else {
-            result = Component.literal(String.valueOf(input)).withColor(getValueColor());
+            result = Component.literal(String.valueOf(input)).withStyle(style -> style.withColor(getValueColor()));
         }
         return result;
     }
@@ -115,11 +115,11 @@ public class TextUtils {
     }
 
     public static MutableComponent formatEnabledDisabled(boolean bool) {
-        return Component.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled").withColor(getBooleanColor(bool));
+        return Component.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled").withStyle(style -> style.withColor(getBooleanColor(bool)));
     }
 
     public static MutableComponent formatOnlineOffline(boolean online) {
-        return Component.translatable(online ? "message.sbutils.online" : "message.sbutils.offline").withColor(getBooleanColor(online));
+        return Component.translatable(online ? "message.sbutils.online" : "message.sbutils.offline").withStyle(style -> style.withColor(getBooleanColor(online)));
     }
 
     public static String formatTime(double seconds) {

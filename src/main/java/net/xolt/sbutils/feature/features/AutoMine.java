@@ -68,17 +68,17 @@ public class AutoMine extends Feature<ModConfig> {
 
     private int onTimerSetCommand(double time) {
         disableAt = System.currentTimeMillis() + (long)(time * 1000.0);
-        ModConfig.HANDLER.instance().autoMine.enabled = true;
+        ModConfig.HANDLER.getConfig().autoMine.enabled = true;
         ChatUtils.printWithPlaceholders("message.sbutils.autoMine.enabledFor", Component.translatable("text.sbutils.config.category.autoMine"), TextUtils.formatTime(time));
         return Command.SINGLE_SUCCESS;
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoMine.enabled || MC.player == null)
+        if (!ModConfig.HANDLER.getConfig().autoMine.enabled || MC.player == null)
             return;
 
         if (disableAt != -1 && System.currentTimeMillis() >= disableAt) {
-            ModConfig.HANDLER.instance().autoMine.enabled = false;
+            ModConfig.HANDLER.getConfig().autoMine.enabled = false;
             ModConfig.HANDLER.save();
             MC.options.keyAttack.setDown(false);
             ChatUtils.printChangedSetting("text.sbutils.config.category.autoMine", false);
@@ -89,12 +89,12 @@ public class AutoMine extends Feature<ModConfig> {
         ItemStack holding = MC.player.getInventory().getSelected();
         int minDurability = getMinDurability();
 
-        if (ModConfig.HANDLER.instance().autoMine.autoSwitch && !SbUtils.FEATURES.get(AutoFix.class).fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamageValue() <= minDurability) {
+        if (ModConfig.HANDLER.getConfig().autoMine.autoSwitch && !SbUtils.FEATURES.get(AutoFix.class).fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamageValue() <= minDurability) {
             int newPickaxeSlot = findNewPickaxe();
             if (newPickaxeSlot != -1) {
                 InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selected, MC.player.containerMenu);
-            } else if (!ModConfig.HANDLER.instance().autoFix.enabled) {
-                ModConfig.HANDLER.instance().autoMine.enabled = false;
+            } else if (!ModConfig.HANDLER.getConfig().autoFix.enabled) {
+                ModConfig.HANDLER.getConfig().autoMine.enabled = false;
                 ModConfig.HANDLER.save();
                 ChatUtils.printMessage("message.sbutils.autoMine.noPickaxe");
                 return;
@@ -127,7 +127,7 @@ public class AutoMine extends Feature<ModConfig> {
         if (MC.player == null)
             return -1;
 
-        int minDurability = Math.max(ModConfig.HANDLER.instance().autoMine.switchDurability, ModConfig.HANDLER.instance().toolSaver.enabled ? ModConfig.HANDLER.instance().toolSaver.durability : 0);
+        int minDurability = Math.max(ModConfig.HANDLER.getConfig().autoMine.switchDurability, ModConfig.HANDLER.getConfig().toolSaver.enabled ? ModConfig.HANDLER.getConfig().toolSaver.durability : 0);
 
         for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
             ItemStack itemStack = MC.player.getInventory().getItem(i);
@@ -142,7 +142,7 @@ public class AutoMine extends Feature<ModConfig> {
     }
 
     private static int getMinDurability() {
-        return Math.max(ModConfig.HANDLER.instance().autoMine.autoSwitch ? ModConfig.HANDLER.instance().autoMine.switchDurability : -1, ModConfig.HANDLER.instance().toolSaver.enabled ? ModConfig.HANDLER.instance().toolSaver.durability : -1);
+        return Math.max(ModConfig.HANDLER.getConfig().autoMine.autoSwitch ? ModConfig.HANDLER.getConfig().autoMine.switchDurability : -1, ModConfig.HANDLER.getConfig().toolSaver.enabled ? ModConfig.HANDLER.getConfig().toolSaver.durability : -1);
     }
 
     public static boolean shouldMine() {

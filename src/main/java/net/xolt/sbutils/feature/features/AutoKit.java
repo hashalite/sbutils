@@ -109,7 +109,7 @@ public class AutoKit extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoKit.enabled || awaitingResponse || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null) {
+        if (!ModConfig.HANDLER.getConfig().autoKit.enabled || awaitingResponse || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null) {
             return;
         }
 
@@ -120,7 +120,7 @@ public class AutoKit extends Feature<ModConfig> {
             return;
 
         // Enforce delay between commands
-        if (currentTime - lastCommandSentAt < ModConfig.HANDLER.instance().autoKit.commandDelay * 1000) {
+        if (currentTime - lastCommandSentAt < ModConfig.HANDLER.getConfig().autoKit.commandDelay * 1000) {
             return;
         }
 
@@ -163,12 +163,12 @@ public class AutoKit extends Feature<ModConfig> {
 
     private void onKitListChanged() {
         reset();
-        if (ModConfig.HANDLER.instance().autoKit.enabled)
+        if (ModConfig.HANDLER.getConfig().autoKit.enabled)
             queueKits();
     }
 
     public void onUpdateInventory() {
-        if (!ModConfig.HANDLER.instance().autoKit.enabled || invFullList.isEmpty() || MC.player == null)
+        if (!ModConfig.HANDLER.getConfig().autoKit.enabled || invFullList.isEmpty() || MC.player == null)
             return;
         List<KitQueueEntry> kitsWithSpace = invFullList.stream().filter((kit) -> InvUtils.doesKitFit(MC.player.getInventory(), kit.kit.getItems())).toList();
         kitQueue.addAll(kitsWithSpace);
@@ -176,7 +176,7 @@ public class AutoKit extends Feature<ModConfig> {
     }
 
     public void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().autoKit.enabled)
+        if (!ModConfig.HANDLER.getConfig().autoKit.enabled)
             return;
 
         joinedAt = System.currentTimeMillis();
@@ -192,7 +192,7 @@ public class AutoKit extends Feature<ModConfig> {
     }
 
     public void onKitResponse(Component message) {
-        if (!ModConfig.HANDLER.instance().autoKit.enabled || !awaitingResponse || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null) {
+        if (!ModConfig.HANDLER.getConfig().autoKit.enabled || !awaitingResponse || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null) {
             return;
         }
 
@@ -247,7 +247,7 @@ public class AutoKit extends Feature<ModConfig> {
     }
 
     public void onDailyRewardsMenu(Component title) {
-        if (!ModConfig.HANDLER.instance().autoKit.enabled || !awaitingDailyMenu || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null || MC.gameMode == null) {
+        if (!ModConfig.HANDLER.getConfig().autoKit.enabled || !awaitingDailyMenu || !SERVER_DETECTOR.isOnSkyblock() || MC.player == null || MC.gameMode == null) {
             return;
         }
 
@@ -331,7 +331,7 @@ public class AutoKit extends Feature<ModConfig> {
 
     private void onKitTimeout() {
         ChatUtils.printMessage("message.sbutils.autoKit.claimTimeout");
-        enabled.set(ModConfig.HANDLER.instance(), false);
+        enabled.set(ModConfig.HANDLER.getConfig(), false);
     }
 
     private void claimKit(ModConfig.Kit kit) {
@@ -353,9 +353,9 @@ public class AutoKit extends Feature<ModConfig> {
             return;
         kitQueue.clear();
         switch (SERVER_DETECTOR.getCurrentServer()) {
-            case SKYBLOCK -> ModConfig.HANDLER.instance().autoKit.sbKits.forEach(this::queueKit);
-            case ECONOMY -> ModConfig.HANDLER.instance().autoKit.ecoKits.forEach(this::queueKit);
-            case CLASSIC -> ModConfig.HANDLER.instance().autoKit.classicKits.forEach(this::queueKit);
+            case SKYBLOCK -> ModConfig.HANDLER.getConfig().autoKit.sbKits.forEach(this::queueKit);
+            case ECONOMY -> ModConfig.HANDLER.getConfig().autoKit.ecoKits.forEach(this::queueKit);
+            case CLASSIC -> ModConfig.HANDLER.getConfig().autoKit.classicKits.forEach(this::queueKit);
         }
     }
 
@@ -388,13 +388,13 @@ public class AutoKit extends Feature<ModConfig> {
         if (kit.getCooldown() == 24 && !(kit == ModConfig.SkyblockKit.DAILY || kit == ModConfig.EconomyKit.DAILY)) {
             long lastReset = currentTime - (currentTime % 86400000);
             // If lastClaim plus buffer is before last reset and more than claimDelay seconds have elapsed since the last reset, return 0
-            if (lastClaim + (ModConfig.HANDLER.instance().autoKit.systemDelay * 1000) < lastReset && currentTime > lastReset + (ModConfig.HANDLER.instance().autoKit.systemDelay * 1000)) {
+            if (lastClaim + (ModConfig.HANDLER.getConfig().autoKit.systemDelay * 1000) < lastReset && currentTime > lastReset + (ModConfig.HANDLER.getConfig().autoKit.systemDelay * 1000)) {
                 return 0;
             }
-            long nextReset = lastReset + 86400000 + (long)(ModConfig.HANDLER.instance().autoKit.systemDelay * 1000);
+            long nextReset = lastReset + 86400000 + (long)(ModConfig.HANDLER.getConfig().autoKit.systemDelay * 1000);
             return nextReset - currentTime;
         }
-        long nextReset = lastClaim + ((long)kit.getCooldown() * 3600000) + (long)(ModConfig.HANDLER.instance().autoKit.claimDelay * 1000);
+        long nextReset = lastClaim + ((long)kit.getCooldown() * 3600000) + (long)(ModConfig.HANDLER.getConfig().autoKit.claimDelay * 1000);
         return Math.max(0, nextReset - currentTime);
     }
 

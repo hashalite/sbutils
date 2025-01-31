@@ -125,7 +125,7 @@ public class EnchantAll extends Feature<ModConfig> {
             return;
 
         if (noPermission) {
-            if (ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL && enchanting) {
+            if (ModConfig.HANDLER.getConfig().enchantAll.mode == ModConfig.EnchantMode.ALL && enchanting) {
                 ChatUtils.printMessage("message.sbutils.enchantAll.noEnchantAllPermission", ChatFormatting.RED);
             } else {
                 ChatUtils.printMessage("message.sbutils.enchantAll.noEnchantPermission", ChatFormatting.RED);
@@ -152,9 +152,9 @@ public class EnchantAll extends Feature<ModConfig> {
             return;
         }
 
-        if (commandCount >= ModConfig.HANDLER.instance().enchantAll.cooldownFrequency) {
+        if (commandCount >= ModConfig.HANDLER.getConfig().enchantAll.cooldownFrequency) {
             cooldown = true;
-            ChatUtils.printWithPlaceholders("message.sbutils.enchantAll.cooldown", ModConfig.HANDLER.instance().enchantAll.cooldownTime);
+            ChatUtils.printWithPlaceholders("message.sbutils.enchantAll.cooldown", ModConfig.HANDLER.getConfig().enchantAll.cooldownTime);
             commandCount = 0;
         }
 
@@ -257,13 +257,13 @@ public class EnchantAll extends Feature<ModConfig> {
     private int delayLeft() {
         long delay;
         if (cooldown)
-            delay = (long)(ModConfig.HANDLER.instance().enchantAll.cooldownTime * 1000.0);
+            delay = (long)(ModConfig.HANDLER.getConfig().enchantAll.cooldownTime * 1000.0);
         else if (pause)
             delay = 250L;
         else
-            delay = (long)(ModConfig.HANDLER.instance().enchantAll.delay * 1000.0);
+            delay = (long)(ModConfig.HANDLER.getConfig().enchantAll.delay * 1000.0);
 
-        if (ModConfig.HANDLER.instance().enchantAll.tpsSync)
+        if (ModConfig.HANDLER.getConfig().enchantAll.tpsSync)
             delay = (int)((double)delay / (SbUtils.TPS_ESTIMATOR.getCappedTickRate() / 20.0));
 
         return (int)Math.max(delay - (System.currentTimeMillis() - lastActionPerformedAt), 0L);
@@ -298,7 +298,7 @@ public class EnchantAll extends Feature<ModConfig> {
     }
 
     private void sendNextEnchant(List<Enchantment> enchants, boolean unenchant) {
-        if (!unenchant && ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL) {
+        if (!unenchant && ModConfig.HANDLER.getConfig().enchantAll.mode == ModConfig.EnchantMode.ALL) {
             sendEnchantAllCommand();
             return;
         }
@@ -366,7 +366,7 @@ public class EnchantAll extends Feature<ModConfig> {
         enchantments.remove(Enchantments.BINDING_CURSE);
         enchantments.remove(Enchantments.VANISHING_CURSE);
 
-        if (ModConfig.HANDLER.instance().enchantAll.excludeFrost && !unenchant)
+        if (ModConfig.HANDLER.getConfig().enchantAll.excludeFrost && !unenchant)
             enchantments.remove(Enchantments.FROST_WALKER);
 
         return enchantments;
@@ -376,7 +376,7 @@ public class EnchantAll extends Feature<ModConfig> {
         if (MC.player == null)
             return false;
 
-        return ModConfig.HANDLER.instance().enchantAll.excludeFrost &&
+        return ModConfig.HANDLER.getConfig().enchantAll.excludeFrost &&
                 EnchantmentHelper.deserializeEnchantments(MC.player.getMainHandItem().getEnchantmentTags()).containsKey(Enchantments.FROST_WALKER);
     }
 }

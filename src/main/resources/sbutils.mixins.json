@@ -6,7 +6,6 @@
     "AbstractContainerMenuMixin",
     "ChatComponentMixin",
     "ChatListenerMixin",
-    "ClientCommonPacketListenerImplMixin",
     "ClientPacketListenerMixin",
     "CommandNodeAccessor",
     "ConnectionMixin",

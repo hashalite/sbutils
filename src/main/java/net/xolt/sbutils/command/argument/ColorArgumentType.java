@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 
 public class ColorArgumentType implements ArgumentType<Color> {
 
-    private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(input -> Component.translatableEscape("message.sbutils.colorArgumentType.invalidColorFormat", input));
+    private static final DynamicCommandExceptionType COLOR_PARSE_EXCEPTION = new DynamicCommandExceptionType(input -> Component.translatable("message.sbutils.colorArgumentType.invalidColorFormat", input));
 
     public static ColorArgumentType color() {
         return new ColorArgumentType();

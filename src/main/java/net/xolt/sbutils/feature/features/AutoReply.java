@@ -49,15 +49,15 @@ public class AutoReply extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoReply.enabled || MC.getConnection() == null)
+        if (!ModConfig.HANDLER.getConfig().autoReply.enabled || MC.getConnection() == null)
             return;
 
-        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.instance().autoReply.delay * 1000.0)
+        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.getConfig().autoReply.delay * 1000.0)
             sendMessage();
     }
 
     public void processMessage(Component message) {
-        if (!ModConfig.HANDLER.instance().autoReply.enabled)
+        if (!ModConfig.HANDLER.getConfig().autoReply.enabled)
             return;
 
         Matcher incomingMsg = RegexFilters.incomingMsgFilter.matcher(message.getString());
@@ -66,7 +66,7 @@ public class AutoReply extends Feature<ModConfig> {
     }
 
     private void queueResponse(String sender) {
-        msgQueue.offer("msg " + sender + " " + ModConfig.HANDLER.instance().autoReply.response);
+        msgQueue.offer("msg " + sender + " " + ModConfig.HANDLER.getConfig().autoReply.response);
     }
 
     private void sendMessage() {

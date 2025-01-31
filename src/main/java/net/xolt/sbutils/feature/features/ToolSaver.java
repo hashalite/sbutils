@@ -93,7 +93,7 @@ public class ToolSaver extends Feature<ModConfig> {
     }
 
     private static boolean shouldCancelBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled)
+        if (!ModConfig.HANDLER.getConfig().toolSaver.enabled)
             return false;
 
         ItemStack item = player.getItemInHand(hand);
@@ -108,7 +108,7 @@ public class ToolSaver extends Feature<ModConfig> {
     }
 
     private static boolean shouldCancelEntityInteract(Player player, Entity entity, InteractionHand hand) {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled)
+        if (!ModConfig.HANDLER.getConfig().toolSaver.enabled)
             return false;
 
         ItemStack item = player.getItemInHand(hand);
@@ -127,7 +127,7 @@ public class ToolSaver extends Feature<ModConfig> {
     }
 
     public static boolean shouldCancelAttack() {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled || MC.player == null)
+        if (!ModConfig.HANDLER.getConfig().toolSaver.enabled || MC.player == null)
             return false;
 
         ItemStack holding = MC.player.getMainHandItem();
@@ -142,6 +142,6 @@ public class ToolSaver extends Feature<ModConfig> {
         if (item.isEmpty() || !item.isDamageableItem())
             return false;
 
-        return item.getMaxDamage() - item.getDamageValue() <= ModConfig.HANDLER.instance().toolSaver.durability;
+        return item.getMaxDamage() - item.getDamageValue() <= ModConfig.HANDLER.getConfig().toolSaver.durability;
     }
 }

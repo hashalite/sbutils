@@ -1,5 +1,6 @@
 package net.xolt.sbutils.config.gui.controllers;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import dev.isxander.yacl3.api.Controller;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.controller.ControllerBuilder;
@@ -14,7 +15,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -108,10 +108,10 @@ public abstract class MultiValueController<T> implements Controller<T> {
         }
 
         @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        public boolean mouseScrolled(double d, double e, double f) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+                result = result || element.mouseScrolled(d, e, f);
             return result;
         }
 
@@ -173,8 +173,8 @@ public abstract class MultiValueController<T> implements Controller<T> {
         }
 
         @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-            elements.forEach((element) -> element.render(graphics, mouseX, mouseY, delta));
+        public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+            elements.forEach((element) -> element.render(matrices, mouseX, mouseY, delta));
         }
     }
 }

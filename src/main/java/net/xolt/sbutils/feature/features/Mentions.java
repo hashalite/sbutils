@@ -64,7 +64,7 @@ public class Mentions extends Feature<ModConfig> {
     }
 
     public static void processMessage(Component message) {
-        if (!ModConfig.HANDLER.instance().mentions.enabled || !ModConfig.HANDLER.instance().mentions.playSound || !isValidMessage(message) || !mentioned(message))
+        if (!ModConfig.HANDLER.getConfig().mentions.enabled || !ModConfig.HANDLER.getConfig().mentions.playSound || !isValidMessage(message) || !mentioned(message))
             return;
         playSound();
     }
@@ -76,12 +76,12 @@ public class Mentions extends Feature<ModConfig> {
         Component newMessage = message;
 
         Matcher playerMsgMatcher = RegexFilters.playerMsgFilter.matcher(message.getString());
-        int prefixLen = ModConfig.HANDLER.instance().mentions.excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
+        int prefixLen = ModConfig.HANDLER.getConfig().mentions.excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
 
-        if (ModConfig.HANDLER.instance().mentions.currentAccount)
+        if (ModConfig.HANDLER.getConfig().mentions.currentAccount)
             newMessage = highlight(newMessage, MC.player.getGameProfile().getName(), prefixLen);
 
-        for (String alias : ModConfig.HANDLER.instance().mentions.aliases) {
+        for (String alias : ModConfig.HANDLER.getConfig().mentions.aliases) {
             if (!alias.equals(""))
                 newMessage = highlight(newMessage, alias, prefixLen);
         }
@@ -95,16 +95,16 @@ public class Mentions extends Feature<ModConfig> {
 
         String msgString = message.getString().toLowerCase(Locale.ROOT);
 
-        if (ModConfig.HANDLER.instance().mentions.excludeSender) {
+        if (ModConfig.HANDLER.getConfig().mentions.excludeSender) {
             Matcher matcher = RegexFilters.playerMsgFilter.matcher(msgString);
             if (matcher.matches())
                 msgString = msgString.replace(matcher.group(1), "");
         }
 
-        if (ModConfig.HANDLER.instance().mentions.currentAccount && msgString.contains(MC.player.getGameProfile().getName().toLowerCase()))
+        if (ModConfig.HANDLER.getConfig().mentions.currentAccount && msgString.contains(MC.player.getGameProfile().getName().toLowerCase()))
             return true;
 
-        for (String alias : ModConfig.HANDLER.instance().mentions.aliases)
+        for (String alias : ModConfig.HANDLER.getConfig().mentions.aliases)
             if (!alias.isEmpty() && msgString.contains(alias.toLowerCase()))
                 return true;
 
@@ -112,14 +112,14 @@ public class Mentions extends Feature<ModConfig> {
     }
 
     public static boolean isValidMessage(Component message) {
-        if (ModConfig.HANDLER.instance().mentions.excludeServerMsgs &&
+        if (ModConfig.HANDLER.getConfig().mentions.excludeServerMsgs &&
                 !RegexFilters.playerMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.incomingMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches()) {
             return false;
         }
 
-        if (ModConfig.HANDLER.instance().mentions.excludeSelfMsgs) {
+        if (ModConfig.HANDLER.getConfig().mentions.excludeSelfMsgs) {
             if (RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches())
                 return false;
 
@@ -179,7 +179,7 @@ public class Mentions extends Feature<ModConfig> {
             int endIndex = beginningIndex + lowerTarget.length();
             String preText = format + stringText.substring(index, beginningIndex);
             result.append(Component.literal(preText).setStyle(oldStyle));
-            result.append(Component.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.instance().mentions.highlightColor.getRGB())));
+            result.append(Component.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.getConfig().mentions.highlightColor.getRGB())));
             int formatSignIndex = preText.lastIndexOf("\u00a7");
             if (formatSignIndex != -1 && formatSignIndex + 2 <= preText.length())
                 format = preText.substring(formatSignIndex, formatSignIndex + 2);
@@ -196,6 +196,6 @@ public class Mentions extends Feature<ModConfig> {
         if (MC.player == null)
             return;
 
-        MC.player.playSound(ModConfig.HANDLER.instance().mentions.sound.getSound(), 1, 1);
+        MC.player.playSound(ModConfig.HANDLER.getConfig().mentions.sound.getSound(), 1, 1);
     }
 }
