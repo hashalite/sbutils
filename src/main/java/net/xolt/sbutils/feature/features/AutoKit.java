@@ -31,15 +31,15 @@ import java.util.regex.Matcher;
 import static net.xolt.sbutils.SbUtils.MC;
 import static net.xolt.sbutils.SbUtils.SERVER_DETECTOR;
 
-public class AutoKit extends Feature {
+public class AutoKit extends Feature<ModConfig> {
     private static final int DAILY_CLAIM_BUTTON_SLOT = 22;
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoKit.enabled", Boolean.class, (config) -> config.autoKit.enabled, (config, value) -> config.autoKit.enabled = value);
-    private final OptionBinding<Double> commandDelay = new OptionBinding<>("autoKit.commandDelay", Double.class, (config) -> config.autoKit.commandDelay, (config, value) -> config.autoKit.commandDelay = value);
-    private final OptionBinding<Double> claimDelay = new OptionBinding<>("autoKit.claimDelay", Double.class, (config) -> config.autoKit.claimDelay, (config, value) -> config.autoKit.claimDelay = value);
-    private final OptionBinding<Double> systemDelay = new OptionBinding<>("autoKit.systemDelay", Double.class, (config) -> config.autoKit.systemDelay, (config, value) -> config.autoKit.systemDelay = value);
-    private final ListOptionBinding<ModConfig.SkyblockKit> sbKits = new ListOptionBinding<>("autoKit.sbKits", ModConfig.SkyblockKit.SKYTITAN, ModConfig.SkyblockKit.class, (config) -> config.autoKit.sbKits, (config, value) -> config.autoKit.sbKits = value);
-    private final ListOptionBinding<ModConfig.EconomyKit> ecoKits = new ListOptionBinding<>("autoKit.ecoKits", ModConfig.EconomyKit.HIGHROLLER, ModConfig.EconomyKit.class, (config) -> config.autoKit.ecoKits, (config, value) -> config.autoKit.ecoKits = value);
-    private final ListOptionBinding<ModConfig.ClassicKit> classicKits = new ListOptionBinding<>("autoKit.classicKits", ModConfig.ClassicKit.DONOR250, ModConfig.ClassicKit.class, (config) -> config.autoKit.classicKits, (config, value) -> config.autoKit.classicKits = value);
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoKit.enabled", Boolean.class, (config) -> config.autoKit.enabled, (config, value) -> config.autoKit.enabled = value);
+    private final OptionBinding<ModConfig, Double> commandDelay = new OptionBinding<>("sbutils", "autoKit.commandDelay", Double.class, (config) -> config.autoKit.commandDelay, (config, value) -> config.autoKit.commandDelay = value);
+    private final OptionBinding<ModConfig, Double> claimDelay = new OptionBinding<>("sbutils", "autoKit.claimDelay", Double.class, (config) -> config.autoKit.claimDelay, (config, value) -> config.autoKit.claimDelay = value);
+    private final OptionBinding<ModConfig, Double> systemDelay = new OptionBinding<>("sbutils", "autoKit.systemDelay", Double.class, (config) -> config.autoKit.systemDelay, (config, value) -> config.autoKit.systemDelay = value);
+    private final ListOptionBinding<ModConfig, ModConfig.SkyblockKit> sbKits = new ListOptionBinding<>("sbutils", "autoKit.sbKits", ModConfig.SkyblockKit.SKYTITAN, ModConfig.SkyblockKit.class, (config) -> config.autoKit.sbKits, (config, value) -> config.autoKit.sbKits = value);
+    private final ListOptionBinding<ModConfig, ModConfig.EconomyKit> ecoKits = new ListOptionBinding<>("sbutils", "autoKit.ecoKits", ModConfig.EconomyKit.HIGHROLLER, ModConfig.EconomyKit.class, (config) -> config.autoKit.ecoKits, (config, value) -> config.autoKit.ecoKits = value);
+    private final ListOptionBinding<ModConfig, ModConfig.ClassicKit> classicKits = new ListOptionBinding<>("sbutils", "autoKit.classicKits", ModConfig.ClassicKit.DONOR250, ModConfig.ClassicKit.class, (config) -> config.autoKit.classicKits, (config, value) -> config.autoKit.classicKits = value);
     private final PriorityQueue<KitQueueEntry> kitQueue;
     private final List<KitQueueEntry> invFullList;
     private final Map<String, Map<String, Map<String, Long>>> kitData;
@@ -49,7 +49,7 @@ public class AutoKit extends Feature {
     private long joinedAt;
 
     public AutoKit() {
-        super("autoKit", "autokit", "ak");
+        super("sbutils", "autoKit", "autokit", "ak");
         enabled.addListener(this::onToggle);
         sbKits.addListener(this::onSbKitListChanged);
         ecoKits.addListener(this::onEcoKitListChanged);
@@ -62,20 +62,20 @@ public class AutoKit extends Feature {
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, commandDelay, claimDelay, systemDelay, sbKits, ecoKits, classicKits);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoKitNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                        .then(CommandHelper.doubl("commandDelay", "seconds", commandDelay))
-                        .then(CommandHelper.doubl("claimDelay", "seconds", claimDelay))
-                        .then(CommandHelper.doubl("systemDelay", "seconds", systemDelay))
-                        .then(CommandHelper.enumList("sbKits", "kit", sbKits))
-                        .then(CommandHelper.enumList("ecoKits", "kit", ecoKits))
-                        .then(CommandHelper.enumList("classicKits", "kit", classicKits))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                        .then(CommandHelper.doubl("commandDelay", "seconds", commandDelay, ModConfig.HANDLER))
+                        .then(CommandHelper.doubl("claimDelay", "seconds", claimDelay, ModConfig.HANDLER))
+                        .then(CommandHelper.doubl("systemDelay", "seconds", systemDelay, ModConfig.HANDLER))
+                        .then(CommandHelper.enumList("sbKits", "kit", sbKits, ModConfig.HANDLER))
+                        .then(CommandHelper.enumList("ecoKits", "kit", ecoKits, ModConfig.HANDLER))
+                        .then(CommandHelper.enumList("classicKits", "kit", classicKits, ModConfig.HANDLER))
                         .then(CommandHelper.runnable("info", this::onInfoCommand))
         );
         registerAlias(dispatcher, autoKitNode);

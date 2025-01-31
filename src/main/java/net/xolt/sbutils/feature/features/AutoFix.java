@@ -23,14 +23,14 @@ import java.util.regex.Matcher;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoFix extends Feature {
+public class AutoFix extends Feature<ModConfig> {
 
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoFix.enabled", Boolean.class, (config) -> config.autoFix.enabled, (config, value) -> config.autoFix.enabled = value);
-    private final OptionBinding<ModConfig.FixMode> mode = new OptionBinding<>("autoFix.mode", ModConfig.FixMode.class, (config) -> config.autoFix.mode, (config, value) -> config.autoFix.mode = value);
-    private final OptionBinding<Double> percent = new OptionBinding<>("autoFix.percent", Double.class, (config) -> config.autoFix.percent, (config, value) -> config.autoFix.percent = value);
-    private final OptionBinding<Double> delay = new OptionBinding<>("autoFix.delay", Double.class, (config) -> config.autoFix.delay, (config, value) -> config.autoFix.delay = value);
-    private final OptionBinding<Double> retryDelay = new OptionBinding<>("autoFix.retryDelay", Double.class, (config) -> config.autoFix.retryDelay, (config, value) -> config.autoFix.retryDelay = value);
-    private final OptionBinding<Integer> maxRetries = new OptionBinding<>("autoFix.maxRetries", Integer.class, (config) -> config.autoFix.maxRetries, (config, value) -> config.autoFix.maxRetries = value);
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoFix.enabled", Boolean.class, (config) -> config.autoFix.enabled, (config, value) -> config.autoFix.enabled = value);
+    private final OptionBinding<ModConfig, ModConfig.FixMode> mode = new OptionBinding<>("sbutils", "autoFix.mode", ModConfig.FixMode.class, (config) -> config.autoFix.mode, (config, value) -> config.autoFix.mode = value);
+    private final OptionBinding<ModConfig, Double> percent = new OptionBinding<>("sbutils", "autoFix.percent", Double.class, (config) -> config.autoFix.percent, (config, value) -> config.autoFix.percent = value);
+    private final OptionBinding<ModConfig, Double> delay = new OptionBinding<>("sbutils", "autoFix.delay", Double.class, (config) -> config.autoFix.delay, (config, value) -> config.autoFix.delay = value);
+    private final OptionBinding<ModConfig, Double> retryDelay = new OptionBinding<>("sbutils", "autoFix.retryDelay", Double.class, (config) -> config.autoFix.retryDelay, (config, value) -> config.autoFix.retryDelay = value);
+    private final OptionBinding<ModConfig, Integer> maxRetries = new OptionBinding<>("sbutils", "autoFix.maxRetries", Integer.class, (config) -> config.autoFix.maxRetries, (config, value) -> config.autoFix.maxRetries = value);
 
     private boolean fixing;
     private boolean waitingForResponse;
@@ -43,28 +43,28 @@ public class AutoFix extends Feature {
     private long joinedAt;
 
     public AutoFix() {
-        super("autoFix", "autofix", "af");
+        super("sbutils", "autoFix", "autofix", "af");
         this.enabled.addListener(this::onToggle);
         this.percent.addListener(this::onChangeMaxFixPercent);
         reset();
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, mode, percent, delay, retryDelay, maxRetries);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoFixNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
                     .then(CommandHelper.runnable("info", this::onInfoCommand))
                     .then(CommandHelper.runnable("reset", () -> {reset(); ChatUtils.printMessage("message.sbutils.autoFix.reset");}))
-                    .then(CommandHelper.genericEnum("mode", "mode", mode))
-                    .then(CommandHelper.doubl("percent", "percent", percent))
-                    .then(CommandHelper.doubl("delay", "seconds", delay))
-                    .then(CommandHelper.doubl("retryDelay", "seconds", retryDelay))
-                    .then(CommandHelper.integer("maxRetries", "retries", maxRetries))
+                    .then(CommandHelper.genericEnum("mode", "mode", mode, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("percent", "percent", percent, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("retryDelay", "seconds", retryDelay, ModConfig.HANDLER))
+                    .then(CommandHelper.integer("maxRetries", "retries", maxRetries, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, autoFixNode);
     }

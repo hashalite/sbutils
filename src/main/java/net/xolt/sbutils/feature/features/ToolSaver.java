@@ -33,26 +33,26 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class ToolSaver extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("toolSaver.enabled", Boolean.class, (config) -> config.toolSaver.enabled, (config, value) -> config.toolSaver.enabled = value);
-    private final OptionBinding<Integer> durability = new OptionBinding<>("toolSaver.durability", Integer.class, (config) -> config.toolSaver.durability, (config, value) -> config.toolSaver.durability = value);
+public class ToolSaver extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "toolSaver.enabled", Boolean.class, (config) -> config.toolSaver.enabled, (config, value) -> config.toolSaver.enabled = value);
+    private final OptionBinding<ModConfig, Integer> durability = new OptionBinding<>("sbutils", "toolSaver.durability", Integer.class, (config) -> config.toolSaver.durability, (config, value) -> config.toolSaver.durability = value);
 
     private long lastMessageSentAt;
 
     public ToolSaver() {
-        super("toolSaver", "toolsaver", "saver");
+        super("sbutils", "toolSaver", "toolsaver", "saver");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, durability);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> toolSaverNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.integer("durability", "durability", durability))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                    .then(CommandHelper.integer("durability", "durability", durability, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, toolSaverNode);
     }

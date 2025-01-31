@@ -2,7 +2,6 @@ package net.xolt.sbutils.config.binding;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.xolt.sbutils.config.ModConfig;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -10,20 +9,21 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public abstract class ConfigBinding<T> {
-    private static final String OPTION_KEY = "text.sbutils.config.option.";
+public abstract class ConfigBinding<C, T> {
 
+    private final String namespace;
     private final String path;
-    private final Function<ModConfig, T> get;
-    private final BiConsumer<ModConfig, T> set;
+    private final Function<C, T> get;
+    private final BiConsumer<C, T> set;
     private final Constraints<T> constraints;
     private final List<BiConsumer<T, T>> listeners;
 
-    public ConfigBinding(String path, Function<ModConfig, T> get, BiConsumer<ModConfig, T> set) {
-        this(path, get, set, null);
+    public ConfigBinding(String namespace, String path, Function<C, T> get, BiConsumer<C, T> set) {
+        this(namespace, path, get, set, null);
     }
 
-    public ConfigBinding(String path, Function<ModConfig, T> get, BiConsumer<ModConfig, T> set, @Nullable Constraints<T> constraints) {
+    public ConfigBinding(String namespace, String path, Function<C, T> get, BiConsumer<C, T> set, @Nullable Constraints<T> constraints) {
+        this.namespace = namespace;
         this.path = path;
         this.get = get;
         this.set = set;
@@ -44,22 +44,22 @@ public abstract class ConfigBinding<T> {
     }
 
     public String getTooltipTranslation() {
-        return OPTION_KEY + path + ".tooltip";
+        return getTranslation() + ".tooltip";
     }
 
     public String getTranslation() {
-        return OPTION_KEY + path;
+        return "text." + namespace + ".config.option." + path;
     }
 
     public Constraints<T> getConstraints() {
         return constraints;
     }
 
-    public T get(ModConfig instance) {
+    public T get(C instance) {
         return get.apply(instance);
     }
 
-    public void set(ModConfig instance, T newValue) {
+    public void set(C instance, T newValue) {
         T oldValue = get.apply(instance);
         T validated = constraints == null ? newValue : constraints.validate(newValue);
         set.accept(instance, validated);

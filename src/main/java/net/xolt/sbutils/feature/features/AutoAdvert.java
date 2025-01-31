@@ -31,18 +31,18 @@ import java.util.*;
 import static net.xolt.sbutils.SbUtils.MC;
 import static net.xolt.sbutils.SbUtils.SERVER_DETECTOR;
 
-public class AutoAdvert extends Feature {
+public class AutoAdvert extends Feature<ModConfig> {
 
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoAdvert.enabled", Boolean.class, (config) -> config.autoAdvert.enabled, (config, value) -> config.autoAdvert.enabled = value);
-    private final OptionBinding<String> sbFile = new OptionBinding<>("autoAdvert.sbFile", String.class, (config) -> config.autoAdvert.sbFile, (config, value) -> config.autoAdvert.sbFile = value);
-    private final OptionBinding<Double> sbDelay = new OptionBinding<>("autoAdvert.sbDelay", Double.class, (config) -> config.autoAdvert.sbDelay, (config, value) -> config.autoAdvert.sbDelay = value);
-    private final OptionBinding<String> ecoFile = new OptionBinding<>("autoAdvert.ecoFile", String.class, (config) -> config.autoAdvert.ecoFile, (config, value) -> config.autoAdvert.ecoFile = value);
-    private final OptionBinding<Double> ecoDelay = new OptionBinding<>("autoAdvert.ecoDelay", Double.class, (config) -> config.autoAdvert.ecoDelay, (config, value) -> config.autoAdvert.ecoDelay = value);
-    private final OptionBinding<String> classicFile = new OptionBinding<>("autoAdvert.classicFile", String.class, (config) -> config.autoAdvert.classicFile, (config, value) -> config.autoAdvert.classicFile = value);
-    private final OptionBinding<Double> classicDelay = new OptionBinding<>("autoAdvert.classicDelay", Double.class, (config) -> config.autoAdvert.classicDelay, (config, value) -> config.autoAdvert.classicDelay = value);
-    private final OptionBinding<Double> initialDelay = new OptionBinding<>("autoAdvert.initialDelay", Double.class, (config) -> config.autoAdvert.initialDelay, (config, value) -> config.autoAdvert.initialDelay = value);
-    private final OptionBinding<Boolean> useWhitelist = new OptionBinding<>("autoAdvert.useWhitelist", Boolean.class, (config) -> config.autoAdvert.useWhitelist, (config, value) -> config.autoAdvert.useWhitelist = value);
-    private final ListOptionBinding<String> whitelist = new ListOptionBinding<>("autoAdvert.whitelist", "", String.class, (config) -> config.autoAdvert.whitelist, (config, value) -> config.autoAdvert.whitelist = value, new ListConstraints<>(false, null, new StringConstraints(false)));
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoAdvert.enabled", Boolean.class, (config) -> config.autoAdvert.enabled, (config, value) -> config.autoAdvert.enabled = value);
+    private final OptionBinding<ModConfig, String> sbFile = new OptionBinding<>("sbutils", "autoAdvert.sbFile", String.class, (config) -> config.autoAdvert.sbFile, (config, value) -> config.autoAdvert.sbFile = value);
+    private final OptionBinding<ModConfig, Double> sbDelay = new OptionBinding<>("sbutils", "autoAdvert.sbDelay", Double.class, (config) -> config.autoAdvert.sbDelay, (config, value) -> config.autoAdvert.sbDelay = value);
+    private final OptionBinding<ModConfig, String> ecoFile = new OptionBinding<>("sbutils", "autoAdvert.ecoFile", String.class, (config) -> config.autoAdvert.ecoFile, (config, value) -> config.autoAdvert.ecoFile = value);
+    private final OptionBinding<ModConfig, Double> ecoDelay = new OptionBinding<>("sbutils", "autoAdvert.ecoDelay", Double.class, (config) -> config.autoAdvert.ecoDelay, (config, value) -> config.autoAdvert.ecoDelay = value);
+    private final OptionBinding<ModConfig, String> classicFile = new OptionBinding<>("sbutils", "autoAdvert.classicFile", String.class, (config) -> config.autoAdvert.classicFile, (config, value) -> config.autoAdvert.classicFile = value);
+    private final OptionBinding<ModConfig, Double> classicDelay = new OptionBinding<>("sbutils", "autoAdvert.classicDelay", Double.class, (config) -> config.autoAdvert.classicDelay, (config, value) -> config.autoAdvert.classicDelay = value);
+    private final OptionBinding<ModConfig, Double> initialDelay = new OptionBinding<>("sbutils", "autoAdvert.initialDelay", Double.class, (config) -> config.autoAdvert.initialDelay, (config, value) -> config.autoAdvert.initialDelay = value);
+    private final OptionBinding<ModConfig, Boolean> useWhitelist = new OptionBinding<>("sbutils", "autoAdvert.useWhitelist", Boolean.class, (config) -> config.autoAdvert.useWhitelist, (config, value) -> config.autoAdvert.useWhitelist = value);
+    private final ListOptionBinding<ModConfig, String> whitelist = new ListOptionBinding<>("sbutils", "autoAdvert.whitelist", "", String.class, (config) -> config.autoAdvert.whitelist, (config, value) -> config.autoAdvert.whitelist = value, new ListConstraints<>(false, null, new StringConstraints(false)));
 
     private List<String> prevAdList;
     private int adIndex;
@@ -50,23 +50,23 @@ public class AutoAdvert extends Feature {
     private long joinedAt;
 
     public AutoAdvert() {
-        super("autoAdvert", "autoadvert", "advert");
+        super("sbutils", "autoAdvert", "autoadvert", "advert");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, sbFile, sbDelay, ecoFile, ecoDelay, classicFile, classicDelay, initialDelay, useWhitelist, whitelist);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoAdvertNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
                     .then(CommandHelper.runnable("info", this::onInfoCommand))
-                    .then(CommandHelper.string("sbFile", "filename", sbFile))
-                    .then(CommandHelper.string("ecoFile", "filename", ecoFile))
-                    .then(CommandHelper.string("classicFile", "filename", classicFile))
-                    .then(CommandHelper.customIndexedList("ads", "advert", "autoAdvert.adList",
+                    .then(CommandHelper.string("sbFile", "filename", sbFile, ModConfig.HANDLER))
+                    .then(CommandHelper.string("ecoFile", "filename", ecoFile, ModConfig.HANDLER))
+                    .then(CommandHelper.string("classicFile", "filename", classicFile, ModConfig.HANDLER))
+                    .then(CommandHelper.customIndexedList("ads", "advert", "text.sbutils.config.option.autoAdvert.adList",
                             StringArgumentType.greedyString(),
                             StringArgumentType::getString,
                             () -> formatAds(getAdList()),
@@ -78,12 +78,12 @@ public class AutoAdvert extends Feature {
                                             .executes(context ->
                                                     onToggleCommand(IntegerArgumentType.getInteger(context, "index"))
                                             ))))
-                    .then(CommandHelper.doubl("sbDelay", "seconds", sbDelay))
-                    .then(CommandHelper.doubl("ecoDelay", "seconds", ecoDelay))
-                    .then(CommandHelper.doubl("classicDelay", "seconds", classicDelay))
-                    .then(CommandHelper.doubl("initialDelay", "seconds", initialDelay))
-                    .then(CommandHelper.stringList("whitelist", "user", whitelist)
-                            .then(CommandHelper.bool("enabled", useWhitelist)))
+                    .then(CommandHelper.doubl("sbDelay", "seconds", sbDelay, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("ecoDelay", "seconds", ecoDelay, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("classicDelay", "seconds", classicDelay, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("initialDelay", "seconds", initialDelay, ModConfig.HANDLER))
+                    .then(CommandHelper.stringList("whitelist", "user", whitelist, ModConfig.HANDLER)
+                            .then(CommandHelper.bool("enabled", useWhitelist, ModConfig.HANDLER)))
                     .then(CommandHelper.runnable("reset", () -> {
                         reset();
                         ChatUtils.printMessage("message.sbutils.autoAdvert.reset");

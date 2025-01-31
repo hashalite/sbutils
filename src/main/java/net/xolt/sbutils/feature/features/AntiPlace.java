@@ -24,26 +24,26 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AntiPlace extends Feature {
-    private final OptionBinding<Boolean> heads = new OptionBinding<>("antiPlace.heads", Boolean.class, (config) -> config.antiPlace.heads, (config, value) -> config.antiPlace.heads = value);
-    private final OptionBinding<Boolean> grass = new OptionBinding<>("antiPlace.grass", Boolean.class, (config) -> config.antiPlace.grass, (config, value) -> config.antiPlace.grass = value);
+public class AntiPlace extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> heads = new OptionBinding<>("sbutils", "antiPlace.heads", Boolean.class, (config) -> config.antiPlace.heads, (config, value) -> config.antiPlace.heads = value);
+    private final OptionBinding<ModConfig, Boolean> grass = new OptionBinding<>("sbutils", "antiPlace.grass", Boolean.class, (config) -> config.antiPlace.grass, (config, value) -> config.antiPlace.grass = value);
 
     private long lastMessageSentAt;
 
     public AntiPlace() {
-        super("antiPlace", "antiplace", "noplace");
+        super("sbutils", "antiPlace", "antiplace", "noplace");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(heads, grass);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> antiPlaceNode = dispatcher.register(ClientCommandManager.literal(command)
-                .then(CommandHelper.bool("heads", heads))
-                .then(CommandHelper.bool("grass", grass))
+                .then(CommandHelper.bool("heads", heads, ModConfig.HANDLER))
+                .then(CommandHelper.bool("grass", grass, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, antiPlaceNode);
     }

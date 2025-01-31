@@ -20,30 +20,30 @@ import java.util.regex.Matcher;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoReply extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoReply.enabled", Boolean.class, (config) -> config.autoReply.enabled, (config, value) -> config.autoReply.enabled = value);
-    private final OptionBinding<String> response = new OptionBinding<>("autoReply.response", String.class, (config) -> config.autoReply.response, (config, value) -> config.autoReply.response = value);
-    private final OptionBinding<Double> delay = new OptionBinding<>("autoReply.delay", Double.class, (config) -> config.autoReply.delay, (config, value) -> config.autoReply.delay = value);
+public class AutoReply extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoReply.enabled", Boolean.class, (config) -> config.autoReply.enabled, (config, value) -> config.autoReply.enabled = value);
+    private final OptionBinding<ModConfig, String> response = new OptionBinding<>("sbutils", "autoReply.response", String.class, (config) -> config.autoReply.response, (config, value) -> config.autoReply.response = value);
+    private final OptionBinding<ModConfig, Double> delay = new OptionBinding<>("sbutils", "autoReply.delay", Double.class, (config) -> config.autoReply.delay, (config, value) -> config.autoReply.delay = value);
 
     private long lastMsgSentAt;
     private final LinkedList<String> msgQueue;
 
     public AutoReply() {
-        super("autoReply", "autoreply", "areply");
+        super("sbutils", "autoReply", "autoreply", "areply");
         msgQueue = new LinkedList<>();
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, response, delay);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoReplyNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.string("response", "response", response))
-                    .then(CommandHelper.doubl("delay", "seconds", delay))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                    .then(CommandHelper.string("response", "response", response, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, autoReplyNode);
     }

@@ -25,31 +25,31 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class Notifier extends Feature {
-    private final OptionBinding<Boolean> showLlamaTitle = new OptionBinding<>("notifier.showLlamaTitle", Boolean.class, (config) -> config.notifier.showLlamaTitle, (config, value) -> config.notifier.showLlamaTitle = value);
-    private final OptionBinding<Boolean> playLlamaSound = new OptionBinding<>("notifier.playLlamaSound", Boolean.class, (config) -> config.notifier.playLlamaSound, (config, value) -> config.notifier.playLlamaSound = value);
-    private final OptionBinding<ModConfig.NotifSound> llamaSound = new OptionBinding<>("notifier.llamaSound", ModConfig.NotifSound.class, (config) -> config.notifier.llamaSound, (config, value) -> config.notifier.llamaSound = value);
-    private final OptionBinding<Boolean> showTraderTitle = new OptionBinding<>("notifier.showTraderTitle", Boolean.class, (config) -> config.notifier.showTraderTitle, (config, value) -> config.notifier.showTraderTitle = value);
-    private final OptionBinding<Boolean> showTraderItems = new OptionBinding<>("notifier.showTraderItems", Boolean.class, (config) -> config.notifier.showTraderItems, (config, value) -> config.notifier.showTraderItems = value);
-    private final OptionBinding<Boolean> showTradesOnClick = new OptionBinding<>("notifier.showTradesOnClick", Boolean.class, (config) -> config.notifier.showTradesOnClick, (config, value) -> config.notifier.showTradesOnClick = value);
-    private final OptionBinding<Boolean> playTraderSound = new OptionBinding<>("notifier.playTraderSound", Boolean.class, (config) -> config.notifier.playTraderSound, (config, value) -> config.notifier.playTraderSound = value);
-    private final OptionBinding<ModConfig.NotifSound> traderSound = new OptionBinding<>("notifier.traderSound", ModConfig.NotifSound.class, (config) -> config.notifier.traderSound, (config, value) -> config.notifier.traderSound = value);
-    private final OptionBinding<Boolean> playShopSound = new OptionBinding<>("notifier.playShopSound", Boolean.class, (config) -> config.notifier.playShopSound, (config, value) -> config.notifier.playShopSound = value);
-    private final OptionBinding<ModConfig.NotifSound> shopSound = new OptionBinding<>("notifier.shopSound", ModConfig.NotifSound.class, (config) -> config.notifier.shopSound, (config, value) -> config.notifier.shopSound = value);
-    private final OptionBinding<Boolean> playVisitSound = new OptionBinding<>("notifier.playVisitSound", Boolean.class, (config) -> config.notifier.playVisitSound, (config, value) -> config.notifier.playVisitSound = value);
-    private final OptionBinding<ModConfig.NotifSound> visitSound = new OptionBinding<>("notifier.visitSound", ModConfig.NotifSound.class, (config) -> config.notifier.visitSound, (config, value) -> config.notifier.visitSound = value);
+public class Notifier extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> showLlamaTitle = new OptionBinding<>("sbutils", "notifier.showLlamaTitle", Boolean.class, (config) -> config.notifier.showLlamaTitle, (config, value) -> config.notifier.showLlamaTitle = value);
+    private final OptionBinding<ModConfig, Boolean> playLlamaSound = new OptionBinding<>("sbutils", "notifier.playLlamaSound", Boolean.class, (config) -> config.notifier.playLlamaSound, (config, value) -> config.notifier.playLlamaSound = value);
+    private final OptionBinding<ModConfig, ModConfig.NotifSound> llamaSound = new OptionBinding<>("sbutils", "notifier.llamaSound", ModConfig.NotifSound.class, (config) -> config.notifier.llamaSound, (config, value) -> config.notifier.llamaSound = value);
+    private final OptionBinding<ModConfig, Boolean> showTraderTitle = new OptionBinding<>("sbutils", "notifier.showTraderTitle", Boolean.class, (config) -> config.notifier.showTraderTitle, (config, value) -> config.notifier.showTraderTitle = value);
+    private final OptionBinding<ModConfig, Boolean> showTraderItems = new OptionBinding<>("sbutils", "notifier.showTraderItems", Boolean.class, (config) -> config.notifier.showTraderItems, (config, value) -> config.notifier.showTraderItems = value);
+    private final OptionBinding<ModConfig, Boolean> showTradesOnClick = new OptionBinding<>("sbutils", "notifier.showTradesOnClick", Boolean.class, (config) -> config.notifier.showTradesOnClick, (config, value) -> config.notifier.showTradesOnClick = value);
+    private final OptionBinding<ModConfig, Boolean> playTraderSound = new OptionBinding<>("sbutils", "notifier.playTraderSound", Boolean.class, (config) -> config.notifier.playTraderSound, (config, value) -> config.notifier.playTraderSound = value);
+    private final OptionBinding<ModConfig, ModConfig.NotifSound> traderSound = new OptionBinding<>("sbutils", "notifier.traderSound", ModConfig.NotifSound.class, (config) -> config.notifier.traderSound, (config, value) -> config.notifier.traderSound = value);
+    private final OptionBinding<ModConfig, Boolean> playShopSound = new OptionBinding<>("sbutils", "notifier.playShopSound", Boolean.class, (config) -> config.notifier.playShopSound, (config, value) -> config.notifier.playShopSound = value);
+    private final OptionBinding<ModConfig, ModConfig.NotifSound> shopSound = new OptionBinding<>("sbutils", "notifier.shopSound", ModConfig.NotifSound.class, (config) -> config.notifier.shopSound, (config, value) -> config.notifier.shopSound = value);
+    private final OptionBinding<ModConfig, Boolean> playVisitSound = new OptionBinding<>("sbutils", "notifier.playVisitSound", Boolean.class, (config) -> config.notifier.playVisitSound, (config, value) -> config.notifier.playVisitSound = value);
+    private final OptionBinding<ModConfig, ModConfig.NotifSound> visitSound = new OptionBinding<>("sbutils", "notifier.visitSound", ModConfig.NotifSound.class, (config) -> config.notifier.visitSound, (config, value) -> config.notifier.visitSound = value);
 
 
     private List<ItemStack> traderItems;
     private int showTraderItemsTicks;
 
     public Notifier() {
-        super("notifier", "notifier", "notif");
+        super("sbutils", "notifier", "notifier", "notif");
         showTraderItemsTicks = 0;
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(showLlamaTitle, playLlamaSound, llamaSound, showTraderTitle, showTraderItems, showTradesOnClick, playTraderSound, traderSound, playShopSound, shopSound, playVisitSound, visitSound);
     }
 
@@ -57,20 +57,20 @@ public class Notifier extends Feature {
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> eventNotifierNode = dispatcher.register(ClientCommandManager.literal(command)
                 .then(ClientCommandManager.literal("vpLlama")
-                        .then(CommandHelper.bool("title", showLlamaTitle))
-                        .then(CommandHelper.bool("playSound", playLlamaSound))
-                        .then(CommandHelper.genericEnum("sound", "sound", llamaSound)))
+                        .then(CommandHelper.bool("title", showLlamaTitle, ModConfig.HANDLER))
+                        .then(CommandHelper.bool("playSound", playLlamaSound, ModConfig.HANDLER))
+                        .then(CommandHelper.genericEnum("sound", "sound", llamaSound, ModConfig.HANDLER)))
                 .then(ClientCommandManager.literal("trader")
-                        .then(CommandHelper.bool("title", showTraderTitle))
-                        .then(CommandHelper.bool("items", showTraderItems)
-                                .then(CommandHelper.bool("onClick", showTradesOnClick)))
+                        .then(CommandHelper.bool("title", showTraderTitle, ModConfig.HANDLER))
+                        .then(CommandHelper.bool("items", showTraderItems, ModConfig.HANDLER)
+                                .then(CommandHelper.bool("onClick", showTradesOnClick, ModConfig.HANDLER)))
                         .then(CommandHelper.runnable("checkItems", this::displayTraderItems))
-                        .then(CommandHelper.bool("playSound", playTraderSound))
-                        .then(CommandHelper.genericEnum("sound", "sound", traderSound)))
-                .then(CommandHelper.bool("shop", playShopSound)
-                        .then(CommandHelper.genericEnum("sound", "sound", shopSound)))
-                .then(CommandHelper.bool("visits", playVisitSound)
-                        .then(CommandHelper.genericEnum("sound", "sound", visitSound)))
+                        .then(CommandHelper.bool("playSound", playTraderSound, ModConfig.HANDLER))
+                        .then(CommandHelper.genericEnum("sound", "sound", traderSound, ModConfig.HANDLER)))
+                .then(CommandHelper.bool("shop", playShopSound, ModConfig.HANDLER)
+                        .then(CommandHelper.genericEnum("sound", "sound", shopSound, ModConfig.HANDLER)))
+                .then(CommandHelper.bool("visits", playVisitSound, ModConfig.HANDLER)
+                        .then(CommandHelper.genericEnum("sound", "sound", visitSound, ModConfig.HANDLER)))
         );
         registerAlias(dispatcher, eventNotifierNode);
     }

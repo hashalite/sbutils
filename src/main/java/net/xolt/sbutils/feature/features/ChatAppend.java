@@ -14,28 +14,28 @@ import net.xolt.sbutils.feature.Feature;
 
 import java.util.List;
 
-public class ChatAppend extends Feature {
-    private final OptionBinding<Boolean> addPrefix = new OptionBinding<>("chatAppend.addPrefix", Boolean.class, (config) -> config.chatAppend.addPrefix, (config, value) -> config.chatAppend.addPrefix = value);
-    private final OptionBinding<String> prefix = new OptionBinding<>("chatAppend.prefix", String.class, (config) -> config.chatAppend.prefix, (config, value) -> config.chatAppend.prefix = value);
-    private final OptionBinding<Boolean> addSuffix = new OptionBinding<>("chatAppend.addSuffix", Boolean.class, (config) -> config.chatAppend.addSuffix, (config, value) -> config.chatAppend.addSuffix = value);
-    private final OptionBinding<String> suffix = new OptionBinding<>("chatAppend.suffix", String.class, (config) -> config.chatAppend.suffix, (config, value) -> config.chatAppend.suffix = value);
+public class ChatAppend extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> addPrefix = new OptionBinding<>("sbutils", "chatAppend.addPrefix", Boolean.class, (config) -> config.chatAppend.addPrefix, (config, value) -> config.chatAppend.addPrefix = value);
+    private final OptionBinding<ModConfig, String> prefix = new OptionBinding<>("sbutils", "chatAppend.prefix", String.class, (config) -> config.chatAppend.prefix, (config, value) -> config.chatAppend.prefix = value);
+    private final OptionBinding<ModConfig, Boolean> addSuffix = new OptionBinding<>("sbutils", "chatAppend.addSuffix", Boolean.class, (config) -> config.chatAppend.addSuffix, (config, value) -> config.chatAppend.addSuffix = value);
+    private final OptionBinding<ModConfig, String> suffix = new OptionBinding<>("sbutils", "chatAppend.suffix", String.class, (config) -> config.chatAppend.suffix, (config, value) -> config.chatAppend.suffix = value);
 
     public ChatAppend() {
-        super("chatAppend", "chatappend", "append");
+        super("sbutils", "chatAppend", "chatappend", "append");
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(addPrefix, prefix, addSuffix, suffix);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> chatAppendNode = dispatcher.register(ClientCommandManager.literal(command)
-                .then(CommandHelper.string("prefix", "prefix", prefix)
-                        .then(CommandHelper.bool("enabled", addPrefix)))
-                .then(CommandHelper.string("suffix", "suffix", suffix)
-                        .then(CommandHelper.bool("enabled", addSuffix)))
+                .then(CommandHelper.string("prefix", "prefix", prefix, ModConfig.HANDLER)
+                        .then(CommandHelper.bool("enabled", addPrefix, ModConfig.HANDLER)))
+                .then(CommandHelper.string("suffix", "suffix", suffix, ModConfig.HANDLER)
+                        .then(CommandHelper.bool("enabled", addSuffix, ModConfig.HANDLER)))
         );
         registerAlias(dispatcher, chatAppendNode);
     }

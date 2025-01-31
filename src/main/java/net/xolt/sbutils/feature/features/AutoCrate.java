@@ -39,38 +39,38 @@ import java.util.regex.Pattern;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoCrate extends Feature {
+public class AutoCrate extends Feature<ModConfig> {
 
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoCrate.enabled", Boolean.class, (config) -> config.autoCrate.enabled, (config, value) -> config.autoCrate.enabled = value);
-    private final OptionBinding<ModConfig.Crate> mode = new OptionBinding<>("autoCrate.mode", ModConfig.Crate.class, (config) -> config.autoCrate.mode, (config, value) -> config.autoCrate.mode = value);
-    private final OptionBinding<Double> delay = new OptionBinding<>("autoCrate.delay", Double.class, (config) -> config.autoCrate.delay, (config, value) -> config.autoCrate.delay = value);
-    private final OptionBinding<Double> distance = new OptionBinding<>("autoCrate.distance", Double.class, (config) -> config.autoCrate.distance, (config, value) -> config.autoCrate.distance = value);
-    private final OptionBinding<Boolean> cleaner = new OptionBinding<>("autoCrate.cleaner", Boolean.class, (config) -> config.autoCrate.cleaner, (config, value) -> config.autoCrate.cleaner = value);
-    private final ListOptionBinding<String> itemsToClean = new ListOptionBinding<>("autoCrate.itemsToClean", "", String.class, (config) -> config.autoCrate.itemsToClean, (config, value) -> config.autoCrate.itemsToClean = value, new ListConstraints<>(false, null, new StringConstraints(false)));
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoCrate.enabled", Boolean.class, (config) -> config.autoCrate.enabled, (config, value) -> config.autoCrate.enabled = value);
+    private final OptionBinding<ModConfig, ModConfig.Crate> mode = new OptionBinding<>("sbutils", "autoCrate.mode", ModConfig.Crate.class, (config) -> config.autoCrate.mode, (config, value) -> config.autoCrate.mode = value);
+    private final OptionBinding<ModConfig, Double> delay = new OptionBinding<>("sbutils", "autoCrate.delay", Double.class, (config) -> config.autoCrate.delay, (config, value) -> config.autoCrate.delay = value);
+    private final OptionBinding<ModConfig, Double> distance = new OptionBinding<>("sbutils", "autoCrate.distance", Double.class, (config) -> config.autoCrate.distance, (config, value) -> config.autoCrate.distance = value);
+    private final OptionBinding<ModConfig, Boolean> cleaner = new OptionBinding<>("sbutils", "autoCrate.cleaner", Boolean.class, (config) -> config.autoCrate.cleaner, (config, value) -> config.autoCrate.cleaner = value);
+    private final ListOptionBinding<ModConfig, String> itemsToClean = new ListOptionBinding<>("sbutils", "autoCrate.itemsToClean", "", String.class, (config) -> config.autoCrate.itemsToClean, (config, value) -> config.autoCrate.itemsToClean = value, new ListConstraints<>(false, null, new StringConstraints(false)));
 
     private boolean waitingForCrate;
     private long crateClosedAt;
     private boolean cleaning;
 
     public AutoCrate() {
-        super("autoCrate", "autocrate", "ac");
+        super("sbutils", "autoCrate", "autocrate", "ac");
         enabled.addListener(this::onToggle);
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, mode, delay, distance, cleaner, itemsToClean);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoCrateNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
-                    .then(CommandHelper.genericEnum("mode", "mode", mode))
-                    .then(CommandHelper.doubl("delay", "seconds", delay))
-                    .then(CommandHelper.doubl("range", "range", distance))
-                    .then(CommandHelper.bool("cleaner", cleaner)
-                            .then(CommandHelper.stringList("items", "item", itemsToClean)))
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
+                    .then(CommandHelper.genericEnum("mode", "mode", mode, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
+                    .then(CommandHelper.doubl("range", "range", distance, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("cleaner", cleaner, ModConfig.HANDLER)
+                            .then(CommandHelper.stringList("items", "item", itemsToClean, ModConfig.HANDLER)))
         );
         registerAlias(dispatcher, autoCrateNode);
     }

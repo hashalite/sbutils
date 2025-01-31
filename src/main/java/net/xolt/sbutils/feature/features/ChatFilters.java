@@ -28,42 +28,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class ChatFilters extends Feature {
-    private final OptionBinding<Boolean> tipsFilter = new OptionBinding<>("chatFilters.tipsFilter", Boolean.class, (config) -> config.chatFilters.tipsFilter, (config, value) -> config.chatFilters.tipsFilter = value);
-    private final OptionBinding<Boolean> advancementsFilter = new OptionBinding<>("chatFilters.advancementsFilter", Boolean.class, (config) -> config.chatFilters.advancementsFilter, (config, value) -> config.chatFilters.advancementsFilter = value);
-    private final OptionBinding<Boolean> welcomeFilter = new OptionBinding<>("chatFilters.welcomeFilter", Boolean.class, (config) -> config.chatFilters.welcomeFilter, (config, value) -> config.chatFilters.welcomeFilter = value);
-    private final OptionBinding<Boolean> friendJoinFilter = new OptionBinding<>("chatFilters.friendJoinFilter", Boolean.class, (config) -> config.chatFilters.friendJoinFilter, (config, value) -> config.chatFilters.friendJoinFilter = value);
-    private final OptionBinding<Boolean> motdFilter = new OptionBinding<>("chatFilters.motdFilter", Boolean.class, (config) -> config.chatFilters.motdFilter, (config, value) -> config.chatFilters.motdFilter = value);
-    private final OptionBinding<Boolean> voteFilter = new OptionBinding<>("chatFilters.voteFilter", Boolean.class, (config) -> config.chatFilters.voteFilter, (config, value) -> config.chatFilters.voteFilter = value);
-    private final OptionBinding<Boolean> voteRewardFilter = new OptionBinding<>("chatFilters.voteRewardFilter", Boolean.class, (config) -> config.chatFilters.voteRewardFilter, (config, value) -> config.chatFilters.voteRewardFilter = value);
-    private final OptionBinding<Boolean> raffleFilter = new OptionBinding<>("chatFilters.raffleFilter", Boolean.class, (config) -> config.chatFilters.raffleFilter, (config, value) -> config.chatFilters.raffleFilter = value);
-    private final OptionBinding<Boolean> cratesFilter = new OptionBinding<>("chatFilters.cratesFilter", Boolean.class, (config) -> config.chatFilters.cratesFilter, (config, value) -> config.chatFilters.cratesFilter = value);
-    private final OptionBinding<Boolean> perishedInVoidFilter = new OptionBinding<>("chatFilters.perishedInVoidFilter", Boolean.class, (config) -> config.chatFilters.perishedInVoidFilter, (config, value) -> config.chatFilters.perishedInVoidFilter = value);
-    private final OptionBinding<Boolean> skyChatFilter = new OptionBinding<>("chatFilters.skyChatFilter", Boolean.class, (config) -> config.chatFilters.skyChatFilter, (config, value) -> config.chatFilters.skyChatFilter = value);
-    private final ListOptionBinding<FilterEntry> customFilters = new ListOptionBinding<>("chatFilters.customFilters", new FilterEntry("", false), FilterEntry.class, (config) -> config.chatFilters.customFilters, (config, value) -> config.chatFilters.customFilters = value);
-    private final List<ChatFilter> builtInFilters = List.of(
-            new ChatFilter(tipsFilter, List.of(RegexFilters.tipsFilter)),
-            new ChatFilter(advancementsFilter, List.of(RegexFilters.advancementsFilter)),
-            new ChatFilter(welcomeFilter, List.of(RegexFilters.welcomeFilter)),
-            new ChatFilter(friendJoinFilter, List.of(RegexFilters.friendJoinFilter)),
-            new ChatFilter(motdFilter, List.of(RegexFilters.motdFilter)),
-            new ChatFilter(voteFilter, List.of(RegexFilters.voteFilter)),
-            new ChatFilter(voteRewardFilter, List.of(RegexFilters.voteRewardFilter)),
-            new ChatFilter(raffleFilter, List.of(RegexFilters.raffleFilter)),
-            new ChatFilter(cratesFilter, List.of(RegexFilters.cratesFilter)),
-            new ChatFilter(perishedInVoidFilter, List.of(RegexFilters.perishedInVoidFilter)),
-            new ChatFilter(skyChatFilter, List.of(RegexFilters.skyChatFilter))
+public class ChatFilters extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> tipsFilter = new OptionBinding<>("sbutils", "chatFilters.tipsFilter", Boolean.class, (config) -> config.chatFilters.tipsFilter, (config, value) -> config.chatFilters.tipsFilter = value);
+    private final OptionBinding<ModConfig, Boolean> advancementsFilter = new OptionBinding<>("sbutils", "chatFilters.advancementsFilter", Boolean.class, (config) -> config.chatFilters.advancementsFilter, (config, value) -> config.chatFilters.advancementsFilter = value);
+    private final OptionBinding<ModConfig, Boolean> welcomeFilter = new OptionBinding<>("sbutils", "chatFilters.welcomeFilter", Boolean.class, (config) -> config.chatFilters.welcomeFilter, (config, value) -> config.chatFilters.welcomeFilter = value);
+    private final OptionBinding<ModConfig, Boolean> friendJoinFilter = new OptionBinding<>("sbutils", "chatFilters.friendJoinFilter", Boolean.class, (config) -> config.chatFilters.friendJoinFilter, (config, value) -> config.chatFilters.friendJoinFilter = value);
+    private final OptionBinding<ModConfig, Boolean> motdFilter = new OptionBinding<>("sbutils", "chatFilters.motdFilter", Boolean.class, (config) -> config.chatFilters.motdFilter, (config, value) -> config.chatFilters.motdFilter = value);
+    private final OptionBinding<ModConfig, Boolean> voteFilter = new OptionBinding<>("sbutils", "chatFilters.voteFilter", Boolean.class, (config) -> config.chatFilters.voteFilter, (config, value) -> config.chatFilters.voteFilter = value);
+    private final OptionBinding<ModConfig, Boolean> voteRewardFilter = new OptionBinding<>("sbutils", "chatFilters.voteRewardFilter", Boolean.class, (config) -> config.chatFilters.voteRewardFilter, (config, value) -> config.chatFilters.voteRewardFilter = value);
+    private final OptionBinding<ModConfig, Boolean> raffleFilter = new OptionBinding<>("sbutils", "chatFilters.raffleFilter", Boolean.class, (config) -> config.chatFilters.raffleFilter, (config, value) -> config.chatFilters.raffleFilter = value);
+    private final OptionBinding<ModConfig, Boolean> cratesFilter = new OptionBinding<>("sbutils", "chatFilters.cratesFilter", Boolean.class, (config) -> config.chatFilters.cratesFilter, (config, value) -> config.chatFilters.cratesFilter = value);
+    private final OptionBinding<ModConfig, Boolean> perishedInVoidFilter = new OptionBinding<>("sbutils", "chatFilters.perishedInVoidFilter", Boolean.class, (config) -> config.chatFilters.perishedInVoidFilter, (config, value) -> config.chatFilters.perishedInVoidFilter = value);
+    private final OptionBinding<ModConfig, Boolean> skyChatFilter = new OptionBinding<>("sbutils", "chatFilters.skyChatFilter", Boolean.class, (config) -> config.chatFilters.skyChatFilter, (config, value) -> config.chatFilters.skyChatFilter = value);
+    private final ListOptionBinding<ModConfig, FilterEntry> customFilters = new ListOptionBinding<>("sbutils", "chatFilters.customFilters", new FilterEntry("", false), FilterEntry.class, (config) -> config.chatFilters.customFilters, (config, value) -> config.chatFilters.customFilters = value);
+    private final List<ChatFilter<ModConfig>> builtInFilters = List.of(
+            new ChatFilter<>(tipsFilter, ModConfig.HANDLER, List.of(RegexFilters.tipsFilter)),
+            new ChatFilter<>(advancementsFilter, ModConfig.HANDLER, List.of(RegexFilters.advancementsFilter)),
+            new ChatFilter<>(welcomeFilter, ModConfig.HANDLER, List.of(RegexFilters.welcomeFilter)),
+            new ChatFilter<>(friendJoinFilter, ModConfig.HANDLER, List.of(RegexFilters.friendJoinFilter)),
+            new ChatFilter<>(motdFilter, ModConfig.HANDLER, List.of(RegexFilters.motdFilter)),
+            new ChatFilter<>(voteFilter, ModConfig.HANDLER, List.of(RegexFilters.voteFilter)),
+            new ChatFilter<>(voteRewardFilter, ModConfig.HANDLER, List.of(RegexFilters.voteRewardFilter)),
+            new ChatFilter<>(raffleFilter, ModConfig.HANDLER, List.of(RegexFilters.raffleFilter)),
+            new ChatFilter<>(cratesFilter, ModConfig.HANDLER, List.of(RegexFilters.cratesFilter)),
+            new ChatFilter<>(perishedInVoidFilter, ModConfig.HANDLER, List.of(RegexFilters.perishedInVoidFilter)),
+            new ChatFilter<>(skyChatFilter, ModConfig.HANDLER, List.of(RegexFilters.skyChatFilter))
     );
     private final List<Pattern> customRegex;
 
     public ChatFilters() {
-        super("chatFilters", "chatfilter", "filter");
+        super("sbutils", "chatFilters", "chatfilter", "filter");
         customFilters.addListener((ignored1, ignored2) -> recompileCustomRegex());
         customRegex = new ArrayList<>();
         recompileCustomRegex();
     }
 
-    @Override public List<? extends ConfigBinding<?>> getConfigBindings() {
+    @Override public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(tipsFilter, advancementsFilter, welcomeFilter, friendJoinFilter, motdFilter, voteFilter, voteRewardFilter, raffleFilter, cratesFilter, perishedInVoidFilter, skyChatFilter, customFilters);
     }
 
@@ -71,18 +71,18 @@ public class ChatFilters extends Feature {
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> chatFilterNode = dispatcher.register(
                 CommandHelper.runnable(command, () -> showEnabledFilters("message.sbutils.chatFilter.status", builtInFilters))
-                    .then(CommandHelper.bool("tips", tipsFilter))
-                    .then(CommandHelper.bool("advancements", advancementsFilter))
-                    .then(CommandHelper.bool("welcome", welcomeFilter))
-                    .then(CommandHelper.bool("friendJoin", friendJoinFilter))
-                    .then(CommandHelper.bool("motd", motdFilter))
-                    .then(CommandHelper.bool("vote", voteFilter))
-                    .then(CommandHelper.bool("voteReward", voteRewardFilter))
-                    .then(CommandHelper.bool("raffle", raffleFilter))
-                    .then(CommandHelper.bool("crates", cratesFilter))
-                    .then(CommandHelper.bool("perished", perishedInVoidFilter))
-                    .then(CommandHelper.bool("skyChat", skyChatFilter))
-                    .then(CommandHelper.genericList("custom", "regex", customFilters, true, FilterEntryArgumentType.filterEntry(), FilterEntryArgumentType::getFilterEntry)
+                    .then(CommandHelper.bool("tips", tipsFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("advancements", advancementsFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("welcome", welcomeFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("friendJoin", friendJoinFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("motd", motdFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("vote", voteFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("voteReward", voteRewardFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("raffle", raffleFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("crates", cratesFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("perished", perishedInVoidFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("skyChat", skyChatFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.genericList("custom", "regex", customFilters, ModConfig.HANDLER, true, FilterEntryArgumentType.filterEntry(), FilterEntryArgumentType::getFilterEntry)
                             .then(ClientCommandManager.literal("toggle")
                                     .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
                                             .executes(context -> onToggleCommand(IntegerArgumentType.getInteger(context, "index")))))
@@ -140,7 +140,7 @@ public class ChatFilters extends Feature {
                 customRegex.add(Pattern.compile(filter.regex));
     }
 
-    public static boolean shouldFilter(Component message, List<ChatFilter> filters, List<Pattern> customRegex) {
+    public static boolean shouldFilter(Component message, List<ChatFilter<ModConfig>> filters, List<Pattern> customRegex) {
         String stringMessage = message.getString();
 
         for (ChatFilter filter : filters)
@@ -154,7 +154,7 @@ public class ChatFilters extends Feature {
         return false;
     }
 
-    public static void showEnabledFilters(String message, List<ChatFilter> filters) {
+    public static void showEnabledFilters(String message, List<ChatFilter<ModConfig>> filters) {
         ChatUtils.printMessage(Component.translatable(message));
         List<MutableComponent> formatted = filters.stream().map(ChatFilter::format).toList();
         ChatUtils.printList(formatted, false);

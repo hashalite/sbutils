@@ -1,19 +1,16 @@
 package net.xolt.sbutils;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.CommandBuildContext;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
-import net.xolt.sbutils.config.gui.ConfigGui;
+import net.xolt.sbutils.config.gui.ConfigGuiFactory;
 import net.xolt.sbutils.feature.*;
 import net.xolt.sbutils.feature.features.*;
 import net.xolt.sbutils.systems.CommandSender;
@@ -31,15 +28,16 @@ public class SbUtils implements ClientModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("sbutils");
     public static final Minecraft MC = Minecraft.getInstance();
-    public static final Features FEATURES = new Features();
+    public static final Features<ModConfig> FEATURES = new Features<>(ModConfig.HANDLER);
     public static final CommandSender COMMAND_SENDER = new CommandSender();
     public static final ServerDetector SERVER_DETECTOR = new ServerDetector();
     public static final TpsEstimator TPS_ESTIMATOR = new TpsEstimator();
-    private static final OptionBinding<String> prefixFormat = new OptionBinding<>("prefixFormat", String.class, (config) -> config.prefixFormat, (config, value) -> config.prefixFormat = value);
-    private static final OptionBinding<Color> sbutilsColor = new OptionBinding<>("sbutilsColor", Color.class, (config) -> config.sbutilsColor, (config, value) -> config.sbutilsColor = value);
-    private static final OptionBinding<Color> prefixColor = new OptionBinding<>("prefixColor", Color.class, (config) -> config.prefixColor, (config, value) -> config.prefixColor = value);
-    private static final OptionBinding<Color> messageColor = new OptionBinding<>("messageColor", Color.class, (config) -> config.messageColor, (config, value) -> config.messageColor = value);
-    private static final OptionBinding<Color> valueColor = new OptionBinding<>("valueColor", Color.class, (config) -> config.valueColor, (config, value) -> config.valueColor = value);
+    private static final OptionBinding<ModConfig, String> prefixFormat = new OptionBinding<>("sbutils", "prefixFormat", String.class, (config) -> config.prefixFormat, (config, value) -> config.prefixFormat = value);
+    private static final OptionBinding<ModConfig, Color> sbutilsColor = new OptionBinding<>("sbutils", "sbutilsColor", Color.class, (config) -> config.sbutilsColor, (config, value) -> config.sbutilsColor = value);
+    private static final OptionBinding<ModConfig, Color> prefixColor = new OptionBinding<>("sbutils", "prefixColor", Color.class, (config) -> config.prefixColor, (config, value) -> config.prefixColor = value);
+    private static final OptionBinding<ModConfig, Color> messageColor = new OptionBinding<>("sbutils", "messageColor", Color.class, (config) -> config.messageColor, (config, value) -> config.messageColor = value);
+    private static final OptionBinding<ModConfig, Color> valueColor = new OptionBinding<>("sbutils", "valueColor", Color.class, (config) -> config.valueColor, (config, value) -> config.valueColor = value);
+    public static final ConfigGuiFactory<ModConfig> GUI_FACTORY = new ConfigGuiFactory<>("sbutils", FEATURES, List.of(prefixFormat, sbutilsColor, prefixColor, messageColor, valueColor));
 
     public static KeyMapping configKey;
     public static KeyMapping islandKey;
@@ -104,7 +102,7 @@ public class SbUtils implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (configKey.consumeClick()) {
-                MC.setScreen(ConfigGui.getConfigScreen(MC.screen));
+                MC.setScreen(GUI_FACTORY.getConfigScreen(MC.screen));
             }
 
             if (MC.getConnection() == null) {
@@ -141,7 +139,7 @@ public class SbUtils implements ClientModInitializer {
         });
     }
 
-    public static List<? extends ConfigBinding<?>> getGlobalConfigBindings() {
+    public static List<? extends ConfigBinding<ModConfig, ?>> getGlobalConfigBindings() {
         return List.of(prefixFormat, sbutilsColor, prefixColor, messageColor, valueColor);
     }
 }

@@ -23,37 +23,50 @@ import java.awt.*;
 import java.util.List;
 import java.util.function.Function;
 
-public class ConfigGui {
+public class ConfigGuiFactory<C> {
 
-    public static Screen getConfigScreen(Screen parent) {
-        return YetAnotherConfigLib.create(ModConfig.HANDLER, (defaults, config, builder) -> builder
-                        .title(Component.translatable("text.sbutils.config.title"))
-                        .category(buildSbutilsCategory(defaults, config))
-                        .categories(buildFeatureCategories(SbUtils.FEATURES, defaults, config))
-                        .save(ModConfig.HANDLER::save))
-                        .generateScreen(parent);
+    private final String key;
+    private final Features<C> features;
+    private final List<ConfigBinding<C, ?>> globalSettings;
+
+    public ConfigGuiFactory(String key, Features<C> features, List<ConfigBinding<C, ?>> globalSettings) {
+        this.features = features;
+        this.key = key;
+        this.globalSettings = globalSettings;
     }
 
-    private static ConfigCategory buildSbutilsCategory(ModConfig defaults, ModConfig config) {
-        return buildCategory(Component.translatable("text.sbutils.config.category.default"), Component.translatable("text.sbutils.config.group.sbutils"), SbUtils.getGlobalConfigBindings(), defaults, config);
+    public Screen getConfigScreen(Screen parent) {
+        return YetAnotherConfigLib.create(features.getConfigHandler(), (defaults, config, builder) -> {
+                    builder.title(Component.translatable("text." + key + ".config.title"));
+
+                    if (!globalSettings.isEmpty())
+                        builder.category(buildGlobalCategory(defaults, config));
+
+                    return builder.categories(buildFeatureCategories(features, defaults, config)).save(features.getConfigHandler()::save);
+                }
+                ).generateScreen(parent);
     }
 
-    public static List<ConfigCategory> buildFeatureCategories(Features features, ModConfig defaults, ModConfig config) {
+    private ConfigCategory buildGlobalCategory(C defaults, C config) {
+        return buildCategory(Component.translatable("text." + key + ".config.category.default"), Component.translatable("text." + key + ".config.group." + key), globalSettings, defaults, config);
+    }
+
+    public List<ConfigCategory> buildFeatureCategories(Features<C> features, C defaults, C config) {
         return features.getAll().stream().filter((feature) -> feature.getConfigBindings() != null).map((feature) -> buildFeatureCategory(feature, defaults, config)).toList();
     }
 
-    public static ConfigCategory buildFeatureCategory(Feature feature, ModConfig defaults, ModConfig config) {
+    public static <C> ConfigCategory buildFeatureCategory(Feature<C> feature, C defaults, C config) {
         return buildCategory(feature.getName(), feature.getGroupName(), feature.getConfigBindings(), defaults, config);
     }
 
-    private static ConfigCategory buildCategory(MutableComponent name, MutableComponent groupName, List<? extends ConfigBinding<?>> configBindings, ModConfig defaults, ModConfig config) {
+    private static <C> ConfigCategory buildCategory(MutableComponent name, MutableComponent groupName, List<? extends ConfigBinding<C, ?>> configBindings, C defaults, C config) {
         ConfigCategory.Builder builder = ConfigCategory.createBuilder()
                 .name(name);
         OptionGroup.Builder optionGroup = OptionGroup.createBuilder()
                 .name(groupName);
 
-        for (ConfigBinding<?> binding : configBindings) {
-            if (!(binding instanceof OptionBinding<?> optionBinding))
+        for (ConfigBinding<C, ?> binding : configBindings) {
+            if (!(binding instanceof OptionBinding<C, ?> optionBinding))
                 continue;
             Option<?> option = buildOption(optionBinding, defaults, config);
             if (option != null)
@@ -64,8 +77,8 @@ public class ConfigGui {
 
         builder = builder.group(optionGroup.build());
 
-        for (ConfigBinding<?> binding : configBindings) {
-            if (!(binding instanceof ListOptionBinding<?> listOptionBinding))
+        for (ConfigBinding<C, ?> binding : configBindings) {
+            if (!(binding instanceof ListOptionBinding listOptionBinding))
                 continue;
             ListOption<?> option = buildListOption(listOptionBinding, defaults, config);
             if (option != null)
@@ -77,7 +90,7 @@ public class ConfigGui {
         return builder.build();
     }
 
-    private static <T> Option<T> buildOption(OptionBinding<T> binding, ModConfig defaults, ModConfig config) {
+    private static <C, T> Option<T> buildOption(OptionBinding<C, T> binding, C defaults, C config) {
         Function<Option<T>, Controller<T>> controller = getControllerFor(binding.getType(), binding.getConstraints());
         if (controller == null)
             return null;
@@ -94,7 +107,7 @@ public class ConfigGui {
                 .build();
     }
 
-    private static <T> ListOption<T> buildListOption(ListOptionBinding<T> binding, ModConfig defaults, ModConfig config) {
+    private static <C, T> ListOption<T> buildListOption(ListOptionBinding<C, T> binding, C defaults, C config) {
         Constraints<List<T>> constraints = binding.getConstraints();
         int maxSize = Integer.MAX_VALUE;
         final Constraints<T> entryConstraints;

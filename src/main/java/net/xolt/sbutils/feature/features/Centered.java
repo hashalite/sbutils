@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.BlockPos;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
@@ -17,13 +18,13 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class Centered extends Feature {
+public class Centered extends Feature<ModConfig> {
 
     public Centered() {
-        super("centered", "centered", "ctr");
+        super("sbutils", "centered", "centered", "ctr");
     }
 
-    @Override public List<? extends ConfigBinding<?>> getConfigBindings() {
+    @Override public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return null;
     }
 

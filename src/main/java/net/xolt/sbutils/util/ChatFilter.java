@@ -1,5 +1,6 @@
 package net.xolt.sbutils.util;
 
+import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import net.minecraft.network.chat.MutableComponent;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.OptionBinding;
@@ -7,14 +8,16 @@ import net.xolt.sbutils.config.binding.OptionBinding;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class ChatFilter {
+public class ChatFilter<C> {
 
     private final List<Pattern> regex;
-    private final OptionBinding<Boolean> option;
+    private final OptionBinding<C, Boolean> option;
+    private final ConfigClassHandler<C> configHandler;
 
-    public ChatFilter(OptionBinding<Boolean> option, List<Pattern> regex) {
+    public ChatFilter(OptionBinding<C, Boolean> option, ConfigClassHandler<C> configHandler, List<Pattern> regex) {
         this.regex = regex;
         this.option = option;
+        this.configHandler = configHandler;
     }
 
     public MutableComponent getName() {
@@ -31,7 +34,7 @@ public class ChatFilter {
     }
 
     public boolean isEnabled() {
-        return option.get(ModConfig.HANDLER.instance());
+        return option.get(configHandler.instance());
     }
 
     public MutableComponent format() {

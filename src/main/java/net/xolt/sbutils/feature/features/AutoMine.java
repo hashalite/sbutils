@@ -25,33 +25,33 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class AutoMine extends Feature {
-    private final OptionBinding<Boolean> enabled = new OptionBinding<>("autoMine.enabled", Boolean.class, (config) -> config.autoMine.enabled, (config, value) -> config.autoMine.enabled = value);
-    private final OptionBinding<Boolean> autoSwitch = new OptionBinding<>("autoMine.autoSwitch", Boolean.class, (config) -> config.autoMine.autoSwitch, (config, value) -> config.autoMine.autoSwitch = value);
-    private final OptionBinding<Integer> switchDurability = new OptionBinding<>("autoMine.switchDurability", Integer.class, (config) -> config.autoMine.switchDurability, (config, value) -> config.autoMine.switchDurability = value);
+public class AutoMine extends Feature<ModConfig> {
+    private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoMine.enabled", Boolean.class, (config) -> config.autoMine.enabled, (config, value) -> config.autoMine.enabled = value);
+    private final OptionBinding<ModConfig, Boolean> autoSwitch = new OptionBinding<>("sbutils", "autoMine.autoSwitch", Boolean.class, (config) -> config.autoMine.autoSwitch, (config, value) -> config.autoMine.autoSwitch = value);
+    private final OptionBinding<ModConfig, Integer> switchDurability = new OptionBinding<>("sbutils", "autoMine.switchDurability", Integer.class, (config) -> config.autoMine.switchDurability, (config, value) -> config.autoMine.switchDurability = value);
 
     private long disableAt;
 
     public AutoMine() {
-        super("autoMine", "automine", "mine");
+        super("sbutils", "autoMine", "automine", "mine");
         enabled.addListener(this::onToggle);
         reset();
     }
 
     @Override
-    public List<? extends ConfigBinding<?>> getConfigBindings() {
+    public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return List.of(enabled, autoSwitch, switchDurability);
     }
 
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> autoMineNode = dispatcher.register(
-                CommandHelper.toggle(command, this, enabled)
+                CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
                     .then(CommandHelper.runnable("timer", this::onTimerCommand)
                             .then(ClientCommandManager.argument("duration", TimeArgumentType.time())
                                     .executes(context -> onTimerSetCommand(DoubleArgumentType.getDouble(context, "duration")))))
-                    .then(CommandHelper.bool("switch", autoSwitch))
-                    .then(CommandHelper.integer("durability", "durability", switchDurability))
+                    .then(CommandHelper.bool("switch", autoSwitch, ModConfig.HANDLER))
+                    .then(CommandHelper.integer("durability", "durability", switchDurability, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, autoMineNode);
     }

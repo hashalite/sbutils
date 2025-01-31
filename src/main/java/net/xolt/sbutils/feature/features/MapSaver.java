@@ -13,6 +13,7 @@ import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.EntityHitResult;
 import net.xolt.sbutils.command.CommandHelper;
+import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.mixins.MapInstanceAccessor;
@@ -24,12 +25,12 @@ import java.util.List;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
-public class MapSaver extends Feature {
+public class MapSaver extends Feature<ModConfig> {
     public MapSaver() {
-        super("mapsaver", "savemap", "smap");
+        super("sbutils", "mapsaver", "savemap", "smap");
     }
 
-    @Override public List<? extends ConfigBinding<?>> getConfigBindings() {
+    @Override public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
         return null;
     }
 
