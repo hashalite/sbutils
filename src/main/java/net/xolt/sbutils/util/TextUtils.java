@@ -70,12 +70,6 @@ public class TextUtils {
         }
     }
 
-    public static <T> MutableComponent format(T input) {
-        if (input instanceof ModConfig.MultiValue multiValue)
-            return multiValue.format();
-        return formatPlaceholder(input);
-    }
-
     public static <T> MutableComponent[] format(T[] input) {
         MutableComponent[] result = new MutableComponent[input.length];
         for (int i = 0; i < input.length; i++)
@@ -83,7 +77,7 @@ public class TextUtils {
         return result;
     }
 
-    public static <T> MutableComponent formatPlaceholder(T input) {
+    public static <T> MutableComponent format(T input) {
         MutableComponent result;
         if (input instanceof MutableComponent text) {
             result = text;
@@ -101,6 +95,8 @@ public class TextUtils {
                 result = result.withStyle(ChatFormatting.ITALIC);
         } else if (input instanceof Color color) {
             result = Component.literal("#" + String.format("%06x", color.getRGB() & 0x00FFFFFF)).withColor(color.getRGB());
+        } else if (input instanceof ModConfig.MultiValue multiValue) {
+            result = multiValue.format();
         } else {
             result = Component.literal(String.valueOf(input)).withColor(getValueColor());
         }
@@ -110,7 +106,7 @@ public class TextUtils {
     public static <T> MutableComponent[] formatPlaceholders(T[] input) {
         MutableComponent[] result = new MutableComponent[input.length];
         for (int i = 0; i < input.length; i++)
-            result[i] = formatPlaceholder(input[i]);
+            result[i] = format(input[i]);
         return result;
     }
 
