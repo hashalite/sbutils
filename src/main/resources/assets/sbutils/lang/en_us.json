@@ -55,7 +55,7 @@
 
   "message.sbutils.chatFilter.status": "Chat filter status:",
   "message.sbutils.chatFilter.statusFormat": "%s: %s",
-  "message.sbutils.chatFilter.filterEntry": "%s | %s | Enabled: %s",
+  "message.sbutils.chatFilter.filterEntry": "%s | %s | %s",
   "message.sbutils.chatFilter.filterSetSuccess": "Filter changed from %s to %s.",
   "message.sbutils.chatFilter.filterToggleSuccess": "Filter %s has been %s.",
 

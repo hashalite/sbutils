@@ -108,7 +108,7 @@ public class ChatUtils {
         } else {
             message = Component.translatable(changed ? "message.sbutils.changeOtherSetting" : "message.sbutils.printOtherSetting");
         }
-        printWithPlaceholders(message, settingText, TextUtils.formatPlaceholder(value));
+        printWithPlaceholders(message, settingText, TextUtils.format(value));
     }
 
     public static <T> void printListSetting(String setting, List<T> list) {
