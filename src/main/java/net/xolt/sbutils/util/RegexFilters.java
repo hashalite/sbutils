@@ -37,6 +37,8 @@ public class RegexFilters {
     public static final Pattern cratesFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ has just opened a (Rare|Epic|Legendary) Crate!");
     public static final Pattern perishedInVoidFilter = Pattern.compile("\\[\u2620\\] [0-9]+ players have perished in the void today\\.");
     public static final Pattern skyChatFilter = Pattern.compile("\\[\u270e\\] .*|The word was [a-z0-9 ]+");
+    public static final Pattern islandTitleFilter = Pattern.compile("(§.)?-=(§.)?[\u00a7_a-zA-Z0-9]+'s Island(§.)?=-");
+    public static final Pattern islandWelcomeFilter = Pattern.compile("============ Welcome to [\u00a7_a-zA-Z0-9]+'s Island ============");
     
 
     // Chat Logger
