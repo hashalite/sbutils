@@ -22,7 +22,8 @@ import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.xolt.sbutils.config.ModConfig.ChatFiltersConfig.FilterEntry;
+import static net.xolt.sbutils.SbUtils.LOGGER;
+import static net.xolt.sbutils.config.ModConfig.ChatFiltersConfig.CustomFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,19 +35,23 @@ public class ChatFilters extends Feature<ModConfig> {
     private final OptionBinding<ModConfig, Boolean> welcomeFilter = new OptionBinding<>("sbutils", "chatFilters.welcomeFilter", Boolean.class, (config) -> config.chatFilters.welcomeFilter, (config, value) -> config.chatFilters.welcomeFilter = value);
     private final OptionBinding<ModConfig, Boolean> friendJoinFilter = new OptionBinding<>("sbutils", "chatFilters.friendJoinFilter", Boolean.class, (config) -> config.chatFilters.friendJoinFilter, (config, value) -> config.chatFilters.friendJoinFilter = value);
     private final OptionBinding<ModConfig, Boolean> motdFilter = new OptionBinding<>("sbutils", "chatFilters.motdFilter", Boolean.class, (config) -> config.chatFilters.motdFilter, (config, value) -> config.chatFilters.motdFilter = value);
+    private final OptionBinding<ModConfig, Boolean> islandTitleFilter = new OptionBinding<>("sbutils", "chatFilters.islandTitleFilter", Boolean.class, (config) -> config.chatFilters.islandTitleFilter, (config, value) -> config.chatFilters.islandTitleFilter = value);
+    private final OptionBinding<ModConfig, Boolean> islandWelcomeFilter = new OptionBinding<>("sbutils", "chatFilters.islandWelcomeFilter", Boolean.class, (config) -> config.chatFilters.islandWelcomeFilter, (config, value) -> config.chatFilters.islandWelcomeFilter = value);
     private final OptionBinding<ModConfig, Boolean> voteFilter = new OptionBinding<>("sbutils", "chatFilters.voteFilter", Boolean.class, (config) -> config.chatFilters.voteFilter, (config, value) -> config.chatFilters.voteFilter = value);
     private final OptionBinding<ModConfig, Boolean> voteRewardFilter = new OptionBinding<>("sbutils", "chatFilters.voteRewardFilter", Boolean.class, (config) -> config.chatFilters.voteRewardFilter, (config, value) -> config.chatFilters.voteRewardFilter = value);
     private final OptionBinding<ModConfig, Boolean> raffleFilter = new OptionBinding<>("sbutils", "chatFilters.raffleFilter", Boolean.class, (config) -> config.chatFilters.raffleFilter, (config, value) -> config.chatFilters.raffleFilter = value);
     private final OptionBinding<ModConfig, Boolean> cratesFilter = new OptionBinding<>("sbutils", "chatFilters.cratesFilter", Boolean.class, (config) -> config.chatFilters.cratesFilter, (config, value) -> config.chatFilters.cratesFilter = value);
     private final OptionBinding<ModConfig, Boolean> perishedInVoidFilter = new OptionBinding<>("sbutils", "chatFilters.perishedInVoidFilter", Boolean.class, (config) -> config.chatFilters.perishedInVoidFilter, (config, value) -> config.chatFilters.perishedInVoidFilter = value);
     private final OptionBinding<ModConfig, Boolean> skyChatFilter = new OptionBinding<>("sbutils", "chatFilters.skyChatFilter", Boolean.class, (config) -> config.chatFilters.skyChatFilter, (config, value) -> config.chatFilters.skyChatFilter = value);
-    private final ListOptionBinding<ModConfig, FilterEntry> customFilters = new ListOptionBinding<>("sbutils", "chatFilters.customFilters", new FilterEntry("", false), FilterEntry.class, (config) -> config.chatFilters.customFilters, (config, value) -> config.chatFilters.customFilters = value);
+    private final ListOptionBinding<ModConfig, CustomFilter> customFilters = new ListOptionBinding<>("sbutils", "chatFilters.customFilters", new CustomFilter("", ModConfig.FilterTarget.CHAT, false), CustomFilter.class, (config) -> config.chatFilters.customFilters, (config, value) -> config.chatFilters.customFilters = value);
     private final List<ChatFilter<ModConfig>> builtInFilters = List.of(
             new ChatFilter<>(tipsFilter, ModConfig.HANDLER, List.of(RegexFilters.tipsFilter)),
             new ChatFilter<>(advancementsFilter, ModConfig.HANDLER, List.of(RegexFilters.advancementsFilter)),
             new ChatFilter<>(welcomeFilter, ModConfig.HANDLER, List.of(RegexFilters.welcomeFilter)),
             new ChatFilter<>(friendJoinFilter, ModConfig.HANDLER, List.of(RegexFilters.friendJoinFilter)),
             new ChatFilter<>(motdFilter, ModConfig.HANDLER, List.of(RegexFilters.motdFilter)),
+            new ChatFilter<>(islandTitleFilter, ModConfig.HANDLER, List.of(RegexFilters.islandTitleFilter), true),
+            new ChatFilter<>(islandWelcomeFilter, ModConfig.HANDLER, List.of(RegexFilters.islandWelcomeFilter)),
             new ChatFilter<>(voteFilter, ModConfig.HANDLER, List.of(RegexFilters.voteFilter)),
             new ChatFilter<>(voteRewardFilter, ModConfig.HANDLER, List.of(RegexFilters.voteRewardFilter)),
             new ChatFilter<>(raffleFilter, ModConfig.HANDLER, List.of(RegexFilters.raffleFilter)),
@@ -54,17 +59,19 @@ public class ChatFilters extends Feature<ModConfig> {
             new ChatFilter<>(perishedInVoidFilter, ModConfig.HANDLER, List.of(RegexFilters.perishedInVoidFilter)),
             new ChatFilter<>(skyChatFilter, ModConfig.HANDLER, List.of(RegexFilters.skyChatFilter))
     );
-    private final List<Pattern> customRegex;
+    private final List<Pattern> chatCustomRegex;
+    private final List<Pattern> titleCustomRegex;
 
     public ChatFilters() {
         super("sbutils", "chatFilters", "chatfilter", "filter");
         customFilters.addListener((ignored1, ignored2) -> recompileCustomRegex());
-        customRegex = new ArrayList<>();
+        chatCustomRegex = new ArrayList<>();
+        titleCustomRegex = new ArrayList<>();
         recompileCustomRegex();
     }
 
     @Override public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
-        return List.of(tipsFilter, advancementsFilter, welcomeFilter, friendJoinFilter, motdFilter, voteFilter, voteRewardFilter, raffleFilter, cratesFilter, perishedInVoidFilter, skyChatFilter, customFilters);
+        return List.of(tipsFilter, advancementsFilter, welcomeFilter, friendJoinFilter, motdFilter, islandTitleFilter, islandWelcomeFilter, voteFilter, voteRewardFilter, raffleFilter, cratesFilter, perishedInVoidFilter, skyChatFilter, customFilters);
     }
 
     @Override
@@ -82,6 +89,8 @@ public class ChatFilters extends Feature<ModConfig> {
                     .then(CommandHelper.bool("crates", cratesFilter, ModConfig.HANDLER))
                     .then(CommandHelper.bool("perished", perishedInVoidFilter, ModConfig.HANDLER))
                     .then(CommandHelper.bool("skyChat", skyChatFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("islandTitle", islandTitleFilter, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("islandWelcome", islandWelcomeFilter, ModConfig.HANDLER))
                     .then(CommandHelper.genericList("custom", "regex", customFilters, ModConfig.HANDLER, true, FilterEntryArgumentType.filterEntry(), FilterEntryArgumentType::getFilterEntry)
                             .then(ClientCommandManager.literal("toggle")
                                     .then(ClientCommandManager.argument("index", IntegerArgumentType.integer())
@@ -95,13 +104,13 @@ public class ChatFilters extends Feature<ModConfig> {
     }
 
     private int onSetRegexCommand(int index, String newRegex) {
-        List<ModConfig.ChatFiltersConfig.FilterEntry> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
+        List<CustomFilter> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= filters.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.chatFilters.customFilters"));
             return Command.SINGLE_SUCCESS;
         }
-        ModConfig.ChatFiltersConfig.FilterEntry filter = filters.get(adjustedIndex);
+        CustomFilter filter = filters.get(adjustedIndex);
         String oldRegex = filter.regex;
         filter.regex = newRegex;
         ModConfig.HANDLER.save();
@@ -112,13 +121,13 @@ public class ChatFilters extends Feature<ModConfig> {
     }
 
     private int onToggleCommand(int index) {
-        List<ModConfig.ChatFiltersConfig.FilterEntry> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
+        List<CustomFilter> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= filters.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.chatFilters.customFilters"));
             return Command.SINGLE_SUCCESS;
         }
-        ModConfig.ChatFiltersConfig.FilterEntry filter = filters.get(adjustedIndex);
+        CustomFilter filter = filters.get(adjustedIndex);
         filter.enabled = !filter.enabled;
         ModConfig.HANDLER.save();
         ChatUtils.printWithPlaceholders("message.sbutils.chatFilter.filterToggleSuccess", filter.regex, filter.enabled);
@@ -127,27 +136,48 @@ public class ChatFilters extends Feature<ModConfig> {
         return Command.SINGLE_SUCCESS;
     }
 
-    public void onChatMessage(Component message, CallbackInfo ci) {
-        if (shouldFilter(message, builtInFilters, customRegex)) {
+    public void onTitle(Component message, CallbackInfo ci) {
+        if (shouldFilterTitle(message))
             ci.cancel();
-        }
+    }
+
+    public void onChatMessage(Component message, CallbackInfo ci) {
+        if (shouldFilterChat(message))
+            ci.cancel();
     }
 
     public void recompileCustomRegex() {
-        customRegex.clear();
-        for (FilterEntry filter : ModConfig.HANDLER.instance().chatFilters.customFilters)
-            if (filter.enabled)
-                customRegex.add(Pattern.compile(filter.regex));
+        chatCustomRegex.clear();
+        titleCustomRegex.clear();
+        for (CustomFilter filter : ModConfig.HANDLER.instance().chatFilters.customFilters) {
+            if (!filter.enabled)
+                continue;
+
+            Pattern pattern = Pattern.compile(filter.regex);
+
+            switch (filter.target) {
+                case CHAT -> chatCustomRegex.add(pattern);
+                case TITLE -> titleCustomRegex.add(pattern);
+            }
+        }
     }
 
-    public static boolean shouldFilter(Component message, List<ChatFilter<ModConfig>> filters, List<Pattern> customRegex) {
+    public boolean shouldFilterTitle(Component message) {
+        return shouldFilter(message, true);
+    }
+
+    public boolean shouldFilterChat(Component message) {
+        return shouldFilter(message, false);
+    }
+
+    public boolean shouldFilter(Component message, boolean titles) {
         String stringMessage = message.getString();
 
-        for (ChatFilter filter : filters)
-            if (filter.isEnabled() && filter.matches(stringMessage))
+        for (ChatFilter<ModConfig> filter : builtInFilters)
+            if (filter.isEnabled() && filter.titles() == titles && filter.matches(stringMessage))
                 return true;
 
-        for (Pattern pattern : customRegex)
+        for (Pattern pattern : titles ? titleCustomRegex : chatCustomRegex)
             if (pattern.matcher(stringMessage).matches())
                 return true;
 
