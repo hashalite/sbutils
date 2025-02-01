@@ -14,11 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(OptionListWidget.ListGroupSeparatorEntry.class)
 public class ListGroupSeparatorEntryMixin {
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private TooltipButtonWidget addListButton;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private ListOption<?> listOption;
 
