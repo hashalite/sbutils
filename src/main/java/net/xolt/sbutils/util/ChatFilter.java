@@ -12,11 +12,17 @@ public class ChatFilter<C> {
     private final List<Pattern> regex;
     private final OptionBinding<C, Boolean> option;
     private final ConfigInstance<C> configHandler;
+    private final boolean titles;
 
     public ChatFilter(OptionBinding<C, Boolean> option, ConfigInstance<C> configHandler, List<Pattern> regex) {
+        this(option, configHandler, regex, false);
+    }
+
+    public ChatFilter(OptionBinding<C, Boolean> option, ConfigInstance<C> configHandler, List<Pattern> regex, boolean titles) {
         this.regex = regex;
         this.option = option;
         this.configHandler = configHandler;
+        this.titles = titles;
     }
 
     public MutableComponent getName() {
@@ -38,5 +44,9 @@ public class ChatFilter<C> {
 
     public MutableComponent format() {
         return TextUtils.insertPlaceholders("message.sbutils.chatFilter.statusFormat", getName(), isEnabled());
+    }
+
+    public boolean titles() {
+        return titles;
     }
 }

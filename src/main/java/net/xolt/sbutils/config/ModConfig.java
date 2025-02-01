@@ -183,26 +183,31 @@ public class ModConfig {
         @ConfigEntry public boolean welcomeFilter = false;
         @ConfigEntry public boolean friendJoinFilter = false;
         @ConfigEntry public boolean motdFilter = false;
+        @ConfigEntry public boolean islandTitleFilter = false;
+        @ConfigEntry public boolean islandWelcomeFilter = false;
         @ConfigEntry public boolean voteFilter = false;
         @ConfigEntry public boolean voteRewardFilter = false;
         @ConfigEntry public boolean raffleFilter = false;
         @ConfigEntry public boolean cratesFilter = false;
         @ConfigEntry public boolean perishedInVoidFilter = false;
         @ConfigEntry public boolean skyChatFilter = false;
-        @ConfigEntry public List<FilterEntry> customFilters = new ArrayList<>();
 
-        public static class FilterEntry implements MultiValue {
+        @ConfigEntry public List<CustomFilter> customFilters = new ArrayList<>();
+
+        public static class CustomFilter implements MultiValue {
             @ConfigEntry public String regex;
+            @ConfigEntry public FilterTarget target;
             @ConfigEntry public boolean enabled;
 
-            public FilterEntry(String regex, boolean enabled) {
+            public CustomFilter(String regex, FilterTarget target, boolean enabled) {
                 this.regex = regex;
+                this.target = target;
                 this.enabled = enabled;
             }
 
             @Override
             public MutableComponent format() {
-                return TextUtils.insertPlaceholders("message.sbutils.chatFilter.filterEntry", regex, enabled);
+                return TextUtils.insertPlaceholders("message.sbutils.chatFilter.filterEntry", regex, target, enabled);
             }
         }
     }
@@ -662,6 +667,21 @@ public class ModConfig {
         @Override
         public String getSerializedName() {
             return name;
+        }
+    }
+
+    public enum FilterTarget implements NameableEnum, StringRepresentable {
+        CHAT,
+        TITLE;
+
+        @Override
+        public Component getDisplayName() {
+            return Component.literal(this.name());
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name();
         }
     }
 
