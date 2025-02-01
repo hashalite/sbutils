@@ -5,9 +5,8 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.AirItem;
@@ -307,7 +306,7 @@ public class EnchantAll extends Feature<ModConfig> {
     }
 
     private void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
-        ResourceLocation enchant = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
+        ResourceLocation enchant = Registry.ENCHANTMENT.getKey(enchantment);
         if (enchant == null || MC.getConnection() == null)
             return;
         String enchantName = enchant.getPath().replaceAll("_", "");
@@ -348,7 +347,7 @@ public class EnchantAll extends Feature<ModConfig> {
         Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.deserializeEnchantments(itemStack.getEnchantmentTags());
         List<Enchantment> enchantments = new ArrayList<>();
         if (!unenchant) {
-            for (Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
+            for (Enchantment enchantment : Registry.ENCHANTMENT) {
                 if (enchantment.canEnchant(new ItemStack(item)))
                     enchantments.add(enchantment);
             }

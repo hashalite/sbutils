@@ -20,6 +20,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -241,7 +242,7 @@ public class AutoCrate extends Feature<ModConfig> {
             return false;
         }
 
-        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(cratePos.getCenter(), Direction.UP, cratePos, false));
+        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(cratePos), Direction.UP, cratePos, false));
         return true;
     }
 

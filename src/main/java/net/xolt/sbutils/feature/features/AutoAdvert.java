@@ -255,7 +255,8 @@ public class AutoAdvert extends Feature<ModConfig> {
         if (MC.getConnection() == null)
             return;
 
-        MC.getConnection().sendChat(prevAdList.get(adIndex));
+        assert MC.player != null;
+        MC.player.chatSigned(prevAdList.get(adIndex), null);
     }
 
     private int delayLeft() {

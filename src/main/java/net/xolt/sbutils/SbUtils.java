@@ -109,32 +109,34 @@ public class SbUtils implements ClientModInitializer {
                 return;
             }
 
+            assert MC.player != null;
+
             while (islandKey.consumeClick()) {
-                MC.getConnection().sendCommand("is");
+                MC.player.commandSigned("is", null);
             }
 
             while (ehomeKey.consumeClick()) {
-                MC.getConnection().sendCommand("ehome");
+                MC.player.commandSigned("ehome", null);
             }
 
             while (jumpKey.consumeClick()) {
-                MC.getConnection().sendCommand("jump");
+                MC.player.commandSigned("jump", null);
             }
 
             while (backKey.consumeClick()) {
-                MC.getConnection().sendCommand("back");
+                MC.player.commandSigned("back", null);
             }
 
             while (craftKey.consumeClick()) {
-                MC.getConnection().sendCommand("wb");
+                MC.player.commandSigned("wb", null);
             }
 
             while (echestKey.consumeClick()) {
-                MC.getConnection().sendCommand("ec");
+                MC.player.commandSigned("ec", null);
             }
 
             while (trashKey.consumeClick()) {
-                MC.getConnection().sendCommand("trash");
+                MC.player.commandSigned("trash", null);
             }
         });
     }

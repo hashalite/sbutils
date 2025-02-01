@@ -1,7 +1,7 @@
 package net.xolt.sbutils.feature;
 
 import com.mojang.brigadier.CommandDispatcher;
-import dev.isxander.yacl3.config.ConfigInstance;
+import dev.isxander.yacl.config.ConfigInstance;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 

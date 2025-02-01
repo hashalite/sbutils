@@ -1,11 +1,19 @@
 package net.xolt.sbutils.config.gui;
 
-import dev.isxander.yacl3.api.*;
-import dev.isxander.yacl3.api.controller.*;
+import dev.isxander.yacl.api.*;
+import dev.isxander.yacl.gui.controllers.ColorController;
+import dev.isxander.yacl.gui.controllers.TickBoxController;
+import dev.isxander.yacl.gui.controllers.cycling.EnumController;
+import dev.isxander.yacl.gui.controllers.slider.DoubleSliderController;
+import dev.isxander.yacl.gui.controllers.slider.IntegerSliderController;
+import dev.isxander.yacl.gui.controllers.string.StringController;
+import dev.isxander.yacl.gui.controllers.string.number.DoubleFieldController;
+import dev.isxander.yacl.gui.controllers.string.number.IntegerFieldController;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.config.yacl.CustomListOptionImpl;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.Constraints;
 import net.xolt.sbutils.config.binding.ListOptionBinding;
@@ -95,15 +103,15 @@ public class ConfigGuiFactory<C> {
         if (controller == null)
             return null;
 
-        return Option.<T>createBuilder()
+        return Option.createBuilder(binding.getType())
                 .name(binding.getName())
-                .description(OptionDescription.of(binding.getTooltip()))
+                .tooltip(binding.getTooltip())
                 .binding(
                         binding.get(defaults),
                         () -> binding.get(config),
                         (value) -> binding.set(config, value)
                 )
-                .customController(controller)
+                .controller(controller)
                 .build();
     }
 
@@ -122,16 +130,16 @@ public class ConfigGuiFactory<C> {
         if (controller == null)
             return null;
 
-        return ListOption.<T>createBuilder()
+        return new CustomListOptionImpl.BuilderImpl<>(binding.getListType())
                 .name(binding.getName())
-                .description(OptionDescription.of(binding.getTooltip()))
+                .tooltip(binding.getTooltip())
                 .binding(
                         binding.get(defaults),
                         () -> binding.get(config),
                         (value) -> binding.set(config, value)
                 )
                 .maximumNumberOfEntries(maxSize)
-                .customController(controller::apply)
+                .controller(controller::apply)
                 .initial(binding.getInitialValue())
                 .build();
     }
@@ -148,8 +156,8 @@ public class ConfigGuiFactory<C> {
             int minimum = min == null ? Integer.MIN_VALUE : min.intValue();
             int maximum = max == null ? Integer.MAX_VALUE : max.intValue();
             if (min != null && max != null)
-                return (option) -> (Controller<T>)IntegerSliderControllerBuilder.create((Option<Integer>)option).range(minimum, maximum).step(1).build();
-            return (option) -> (Controller<T>)IntegerFieldControllerBuilder.create((Option<Integer>)option).range(minimum, maximum).build();
+                return option -> (Controller<T>)new IntegerSliderController((Option<Integer>)option, minimum, maximum, 1);
+            return (option) -> (Controller<T>)new IntegerFieldController((Option<Integer>)option, minimum, maximum);
         } else if (type.equals(Double.class)) {
             Number min = null;
             Number max = null;
@@ -160,17 +168,17 @@ public class ConfigGuiFactory<C> {
             double minimum = min == null ? Double.MIN_VALUE : min.doubleValue();
             double maximum = max == null ? Double.MAX_VALUE : max.doubleValue();
             if (min != null && max != null)
-                return (option) -> (Controller<T>)DoubleSliderControllerBuilder.create((Option<Double>)option).range(minimum, maximum).step(0.1).build();
-            return (option) -> (Controller<T>)DoubleFieldControllerBuilder.create((Option<Double>)option).range(minimum, maximum).build();
+                return (option) -> (Controller<T>)new DoubleSliderController((Option<Double>)option, minimum, maximum, 0.1);
+            return (option) -> (Controller<T>)new DoubleFieldController((Option<Double>)option, minimum, maximum);
         } else if (type.equals(Boolean.class)) {
-            return (option) -> (Controller<T>)TickBoxControllerBuilder.create((Option<Boolean>) option).build();
+            return (option) -> (Controller<T>)new TickBoxController((Option<Boolean>) option);
         }
         else if (Enum.class.isAssignableFrom(type)) {
-            return (option) -> (Controller<T>)EnumControllerBuilder.create((Option<Enum>)option).enumClass((Class<Enum>)type).build();
+            return (option) -> (Controller<T>)new EnumController<>((Option<Enum>)option);
         } else if (type.equals(String.class)) {
-            return (option) -> (Controller<T>)StringControllerBuilder.create((Option<String>) option).build();
+            return (option) -> (Controller<T>)new StringController((Option<String>) option);
         } else if (type.equals(Color.class)) {
-            return (option) -> (Controller<T>)ColorControllerBuilder.create((Option<Color>) option).build();
+            return (option) -> (Controller<T>)new ColorController((Option<Color>) option);
         } else if (type.equals(ModConfig.AutoCommandConfig.AutoCommandEntry.class)) {
             return (option) -> (Controller<T>)new AutoCommandEntryController((Option<ModConfig.AutoCommandConfig.AutoCommandEntry>) option);
         } else if (type.equals(ModConfig.JoinCommandsConfig.JoinCommandsEntry.class)) {

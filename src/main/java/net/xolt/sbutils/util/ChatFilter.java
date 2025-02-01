@@ -1,6 +1,6 @@
 package net.xolt.sbutils.util;
 
-import dev.isxander.yacl3.config.ConfigInstance;
+import dev.isxander.yacl.config.ConfigInstance;
 import net.minecraft.network.chat.MutableComponent;
 import net.xolt.sbutils.config.binding.OptionBinding;
 

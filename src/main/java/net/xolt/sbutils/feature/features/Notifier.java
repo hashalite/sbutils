@@ -92,9 +92,17 @@ public class Notifier extends Feature<ModConfig> {
         int itemsWidth = traderItems.size() * 16;
         for (int i = 0; i < traderItems.size(); i++) {
             int x = (i * 16) + ((guiWidth - itemsWidth) / 2);
-            MC.getItemRenderer().renderGuiItem(matrices, traderItems.get(i), guiWidth, guiHeight);
+            MC.getItemRenderer().renderGuiItem(traderItems.get(i), x, guiHeight - 75);
         }
-        GuiComponent.renderOutline(matrices, ((guiWidth - itemsWidth) / 2) - 2, guiHeight - 77, itemsWidth + 4, 20, ModConfig.HANDLER.getConfig().messageColor.getRGB());
+        renderOutline(matrices, ((guiWidth - itemsWidth) / 2) - 2, guiHeight - 77, itemsWidth + 4, 20, ModConfig.HANDLER.getConfig().messageColor.getRGB());
+    }
+
+    // Copied from 1.19.4 GuiComponent.java
+    private static void renderOutline(PoseStack poseStack, int x, int y, int width, int height, int color) {
+        GuiComponent.fill(poseStack, x, y, x + width, y + 1, color);
+        GuiComponent.fill(poseStack, x, y + height - 1, x + width, y + height, color);
+        GuiComponent.fill(poseStack, x, y + 1, x + 1, y + height - 1, color);
+        GuiComponent.fill(poseStack, x + width - 1, y + 1, x + width, y + height - 1, color);
     }
 
     public void processMessage(Component message) {

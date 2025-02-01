@@ -34,38 +34,21 @@ public abstract class ClientPacketListenerMixin {
         SbUtils.FEATURES.get(AutoCrate.class).onServerCloseScreen();
     }
 
-    @Inject(method = "handlePlayerInfoRemove", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void onPlayerRemove(ClientboundPlayerInfoRemovePacket packet, CallbackInfo ci, Iterator<UUID> var2, UUID uUID, PlayerInfo playerListEntry) {
-        SbUtils.FEATURES.get(StaffDetector.class).onPlayerLeave(playerListEntry);
+    @Inject(method = "handlePlayerInfo", at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;"), locals = LocalCapture.CAPTURE_FAILSOFT)
+    private void onPlayerRemove(ClientboundPlayerInfoPacket packet, CallbackInfo ci, Iterator<ClientboundPlayerInfoPacket.PlayerUpdate> var2, ClientboundPlayerInfoPacket.PlayerUpdate playerUpdate) {
+        assert MC.getConnection() != null;
+        PlayerInfo player = MC.getConnection().getPlayerInfo(playerUpdate.getProfile().getId());
+        SbUtils.FEATURES.get(StaffDetector.class).onPlayerLeave(player);
     }
 
-    @Inject(method = "handlePlayerInfoRemove", at = @At("TAIL"))
-    private void onPlayerRemoveTail(ClientboundPlayerInfoRemovePacket packet, CallbackInfo ci) {
+    @Inject(method = "handlePlayerInfo", at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;", shift = At.Shift.AFTER))
+    private void onPlayerRemoveTail(ClientboundPlayerInfoPacket packet, CallbackInfo ci) {
         SbUtils.FEATURES.get(StaffDetector.class).afterPlayerLeave();
     }
 
-    @Inject(method = "applyPlayerInfoUpdate", at = @At("HEAD"))
-    private void onHandlePlayerListAction(ClientboundPlayerInfoUpdatePacket.Action action, ClientboundPlayerInfoUpdatePacket.Entry receivedEntry, PlayerInfo currentEntry, CallbackInfo ci) {
-        if (action != ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED) {
-            return;
-        }
-
-        if (receivedEntry.listed()) {
-            SbUtils.FEATURES.get(StaffDetector.class).onPlayerJoin(currentEntry);
-        } else {
-            SbUtils.FEATURES.get(StaffDetector.class).onPlayerLeave(currentEntry);
-        }
-    }
-
-    @Inject(method = "applyPlayerInfoUpdate", at = @At("TAIL"))
-    private void onHandlePlayerListActionTail(ClientboundPlayerInfoUpdatePacket.Action action, ClientboundPlayerInfoUpdatePacket.Entry receivedEntry, PlayerInfo currentEntry, CallbackInfo ci) {
-        if (action != ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED) {
-            return;
-        }
-
-        if (!receivedEntry.listed()) {
-            SbUtils.FEATURES.get(StaffDetector.class).afterPlayerLeave();
-        }
+    @Inject(method = "handlePlayerInfo", at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"), locals = LocalCapture.CAPTURE_FAILSOFT)
+    private void onPlayerAdd(ClientboundPlayerInfoPacket packet, CallbackInfo ci, Iterator<ClientboundPlayerInfoPacket.PlayerUpdate> var2, ClientboundPlayerInfoPacket.PlayerUpdate playerUpdate, PlayerInfo playerInfo, boolean bl) {
+        SbUtils.FEATURES.get(StaffDetector.class).onPlayerJoin(playerInfo);
     }
 
     @Inject(method = "handleTabListCustomisation", at = @At("HEAD"))

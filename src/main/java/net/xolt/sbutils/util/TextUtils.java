@@ -1,6 +1,6 @@
 package net.xolt.sbutils.util;
 
-import dev.isxander.yacl3.api.NameableEnum;
+import dev.isxander.yacl.api.NameableEnum;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;

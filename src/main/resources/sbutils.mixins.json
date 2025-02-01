@@ -13,6 +13,7 @@
     "EnchantmentScreenMixin",
     "GameRendererMixin",
     "GuiMixin",
+    "ListGroupSeparatorEntryMixin",
     "LocalPlayerMixin",
     "MapInstanceAccessor",
     "MinecraftMixin",

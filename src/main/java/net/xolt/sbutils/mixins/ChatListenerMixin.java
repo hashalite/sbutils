@@ -15,19 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ChatListener.class)
 public class ChatListenerMixin {
 
-    @Inject(method = "handlePlayerChatMessage", at = @At("HEAD"), cancellable = true)
-    private void onChatMessage(PlayerChatMessage message, GameProfile sender, ChatType.Bound params, CallbackInfo ci) {
-        Component text = params.decorate(message.decoratedContent());
-        preFilterMessage(text);
-        SbUtils.FEATURES.get(ChatFilters.class).onChatMessage(text, ci);
-        if (ci.isCancelled())
-            return;
-        postFilterMessage(text);
-    }
-
-    @Inject(method = "handleDisguisedChatMessage", at = @At("HEAD"), cancellable = true)
-    private void onProfilelessMessage(Component content, ChatType.Bound params, CallbackInfo ci) {
-        Component text = params.decorate(content);
+    @Inject(method = "handleChatMessage", at = @At("HEAD"), cancellable = true)
+    private void onChatMessage(PlayerChatMessage chatMessage, ChatType.Bound boundChatType, CallbackInfo ci) {
+        Component text = boundChatType.decorate(chatMessage.serverContent());
         preFilterMessage(text);
         SbUtils.FEATURES.get(ChatFilters.class).onChatMessage(text, ci);
         if (ci.isCancelled())

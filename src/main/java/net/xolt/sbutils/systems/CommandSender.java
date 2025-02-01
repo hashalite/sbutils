@@ -46,7 +46,8 @@ public class CommandSender {
         if (awaitingResponse)
             return;
 
-        MC.getConnection().sendCommand(entry.command);
+        assert MC.player != null;
+        MC.player.commandSigned(entry.command, null);
         lastCommandSentAt = currentTime;
         if (!entry.responseMatchers.isEmpty()) {
             awaitingResponse = true;

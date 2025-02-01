@@ -1,7 +1,7 @@
 package net.xolt.sbutils.util;
 
 import com.google.gson.*;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,11 +35,11 @@ public class ApiUtils {
                 onResponse.accept(result);
                 return;
             }
-            for (JsonElement itemElement : jsonResponse.getAsJsonArray("buyable").asList()) {
+            for (JsonElement itemElement : jsonResponse.getAsJsonArray("buyable")) {
                 JsonObject itemObject = itemElement.getAsJsonObject();
                 if (!itemObject.has("item"))
                     continue;
-                Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemObject.get("item").getAsString().toLowerCase()));
+                Item item = Registry.ITEM.get(new ResourceLocation(itemObject.get("item").getAsString().toLowerCase()));
                 ItemStack itemStack = new ItemStack(item);
                 result.add(itemStack);
             }

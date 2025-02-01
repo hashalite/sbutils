@@ -11,7 +11,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.world.InteractionHand;
@@ -28,6 +28,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.EnchantmentTableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -303,7 +304,7 @@ public class AutoSilk extends Feature<ModConfig> {
         int[] enchantments = screenHandler.enchantClue;
         int silkIndex = -1;
         for (int i = 0; i < enchantments.length; i++) {
-            Optional<Holder.Reference<Enchantment>> optionalEnchantment = BuiltInRegistries.ENCHANTMENT.getHolder(enchantments[i]);
+            Optional<Holder<Enchantment>> optionalEnchantment = Registry.ENCHANTMENT.getHolder(enchantments[i]);
             if (optionalEnchantment.isEmpty())
                 continue;
 
@@ -384,7 +385,7 @@ public class AutoSilk extends Feature<ModConfig> {
         if (tablePos == null)
             return false;
 
-        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(tablePos.getCenter(), Direction.UP, tablePos, false));
+        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(tablePos), Direction.UP, tablePos, false));
         return true;
     }
 

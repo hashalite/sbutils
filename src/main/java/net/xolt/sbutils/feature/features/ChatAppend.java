@@ -52,6 +52,6 @@ public class ChatAppend extends Feature<ModConfig> {
         if (ModConfig.HANDLER.getConfig().chatAppend.addSuffix)
             message = message + ModConfig.HANDLER.getConfig().chatAppend.suffix;
 
-        return new ServerboundChatPacket(message, packet.timeStamp(), packet.salt(), packet.signature(), packet.lastSeenMessages());
+        return new ServerboundChatPacket(message, packet.timeStamp(), packet.salt(), packet.signature(), packet.signedPreview(), packet.lastSeenMessages());
     }
 }

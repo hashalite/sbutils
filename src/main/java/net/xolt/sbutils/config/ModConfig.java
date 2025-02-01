@@ -1,16 +1,11 @@
 package net.xolt.sbutils.config;
 
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.GsonBuilder;
-import dev.isxander.yacl3.api.NameableEnum;
-import dev.isxander.yacl3.config.ConfigEntry;
-import dev.isxander.yacl3.config.ConfigInstance;
-import dev.isxander.yacl3.config.GsonConfigInstance;
+import dev.isxander.yacl.api.NameableEnum;
+import dev.isxander.yacl.config.ConfigEntry;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.StringRepresentable;
@@ -18,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.config.yacl.CustomGsonConfigInstance;
 import net.xolt.sbutils.feature.features.AutoCommand;
 import net.xolt.sbutils.util.TextUtils;
 
@@ -28,22 +24,12 @@ import java.util.List;
 
 public class ModConfig {
 
-    private static final GsonBuilder gsonBuilder = new GsonBuilder()
-            .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
-            .setPrettyPrinting()
-            .serializeNulls()
-            .registerTypeHierarchyAdapter(Component.class, new Component.Serializer())
-            .registerTypeHierarchyAdapter(Style .class, new Style.Serializer())
-            .registerTypeHierarchyAdapter(Color.class, new GsonConfigInstance.ColorTypeAdapter());
-
-    public static final ConfigInstance<ModConfig> HANDLER = GsonConfigInstance.createBuilder(ModConfig.class)
-            .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
-            .overrideGsonBuilder(gsonBuilder)
-            .build();
+    public static final CustomGsonConfigInstance<ModConfig> HANDLER = new CustomGsonConfigInstance<>(ModConfig.class, FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"));
 
     // Mod Settings
 
-    @ConfigEntry public String prefixFormat = "%s »";
+    @ConfigEntry
+    public String prefixFormat = "%s »";
     @ConfigEntry public Color sbutilsColor = new Color(Integer.valueOf("90e7fc", 16));
     @ConfigEntry public Color prefixColor = new Color(Integer.valueOf("002c47", 16));
     @ConfigEntry public Color messageColor = new Color(Integer.valueOf("b5b5b5", 16));
@@ -402,7 +388,7 @@ public class ModConfig {
 
         @Override
         public String getSerializedName() {
-            return BuiltInRegistries.ITEM.getKey(tool).getPath();
+            return Registry.ITEM.getKey(tool).getPath();
         }
     }
 
@@ -434,22 +420,22 @@ public class ModConfig {
         DISPENSER(SoundEvents.DISPENSER_FAIL),
         BUTTON(SoundEvents.STONE_BUTTON_CLICK_ON),
         ANVIL_LAND(SoundEvents.ANVIL_LAND),
-        BANJO(SoundEvents.NOTE_BLOCK_BANJO.value()),
-        BASEDRUM(SoundEvents.NOTE_BLOCK_BASEDRUM.value()),
-        BASS(SoundEvents.NOTE_BLOCK_BASS.value()),
-        BELL(SoundEvents.NOTE_BLOCK_BELL.value()),
-        BIT(SoundEvents.NOTE_BLOCK_BIT.value()),
-        CHIME(SoundEvents.NOTE_BLOCK_CHIME.value()),
-        COW_BELL(SoundEvents.NOTE_BLOCK_COW_BELL.value()),
-        DIDGERIDOO(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value()),
-        FLUTE(SoundEvents.NOTE_BLOCK_FLUTE.value()),
-        GUITAR(SoundEvents.NOTE_BLOCK_GUITAR.value()),
-        HARP(SoundEvents.NOTE_BLOCK_HARP.value()),
-        HAT(SoundEvents.NOTE_BLOCK_HAT.value()),
-        IRON_XYLOPHONE(SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE.value()),
-        PLING(SoundEvents.NOTE_BLOCK_PLING.value()),
-        SNARE(SoundEvents.NOTE_BLOCK_SNARE.value()),
-        XYLOPHONE(SoundEvents.NOTE_BLOCK_XYLOPHONE.value());
+        BANJO(SoundEvents.NOTE_BLOCK_BANJO),
+        BASEDRUM(SoundEvents.NOTE_BLOCK_BASEDRUM),
+        BASS(SoundEvents.NOTE_BLOCK_BASS),
+        BELL(SoundEvents.NOTE_BLOCK_BELL),
+        BIT(SoundEvents.NOTE_BLOCK_BIT),
+        CHIME(SoundEvents.NOTE_BLOCK_CHIME),
+        COW_BELL(SoundEvents.NOTE_BLOCK_COW_BELL),
+        DIDGERIDOO(SoundEvents.NOTE_BLOCK_DIDGERIDOO),
+        FLUTE(SoundEvents.NOTE_BLOCK_FLUTE),
+        GUITAR(SoundEvents.NOTE_BLOCK_GUITAR),
+        HARP(SoundEvents.NOTE_BLOCK_HARP),
+        HAT(SoundEvents.NOTE_BLOCK_HAT),
+        IRON_XYLOPHONE(SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE),
+        PLING(SoundEvents.NOTE_BLOCK_PLING),
+        SNARE(SoundEvents.NOTE_BLOCK_SNARE),
+        XYLOPHONE(SoundEvents.NOTE_BLOCK_XYLOPHONE);
         private final SoundEvent sound;
 
         NotifSound(SoundEvent sound) {

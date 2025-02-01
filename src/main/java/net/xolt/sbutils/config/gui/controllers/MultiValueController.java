@@ -1,13 +1,12 @@
 package net.xolt.sbutils.config.gui.controllers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.isxander.yacl3.api.Controller;
-import dev.isxander.yacl3.api.Option;
-import dev.isxander.yacl3.api.controller.ControllerBuilder;
-import dev.isxander.yacl3.api.utils.Dimension;
-import dev.isxander.yacl3.gui.AbstractWidget;
-import dev.isxander.yacl3.gui.YACLScreen;
-import dev.isxander.yacl3.gui.controllers.ControllerWidget;
+import dev.isxander.yacl.api.Controller;
+import dev.isxander.yacl.api.Option;
+import dev.isxander.yacl.api.utils.Dimension;
+import dev.isxander.yacl.gui.AbstractWidget;
+import dev.isxander.yacl.gui.YACLScreen;
+import dev.isxander.yacl.gui.controllers.ControllerWidget;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -31,8 +30,9 @@ public abstract class MultiValueController<T> implements Controller<T> {
         this.controllers = controllers;
     }
 
-    protected static <T> Controller<T> dummyController(@Nullable String name, Function<Option<T>, ControllerBuilder<T>> controller, T def, Supplier<T> get, Consumer<T> set) {
-        return Option.<T>createBuilder()
+    @SuppressWarnings("unchecked")
+    protected static <T> Controller<T> dummyController(@Nullable String name, Function<Option<T>, Controller<T>> controller, T def, Supplier<T> get, Consumer<T> set) {
+        return Option.<T>createBuilder((Class<T>)def.getClass())
                 .name(name != null ? Component.translatable(name) : Component.literal(""))
                 .binding(
                         def,

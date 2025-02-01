@@ -60,8 +60,8 @@ public class MapSaver extends Feature<ModConfig> {
         MapRenderer.MapInstance mapInstance = MC.gameRenderer.getMapRenderer().getOrCreateMapInstance(mapId, mapData);
         NativeImage image = ((MapInstanceAccessor)mapInstance).getTexture().getPixels();
         String servername = null;
-        if (MC.getConnection() != null && MC.getConnection().getServerData() != null)
-            servername = MC.getConnection().getServerData().ip;
+        if (MC.getConnection() != null && MC.getCurrentServer() != null)
+            servername = MC.getCurrentServer().ip;
         else if (MC.getSingleplayerServer() != null)
             servername = MC.getSingleplayerServer().getWorldData().getLevelName() + " (Singleplayer)";
         else

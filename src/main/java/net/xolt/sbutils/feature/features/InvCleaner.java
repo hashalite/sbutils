@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -167,8 +167,8 @@ public class InvCleaner extends Feature<ModConfig> {
     }
 
     private static List<Item> itemsFromStrings(List<String> strings) {
-        List<String> validItems = strings.stream().filter(string -> BuiltInRegistries.ITEM.containsKey(new ResourceLocation(string))).toList();
-        return validItems.stream().map((item) -> BuiltInRegistries.ITEM.get(new ResourceLocation(item))).toList();
+        List<String> validItems = strings.stream().filter(string -> Registry.ITEM.containsKey(new ResourceLocation(string))).toList();
+        return validItems.stream().map((item) -> Registry.ITEM.get(new ResourceLocation(item))).toList();
     }
 
     public static void showCleanFailedCritical(String dependantFeatureName) {

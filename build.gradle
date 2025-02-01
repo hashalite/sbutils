@@ -40,16 +40,10 @@ dependencies {
         exclude module: "fabric-api"
     }
 
-    modApi ("dev.isxander.yacl:yet-another-config-lib-fabric:${project.yacl_version}") {
-        // YACL depends on a snapshot version of imageio that is no longer available
-        exclude module: "imageio-core"
-        exclude module: "imageio-webp"
-        exclude module: "imageio-metadata"
-        exclude module: "common-lang"
-        exclude module: "common-io"
-        exclude module: "common-image"
+    modApi ("dev.isxander:yet-another-config-lib:${project.yacl_version}") {
+        exclude module: "fabric-loader"
     }
-    include "dev.isxander.yacl:yet-another-config-lib-fabric:${project.yacl_version}"
+    include "dev.isxander:yet-another-config-lib:${project.yacl_version}"
 
     modApi group: 'net.objecthunter', name: 'exp4j', version: project.exp4j_version
     include group: 'net.objecthunter', name: 'exp4j', version: project.exp4j_version

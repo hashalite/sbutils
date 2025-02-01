@@ -101,7 +101,7 @@ public class StaffDetector extends Feature<ModConfig> {
         if (MC.getConnection() == null)
             return false;
 
-        for (PlayerInfo playerListEntry : MC.getConnection().getListedOnlinePlayers())
+        for (PlayerInfo playerListEntry : MC.getConnection().getOnlinePlayers())
             if (isStaff(playerListEntry))
                 return true;
 
