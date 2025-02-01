@@ -11,6 +11,7 @@ import net.xolt.sbutils.systems.ServerDetector;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
@@ -87,7 +88,7 @@ public class ApiUtils {
         Thread apiThread = new Thread(() -> {
             String response = null;
             try {
-                URL url = new URL(stringUrl);
+                URL url = URI.create(stringUrl).toURL();
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 int responseCode = connection.getResponseCode();
