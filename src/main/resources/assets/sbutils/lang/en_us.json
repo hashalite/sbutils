@@ -55,7 +55,7 @@
 
   "message.sbutils.chatFilter.status": "Chat filter status:",
   "message.sbutils.chatFilter.statusFormat": "%s: %s",
-  "message.sbutils.chatFilter.filterEntry": "%s | Enabled: %s",
+  "message.sbutils.chatFilter.filterEntry": "%s | %s | Enabled: %s",
   "message.sbutils.chatFilter.filterSetSuccess": "Filter changed from %s to %s.",
   "message.sbutils.chatFilter.filterToggleSuccess": "Filter %s has been %s.",
 
@@ -375,6 +375,10 @@
   "text.sbutils.config.option.chatFilters.friendJoinFilter.tooltip": "Whether friend join messages should be filtered from chat.",
   "text.sbutils.config.option.chatFilters.motdFilter": "Filter Island MOTDs",
   "text.sbutils.config.option.chatFilters.motdFilter.tooltip": "Whether island MOTD messages should be filtered from chat.",
+  "text.sbutils.config.option.chatFilters.islandTitleFilter": "Filter Island Titles",
+  "text.sbutils.config.option.chatFilters.islandTitleFilter.tooltip": "Whether island title messages should be filtered.",
+  "text.sbutils.config.option.chatFilters.islandWelcomeFilter": "Filter Island Welcomes",
+  "text.sbutils.config.option.chatFilters.islandWelcomeFilter.tooltip": "Whether island welcome messages should be filtered from chat.",
   "text.sbutils.config.option.chatFilters.voteFilter": "Filter Votes",
   "text.sbutils.config.option.chatFilters.voteFilter.tooltip": "Whether player vote messages should be filtered from chat.",
   "text.sbutils.config.option.chatFilters.voteRewardFilter": "Filter Vote Rewards",
@@ -390,6 +394,7 @@
   "text.sbutils.config.option.chatFilters.customFilters": "Custom Filters",
   "text.sbutils.config.option.chatFilters.customFilters.tooltip": "A list of custom regex filters to apply to chat.",
   "text.sbutils.config.option.chatFilters.customFilters.regex": "Regex",
+  "text.sbutils.config.option.chatFilters.customFilters.target": "Target",
   "text.sbutils.config.option.chatFilters.customFilters.enabled": "Status",
 
 

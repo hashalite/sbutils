@@ -109,4 +109,9 @@ public abstract class ClientPacketListenerMixin {
     private void afterSetTime(ClientboundSetTimePacket packet, CallbackInfo ci) {
         SbUtils.TPS_ESTIMATOR.onSetTime();
     }
+
+    @Inject(method = "setTitleText", at = @At("HEAD"), cancellable = true)
+    private void setTitleText(ClientboundSetTitleTextPacket packet, CallbackInfo ci) {
+        SbUtils.FEATURES.get(ChatFilters.class).onTitle(packet.text(), ci);
+    }
 }

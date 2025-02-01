@@ -59,6 +59,7 @@ public class ConfigGuiFactory<C> {
         return buildCategory(feature.getName(), feature.getGroupName(), feature.getConfigBindings(), defaults, config);
     }
 
+    @SuppressWarnings({"rawtypes","unchecked"})
     private static <C> ConfigCategory buildCategory(MutableComponent name, MutableComponent groupName, List<? extends ConfigBinding<C, ?>> configBindings, C defaults, C config) {
         ConfigCategory.Builder builder = ConfigCategory.createBuilder()
                 .name(name);
@@ -175,8 +176,8 @@ public class ConfigGuiFactory<C> {
             return (option) -> (Controller<T>)new AutoCommandEntryController((Option<ModConfig.AutoCommandConfig.AutoCommandEntry>) option);
         } else if (type.equals(ModConfig.JoinCommandsConfig.JoinCommandsEntry.class)) {
             return (option) -> (Controller<T>)new JoinCommandsEntryController((Option<ModConfig.JoinCommandsConfig.JoinCommandsEntry>) option);
-        } else if (type.equals(ModConfig.ChatFiltersConfig.FilterEntry.class)) {
-            return (option) -> (Controller<T>)new FilterEntryController((Option<ModConfig.ChatFiltersConfig.FilterEntry>)option);
+        } else if (type.equals(ModConfig.ChatFiltersConfig.CustomFilter.class)) {
+            return (option) -> (Controller<T>)new FilterEntryController((Option<ModConfig.ChatFiltersConfig.CustomFilter>)option);
         }
         return null;
     }
