@@ -2,6 +2,7 @@ package net.xolt.sbutils.config.gui.controllers;
 
 import dev.isxander.yacl3.api.Controller;
 import dev.isxander.yacl3.api.Option;
+import dev.isxander.yacl3.api.StateManager;
 import dev.isxander.yacl3.api.controller.ControllerBuilder;
 import dev.isxander.yacl3.api.utils.Dimension;
 import dev.isxander.yacl3.gui.AbstractWidget;
@@ -34,12 +35,7 @@ public abstract class MultiValueController<T> implements Controller<T> {
     protected static <T> Controller<T> dummyController(@Nullable String name, Function<Option<T>, ControllerBuilder<T>> controller, T def, Supplier<T> get, Consumer<T> set) {
         return Option.<T>createBuilder()
                 .name(name != null ? Component.translatable(name) : Component.literal(""))
-                .binding(
-                        def,
-                        get,
-                        set
-                )
-                .instant(true)
+                .stateManager(StateManager.createInstant(def, get, set))
                 .controller(controller).build().controller();
     }
 
