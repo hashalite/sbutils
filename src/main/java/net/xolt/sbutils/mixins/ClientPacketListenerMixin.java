@@ -95,6 +95,6 @@ public abstract class ClientPacketListenerMixin {
 
     @Inject(method = "setTitleText", at = @At("HEAD"), cancellable = true)
     private void setTitleText(ClientboundSetTitleTextPacket packet, CallbackInfo ci) {
-        SbUtils.FEATURES.get(ChatFilters.class).onTitle(packet.text(), ci);
+        SbUtils.FEATURES.get(ChatFilters.class).onTitle(packet.getText(), ci);
     }
 }
