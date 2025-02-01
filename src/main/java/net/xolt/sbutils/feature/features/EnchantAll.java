@@ -7,14 +7,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.AirItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -345,7 +343,7 @@ public class EnchantAll extends Feature<ModConfig> {
         if (!itemStack.getItem().isEnchantable(itemStack))
             return new ArrayList<>();
 
-        Map<Enchantment, Integer> itemsEnchants = EnchantmentHelper.deserializeEnchantments(itemStack.getEnchantmentTags());
+        Map<Enchantment, Integer> itemsEnchants = InvUtils.getEnchantments(itemStack);
         List<Enchantment> enchantments = new ArrayList<>();
         if (!unenchant) {
             for (Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
@@ -377,6 +375,6 @@ public class EnchantAll extends Feature<ModConfig> {
             return false;
 
         return ModConfig.HANDLER.instance().enchantAll.excludeFrost &&
-                EnchantmentHelper.deserializeEnchantments(MC.player.getMainHandItem().getEnchantmentTags()).containsKey(Enchantments.FROST_WALKER);
+                InvUtils.getEnchantments(MC.player.getMainHandItem()).containsKey(Enchantments.FROST_WALKER);
     }
 }

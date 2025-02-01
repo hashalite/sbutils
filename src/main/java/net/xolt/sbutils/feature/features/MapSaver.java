@@ -6,10 +6,12 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.MapRenderer;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.EntityHitResult;
 import net.xolt.sbutils.command.CommandHelper;
@@ -51,12 +53,12 @@ public class MapSaver extends Feature<ModConfig> {
             ChatUtils.printMessage("message.sbutils.mapSaver.notHoldingOrInFrame");
             return;
         }
-        Integer mapId = MapItem.getMapId(map);
+        MapId mapId = map.get(DataComponents.MAP_ID);
         if (mapId == null) {
             ChatUtils.printMessage("message.sbutils.mapSaver.saveFailed");
             return;
         }
-        MapItemSavedData mapData = MapItem.getSavedData(mapId, MC.level);
+        MapItemSavedData mapData = MapItem.getSavedData(map, MC.level);
         MapRenderer.MapInstance mapInstance = MC.gameRenderer.getMapRenderer().getOrCreateMapInstance(mapId, mapData);
         NativeImage image = ((MapInstanceAccessor)mapInstance).getTexture().getPixels();
         String servername = null;

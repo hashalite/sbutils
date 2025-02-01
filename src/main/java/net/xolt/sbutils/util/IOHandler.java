@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.saveddata.maps.MapId;
 
 import java.io.File;
 import java.io.IOException;
@@ -162,12 +163,12 @@ public class IOHandler {
         }
     }
 
-    public static boolean saveMapImage(int mapId, String servername, NativeImage image) {
+    public static boolean saveMapImage(MapId mapId, String servername, NativeImage image) {
         File serverDir = new File(mapSaverDir + File.separator + servername);
-        File imagePath = new File(serverDir + File.separator + servername + "-" + mapId + ".png");
+        File imagePath = new File(serverDir + File.separator + servername + "-" + mapId.id() + ".png");
         int suffix = 2;
         while (imagePath.exists())
-            imagePath = new File(serverDir + File.separator + servername + "-" + mapId + "-" + suffix++ + ".png");
+            imagePath = new File(serverDir + File.separator + servername + "-" + mapId.id() + "-" + suffix++ + ".png");
         try {
             serverDir.mkdir();
             image.writeToFile(imagePath);

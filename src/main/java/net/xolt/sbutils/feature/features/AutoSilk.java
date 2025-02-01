@@ -23,9 +23,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.block.EnchantmentTableBlock;
+import net.minecraft.world.level.block.EnchantingTableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
@@ -35,6 +34,7 @@ import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.ChatUtils;
+import net.xolt.sbutils.util.InvUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -114,7 +114,7 @@ public class AutoSilk extends Feature<ModConfig> {
         if (!ModConfig.HANDLER.instance().autoSilk.enabled)
             return;
 
-        if (state.equals(EnchantState.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && !EnchantmentHelper.getEnchantments(packet.getItem()).isEmpty())
+        if (state.equals(EnchantState.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && !InvUtils.getEnchantments(packet.getItem()).isEmpty())
             state = EnchantState.RETURN_ITEM_AND_RESET;
     }
 
@@ -360,7 +360,7 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     private static boolean shouldCleanStack(ItemStack stack) {
-        return stack.getItem() instanceof EnchantedBookItem && !EnchantmentHelper.deserializeEnchantments(EnchantedBookItem.getEnchantments(stack)).containsKey(Enchantments.SILK_TOUCH);
+        return stack.getItem() instanceof EnchantedBookItem && !InvUtils.getEnchantments(stack).containsKey(Enchantments.SILK_TOUCH);
     }
 
     private static boolean clickNearestEnchantTable() {
@@ -375,7 +375,7 @@ public class AutoSilk extends Feature<ModConfig> {
                 for (int z = playerPos.getZ() - range; z <= playerPos.getZ() + range; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockState state = MC.level.getBlockState(pos);
-                    if (state.getBlock() instanceof EnchantmentTableBlock)
+                    if (state.getBlock() instanceof EnchantingTableBlock)
                         tablePos = pos;
                 }
             }
@@ -397,8 +397,8 @@ public class AutoSilk extends Feature<ModConfig> {
             if (ignoreEnchantingSlots && slot.index < 2)
                 continue;
             ItemStack itemStack = slot.getItem();
-            if (itemStack.getItem().equals(item) && itemStack.getEnchantmentTags().isEmpty()) {
-                if (item.getMaxStackSize() == 1)
+            if (itemStack.getItem().equals(item) && InvUtils.getEnchantments(itemStack).isEmpty()) {
+                if (item.getDefaultMaxStackSize() == 1)
                     return slot;
                 if (result == null) {
                     result = slot;
