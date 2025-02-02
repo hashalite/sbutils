@@ -71,7 +71,7 @@ public class AntiPlace extends Feature<ModConfig> {
         assert MC.level != null;
         InteractionResult actionResult = MC.level.getBlockState(hitResult.getBlockPos()).useWithoutItem(MC.level, player, hitResult);
 
-        if (actionResult.consumesAction())
+        if (actionResult.consumesAction() && !player.isShiftKeyDown())
             return false;
 
         ItemStack held = player.getItemInHand(hand);
