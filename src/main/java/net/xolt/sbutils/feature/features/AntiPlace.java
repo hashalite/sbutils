@@ -65,7 +65,7 @@ public class AntiPlace extends Feature<ModConfig> {
     private static boolean shouldCancelBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
         assert MC.level != null;
         InteractionResult actionResult = MC.level.getBlockState(hitResult.getBlockPos()).use(MC.level, player, hand, hitResult);
-        if ((actionResult == InteractionResult.CONSUME || actionResult == InteractionResult.SUCCESS) && !player.isShiftKeyDown())
+        if (actionResult.consumesAction() && !player.isShiftKeyDown())
             return false;
 
         ItemStack held = player.getItemInHand(hand);
