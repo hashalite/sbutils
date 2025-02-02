@@ -168,6 +168,7 @@ public class ModConfig {
         @ConfigEntry public boolean enabled = false;
         @ConfigEntry public String response = "I am currently AFK. Please /mail me and I'll get back to you later!";
         @ConfigEntry public double delay = 1.0;
+        @ConfigEntry public boolean statusHud = true;
     }
 
     @ConfigEntry public AutoSilkConfig autoSilk = new AutoSilkConfig();
