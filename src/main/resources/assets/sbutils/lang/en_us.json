@@ -36,6 +36,8 @@
   "message.sbutils.autoAdvert.deleteSuccess": "Advertisement successfully removed. Current advertisements:",
   "message.sbutils.autoAdvert.toggleSuccess": "Advertisement successfully toggled. Current advertisements:",
 
+  "message.sbutils.autoReply.statusHud": "Auto Reply is currently active!",
+
   "message.sbutils.joinCommands.commandEntry": "%s | Accounts: %s",
   "message.sbutils.joinCommands.commandSetSuccess": "Command changed from %s to %s.",
   "message.sbutils.joinCommands.accountSetSuccess": "Account list for command %s updated to %s.",
@@ -326,6 +328,8 @@
   "text.sbutils.config.option.autoReply.response.tooltip": "The response to send to private messages.",
   "text.sbutils.config.option.autoReply.delay": "Reply Delay",
   "text.sbutils.config.option.autoReply.delay.tooltip": "The delay between responses if multiple people message you at once. (Seconds)",
+  "text.sbutils.config.option.autoReply.statusHud": "Status HUD",
+  "text.sbutils.config.option.autoReply.statusHud.tooltip": "Displays a message above your hotbar while Auto Reply is enabled.",
 
 
   "text.sbutils.config.category.autoSilk": "Auto Silk",
