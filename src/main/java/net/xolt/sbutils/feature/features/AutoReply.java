@@ -2,8 +2,8 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 import net.xolt.sbutils.SbUtils;
@@ -24,6 +24,7 @@ public class AutoReply extends Feature<ModConfig> {
     private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoReply.enabled", Boolean.class, (config) -> config.autoReply.enabled, (config, value) -> config.autoReply.enabled = value);
     private final OptionBinding<ModConfig, String> response = new OptionBinding<>("sbutils", "autoReply.response", String.class, (config) -> config.autoReply.response, (config, value) -> config.autoReply.response = value);
     private final OptionBinding<ModConfig, Double> delay = new OptionBinding<>("sbutils", "autoReply.delay", Double.class, (config) -> config.autoReply.delay, (config, value) -> config.autoReply.delay = value);
+    private final OptionBinding<ModConfig, Boolean> statusHud = new OptionBinding<>("sbutils", "autoReply.statusHud", Boolean.class, (config) -> config.autoReply.statusHud, (config, value) -> config.autoReply.statusHud = value);
 
     private long lastMsgSentAt;
     private final LinkedList<String> msgQueue;
@@ -35,7 +36,7 @@ public class AutoReply extends Feature<ModConfig> {
 
     @Override
     public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
-        return List.of(enabled, response, delay);
+        return List.of(enabled, response, delay, statusHud);
     }
 
     @Override
@@ -44,6 +45,7 @@ public class AutoReply extends Feature<ModConfig> {
                 CommandHelper.toggle(command, this, enabled, ModConfig.HANDLER)
                     .then(CommandHelper.string("response", "response", response, ModConfig.HANDLER))
                     .then(CommandHelper.doubl("delay", "seconds", delay, ModConfig.HANDLER))
+                    .then(CommandHelper.bool("statusHud", statusHud, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, autoReplyNode);
     }
@@ -51,6 +53,9 @@ public class AutoReply extends Feature<ModConfig> {
     public void tick() {
         if (!ModConfig.HANDLER.instance().autoReply.enabled || MC.getConnection() == null)
             return;
+
+        if (ModConfig.HANDLER.instance().autoReply.statusHud && MC.player != null)
+            MC.gui.setOverlayMessage(Component.translatable("message.sbutils.autoReply.statusHud").withStyle(ChatFormatting.RED), false);
 
         if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.instance().autoReply.delay * 1000.0)
             sendMessage();
