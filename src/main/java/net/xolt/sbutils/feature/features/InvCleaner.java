@@ -35,6 +35,7 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class InvCleaner extends Feature<ModConfig> {
     private final OptionBinding<ModConfig, Double> clickDelay = new OptionBinding<>("sbutils", "invCleaner.clickDelay", Double.class, (config) -> config.invCleaner.clickDelay, (config, value) -> config.invCleaner.clickDelay = value);
+    private final OptionBinding<ModConfig, Double> slotCooldown = new OptionBinding<>("sbutils", "invCleaner.slotCooldown", Double.class, (config) -> config.invCleaner.slotCooldown, (config, value) -> config.invCleaner.slotCooldown = value);
     private final ListOptionBinding<ModConfig, String> itemsToClean = new ListOptionBinding<>("sbutils", "invCleaner.itemsToClean", "", String.class, (config) -> config.invCleaner.itemsToClean, (config, value) -> config.invCleaner.itemsToClean = value, new ListConstraints<>(null, null, new StringConstraints(false)));
 
     private boolean cleaning;
@@ -42,15 +43,17 @@ public class InvCleaner extends Feature<ModConfig> {
     private Predicate<ItemStack> garbageFilter;
     private Consumer<Boolean> callback;
     private long lastClick;
+    private long[] slotLastClicked;
     private int stacksCleaned;
 
     public InvCleaner() {
         super("sbutils", "invCleaner", "invcleaner", "ic");
+        slotLastClicked = new long[36];
     }
 
     @Override
     public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
-        return List.of(clickDelay, itemsToClean);
+        return List.of(clickDelay, slotCooldown, itemsToClean);
     }
 
     @Override
@@ -59,6 +62,7 @@ public class InvCleaner extends Feature<ModConfig> {
                 CommandHelper.runnable(command, () -> clean(ModConfig.HANDLER.instance().invCleaner.itemsToClean, null))
                         .then(CommandHelper.stringList("items", "item", itemsToClean, ModConfig.HANDLER))
                         .then(CommandHelper.doubl("clickDelay", "seconds", clickDelay, ModConfig.HANDLER))
+                        .then(CommandHelper.doubl("slotCooldown", "seconds", slotCooldown, ModConfig.HANDLER))
         );
         registerAlias(dispatcher, invCleanerNode);
     }
@@ -91,14 +95,23 @@ public class InvCleaner extends Feature<ModConfig> {
     private void doClean() {
         if (MC.player == null)
             return;
+        boolean slotOnCooldown = false;
         for (int i = 0; i < 36; i++) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - slotLastClicked[i] < ModConfig.HANDLER.instance().invCleaner.slotCooldown * 1000) {
+                slotOnCooldown = true;
+                continue;
+            }
             if (!garbageFilter.test(MC.player.getInventory().getItem(i)))
                 continue;
             InvUtils.quickMove(i, MC.player.containerMenu);
-            lastClick = System.currentTimeMillis();
+            lastClick = currentTime;
+            slotLastClicked[i] = currentTime;
             stacksCleaned++;
             return;
         }
+        if (slotOnCooldown)
+            return;
         MC.player.closeContainer();
         // Callback needs to happen before reset() because stacksCleaned is set to 0 by reset()
         if (callback != null)
