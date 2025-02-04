@@ -252,6 +252,7 @@ public class ModConfig {
     @ConfigEntry public InvCleanerConfig invCleaner = new InvCleanerConfig();
     public static class InvCleanerConfig {
         @ConfigEntry public double clickDelay = 0.0;
+        @ConfigEntry public double slotCooldown = 0.5;
         @ConfigEntry public List<String> itemsToClean = Arrays.asList("cobblestone");
     }
 
