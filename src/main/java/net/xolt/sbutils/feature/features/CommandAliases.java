@@ -26,7 +26,7 @@ public class CommandAliases extends Feature<ModConfig> {
 
     @Override
     public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
-        return List.of();
+        return null;
     }
 
     @Override
