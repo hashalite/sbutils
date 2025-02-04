@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
@@ -56,14 +56,14 @@ public class CommandAliases extends Feature<ModConfig> {
     }
 
     private int findOwned(@Nullable ItemInput item) {
-        assert MC.getConnection() != null;
-        MC.getConnection().sendCommand("shops find owned" + (item == null ? "" : " " + BuiltInRegistries.ITEM.getKey(item.getItem()).getPath()));
+        assert MC.player != null;
+        MC.player.commandSigned("shops find owned" + (item == null ? "" : " " + Registry.ITEM.getKey(item.getItem()).getPath()), null);
         return Command.SINGLE_SUCCESS;
     }
 
     private int findWanted(@Nullable ItemInput item) {
-        assert MC.getConnection() != null;
-        MC.getConnection().sendCommand("shops find wanted" + (item == null ? "" : " " + BuiltInRegistries.ITEM.getKey(item.getItem()).getPath()));
+        assert MC.player != null;
+        MC.player.commandSigned("shops find wanted" + (item == null ? "" : " " + Registry.ITEM.getKey(item.getItem()).getPath()), null);
         return Command.SINGLE_SUCCESS;
     }
 }
