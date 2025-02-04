@@ -328,6 +328,8 @@
   "text.sbutils.config.option.autoReply.response.tooltip": "The response to send to private messages.",
   "text.sbutils.config.option.autoReply.delay": "Reply Delay",
   "text.sbutils.config.option.autoReply.delay.tooltip": "The delay between responses if multiple people message you at once. (Seconds)",
+  "text.sbutils.config.option.autoReply.playerCooldown": "Player Cooldown",
+  "text.sbutils.config.option.autoReply.playerCooldown.tooltip": "The cooldown before another reply can be sent to the same player. (Seconds)",
   "text.sbutils.config.option.autoReply.statusHud": "Status HUD",
   "text.sbutils.config.option.autoReply.statusHud.tooltip": "Displays a message above your hotbar while Auto Reply is enabled.",
 

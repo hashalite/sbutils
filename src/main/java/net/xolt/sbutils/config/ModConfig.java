@@ -162,6 +162,7 @@ public class ModConfig {
         @SerialEntry public boolean enabled = false;
         @SerialEntry public String response = "I am currently AFK. Please /mail me and I'll get back to you later!";
         @SerialEntry public double delay = 1.0;
+        @SerialEntry public double playerCooldown = 60.0;
         @SerialEntry public boolean statusHud = true;
     }
 
