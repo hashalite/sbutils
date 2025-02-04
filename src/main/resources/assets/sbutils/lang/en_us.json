@@ -474,6 +474,8 @@
   "text.sbutils.config.option.invCleaner.itemsToClean.tooltip": "A list of items to clean from your inventory.",
   "text.sbutils.config.option.invCleaner.clickDelay": "Click Delay",
   "text.sbutils.config.option.invCleaner.clickDelay.tooltip": "The delay between clicks when moving items into the disposal. (Seconds)",
+  "text.sbutils.config.option.invCleaner.slotCooldown": "Slot Cooldown",
+  "text.sbutils.config.option.invCleaner.slotCooldown.tooltip": "The cooldown before the same slot may be clicked again. Prevents issues due to inventory desync. (Seconds)",
 
 
   "text.sbutils.config.category.joinCommands": "Join Commands",
