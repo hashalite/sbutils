@@ -67,7 +67,7 @@ public class AutoReply extends Feature<ModConfig> {
 
         Matcher incomingMsg = RegexFilters.incomingMsgFilter.matcher(message.getString());
         if (incomingMsg.matches())
-            queueResponse(incomingMsg.group(1));
+            queueResponse(incomingMsg.group(2));
     }
 
     private void queueResponse(String sender) {
