@@ -74,6 +74,7 @@ public class SbUtils implements ClientModInitializer {
                 new ChatAppend(),
                 new ChatFilters(),
                 new ChatLogger(),
+                new CommandAliases(),
                 new Convert(),
                 new DeathCoords(),
                 new EnchantAll(),
