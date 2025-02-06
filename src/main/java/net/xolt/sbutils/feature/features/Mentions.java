@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.sounds.SoundSource;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.argument.ColorArgumentType;
 import net.xolt.sbutils.command.CommandHelper;
@@ -196,6 +197,6 @@ public class Mentions extends Feature<ModConfig> {
         if (MC.player == null)
             return;
 
-        MC.player.playSound(ModConfig.HANDLER.instance().mentions.sound.getSound(), 1, 1);
+        MC.player.playNotifySound(ModConfig.HANDLER.instance().mentions.sound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
     }
 }

@@ -8,6 +8,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.sounds.SoundSource;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -63,7 +64,7 @@ public class StaffDetector extends Feature<ModConfig> {
         checkForNoStaff = true;
 
         if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
-            MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
+            MC.player.playNotifySound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
     }
 
     public void afterPlayerLeave() {
@@ -82,7 +83,7 @@ public class StaffDetector extends Feature<ModConfig> {
 
         showStaffNotification(player, true);
         if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
-            MC.player.playSound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), 1, 1);
+            MC.player.playNotifySound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
     }
 
     private void showStaffNotification(PlayerInfo player, boolean joined) {

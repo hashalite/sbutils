@@ -9,6 +9,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -138,7 +139,7 @@ public class Notifier extends Feature<ModConfig> {
 
     private static void doLlamaNotification() {
         if (ModConfig.HANDLER.instance().notifier.playLlamaSound && MC.player != null)
-            MC.player.playSound(ModConfig.HANDLER.instance().notifier.llamaSound.getSound(), 1, 1);
+            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.traderSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
 
         if (ModConfig.HANDLER.instance().notifier.showLlamaTitle)
             ChatUtils.sendPlaceholderTitle("message.sbutils.notifier.sighted", Component.translatable("message.sbutils.notifier.vpLlama"));
@@ -146,7 +147,7 @@ public class Notifier extends Feature<ModConfig> {
 
     private static void doTraderNotification() {
         if (ModConfig.HANDLER.instance().notifier.playTraderSound && MC.player != null)
-            MC.player.playSound(ModConfig.HANDLER.instance().notifier.traderSound.getSound(), 1, 1);
+            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.traderSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
 
         if (ModConfig.HANDLER.instance().notifier.showTraderTitle)
             ChatUtils.sendPlaceholderTitle("message.sbutils.notifier.sighted", Component.translatable("message.sbutils.notifier.wanderingTrader"));
@@ -154,12 +155,12 @@ public class Notifier extends Feature<ModConfig> {
 
     private static void doShopNotification() {
         if (ModConfig.HANDLER.instance().notifier.playShopSound && MC.player != null)
-            MC.player.playSound(ModConfig.HANDLER.instance().notifier.shopSound.getSound(), 1, 1);
+            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.shopSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
     }
 
     private static void doVisitNotification() {
         if (ModConfig.HANDLER.instance().notifier.playVisitSound && MC.player != null)
-            MC.player.playSound(ModConfig.HANDLER.instance().notifier.visitSound.getSound(), 1, 1);
+            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.visitSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
     }
 
     private static boolean enabled() {
