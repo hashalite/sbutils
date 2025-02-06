@@ -98,12 +98,12 @@ public class InvCleaner extends Feature<ModConfig> {
         boolean slotOnCooldown = false;
         for (int i = 0; i < 36; i++) {
             long currentTime = System.currentTimeMillis();
+            if (!garbageFilter.test(MC.player.getInventory().getItem(i)))
+                continue;
             if (currentTime - slotLastClicked[i] < ModConfig.HANDLER.instance().invCleaner.slotCooldown * 1000) {
                 slotOnCooldown = true;
                 continue;
             }
-            if (!garbageFilter.test(MC.player.getInventory().getItem(i)))
-                continue;
             InvUtils.quickMove(i, MC.player.containerMenu);
             lastClick = currentTime;
             slotLastClicked[i] = currentTime;
