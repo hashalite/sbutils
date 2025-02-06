@@ -54,7 +54,7 @@ public class RegexFilters {
     // Notifier
 
     public static final Pattern wanderingTraderFilter = Pattern.compile(". A Wandering Trader has been sighted somewhere at spawn offering a limited number of exclusive trades! *");
-    public static final Pattern vpLlamaFilter = Pattern.compile("\\[VoteParty\\] A Vote Party Llama has been sighted at the spawn!");
+    public static final Pattern vpLlamaFilter = Pattern.compile("\\[Vote Party\\] A Vote Party Llama has been sighted at the spawn!");
     
     
     // Auto Fix
