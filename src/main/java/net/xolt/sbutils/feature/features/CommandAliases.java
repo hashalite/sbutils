@@ -52,7 +52,7 @@ public class CommandAliases extends Feature<ModConfig> {
     }
 
     private int findWanted() {
-        return findOwned(null);
+        return findWanted(null);
     }
 
     private int findOwned(@Nullable ItemInput item) {
