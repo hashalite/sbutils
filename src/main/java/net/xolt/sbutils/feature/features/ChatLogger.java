@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
@@ -72,19 +71,19 @@ public class ChatLogger extends Feature<ModConfig> {
 
         for (ChatFilter filter : shopFilters)
             if (filter.matches(stringMessage) && filter.isEnabled())
-                IOHandler.logTransaction(message, messageReceivedAt);
+                FileUtils.logTransaction(message, messageReceivedAt);
 
         for (ChatFilter filter : messageFilters)
             if (filter.matches(stringMessage) && filter.isEnabled())
-                IOHandler.logMessage(message, messageReceivedAt);
+                FileUtils.logMessage(message, messageReceivedAt);
 
         for (ChatFilter filter : visitFilters)
             if (filter.matches(stringMessage) && filter.isEnabled())
-                IOHandler.logVisit(message, messageReceivedAt);
+                FileUtils.logVisit(message, messageReceivedAt);
 
         for (ChatFilter filter : dpFilters)
             if (filter.matches(stringMessage) && filter.isEnabled())
-                IOHandler.logDpWinner(message, messageReceivedAt);
+                FileUtils.logDpWinner(message, messageReceivedAt);
     }
 
     private boolean anyFiltersEnabled() {

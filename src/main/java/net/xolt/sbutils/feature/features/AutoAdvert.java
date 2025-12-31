@@ -22,7 +22,7 @@ import net.xolt.sbutils.config.binding.constraints.ListConstraints;
 import net.xolt.sbutils.config.binding.constraints.StringConstraints;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.command.CommandHelper;
-import net.xolt.sbutils.util.IOHandler;
+import net.xolt.sbutils.util.FileUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
 
@@ -134,7 +134,7 @@ public class AutoAdvert extends Feature<ModConfig> {
         String adFile = getAdFile();
         List<String> adverts = getAdList();
         adverts.add(advert);
-        IOHandler.writeAdverts(adverts, adFile);
+        FileUtils.writeAdverts(adverts, adFile);
 
         ChatUtils.printMessage("message.sbutils.autoAdvert.addSuccess");
         ChatUtils.printList(formatAds(adverts), true);
@@ -156,7 +156,7 @@ public class AutoAdvert extends Feature<ModConfig> {
         }
 
         adverts.remove(adjustedIndex);
-        IOHandler.writeAdverts(adverts, adFile);
+        FileUtils.writeAdverts(adverts, adFile);
 
         ChatUtils.printMessage("message.sbutils.autoAdvert.deleteSuccess");
         ChatUtils.printList(formatAds(adverts), true);
@@ -178,7 +178,7 @@ public class AutoAdvert extends Feature<ModConfig> {
         }
 
         adverts.add(adjustedIndex, advert);
-        IOHandler.writeAdverts(adverts, adFile);
+        FileUtils.writeAdverts(adverts, adFile);
 
         ChatUtils.printMessage("message.sbutils.autoAdvert.addSuccess");
         ChatUtils.printList(formatAds(adverts), true);
@@ -205,7 +205,7 @@ public class AutoAdvert extends Feature<ModConfig> {
         else
             adverts.set(adjustedIndex, "//" + currentValue);
 
-        IOHandler.writeAdverts(adverts, adFile);
+        FileUtils.writeAdverts(adverts, adFile);
 
         ChatUtils.printMessage("message.sbutils.autoAdvert.toggleSuccess");
         ChatUtils.printList(formatAds(adverts), true);
@@ -315,7 +315,7 @@ public class AutoAdvert extends Feature<ModConfig> {
         if (adFile == null)
             return new ArrayList<>();
 
-        String adListString = IOHandler.readAdFile(getAdFile());
+        String adListString = FileUtils.readAdFile(getAdFile());
 
         if (adListString == null || adListString.isEmpty())
             return new ArrayList<>();

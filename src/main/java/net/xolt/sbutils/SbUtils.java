@@ -16,7 +16,7 @@ import net.xolt.sbutils.feature.features.*;
 import net.xolt.sbutils.systems.CommandSender;
 import net.xolt.sbutils.systems.ServerDetector;
 import net.xolt.sbutils.systems.TpsEstimator;
-import net.xolt.sbutils.util.IOHandler;
+import net.xolt.sbutils.util.FileUtils;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class SbUtils implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        IOHandler.createAll();
+        FileUtils.createAll();
         ModConfig.HANDLER.load();
         initializeFeatures();
         ClientCommandRegistrationCallback.EVENT.register(FEATURES::registerCommands);

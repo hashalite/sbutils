@@ -20,7 +20,7 @@ import java.util.Map;
 
 import static net.xolt.sbutils.SbUtils.LOGGER;
 
-public class IOHandler {
+public class FileUtils {
     private static final SimpleDateFormat dateTimeLogFormat = new SimpleDateFormat("[YYYY-MM-dd HH:mm:ss] ");
     public static final File mcDirectory = FabricLoader.getInstance().getGameDir().toFile();
 

@@ -7,9 +7,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.inventory.ClickType;
@@ -58,7 +55,7 @@ public class AutoKit extends Feature<ModConfig> {
         classicKits.addListener(this::onClassicKitListChanged);
         kitQueue = new PriorityQueue<>(KitQueueEntry.KIT_QUEUE_ENTRY_COMPARATOR);
         invFullList = new ArrayList<>();
-        kitData = IOHandler.readAutoKitData();
+        kitData = FileUtils.readAutoKitData();
         awaitingResponse = false;
         lastCommandSentAt = 0;
     }
@@ -243,7 +240,7 @@ public class AutoKit extends Feature<ModConfig> {
         }
 
         serverKitData.get(player).put(kitEntry.kit.getSerializedName(), lastClaimed);
-        IOHandler.writeAutoKitData(kitData);
+        FileUtils.writeAutoKitData(kitData);
         kitQueue.poll();
         queueKit(kitEntry.kit);
     }
@@ -281,7 +278,7 @@ public class AutoKit extends Feature<ModConfig> {
             MC.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, DAILY_CLAIM_BUTTON_SLOT, 0, ClickType.PICKUP, MC.player);
             MC.player.closeContainer();
             serverKitData.get(player).put(kitEntry.kit.getSerializedName(), currentTime);
-            IOHandler.writeAutoKitData(kitData);
+            FileUtils.writeAutoKitData(kitData);
             kitQueue.poll();
             queueKit(kitEntry.kit);
             return;
@@ -315,7 +312,7 @@ public class AutoKit extends Feature<ModConfig> {
 
         MC.player.closeContainer();
         serverKitData.get(player).put(kitEntry.kit.getSerializedName(), lastClaimed);
-        IOHandler.writeAutoKitData(kitData);
+        FileUtils.writeAutoKitData(kitData);
         kitQueue.poll();
         queueKit(kitEntry.kit);
     }

@@ -20,7 +20,7 @@ import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.mixins.MapInstanceAccessor;
 import net.xolt.sbutils.util.ChatUtils;
-import net.xolt.sbutils.util.IOHandler;
+import net.xolt.sbutils.util.FileUtils;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class MapSaver extends Feature<ModConfig> {
             servername = MC.getSingleplayerServer().getWorldData().getLevelName() + " (Singleplayer)";
         else
             servername = "unknown";
-        if (!IOHandler.saveMapImage(mapId, servername, image)) {
+        if (!FileUtils.saveMapImage(mapId, servername, image)) {
             ChatUtils.printMessage("message.sbutils.mapSaver.saveFailed");
             return;
         }
