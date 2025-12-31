@@ -2,7 +2,6 @@ package net.xolt.sbutils.util;
 
 import java.util.*;
 
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
@@ -11,7 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -26,7 +25,7 @@ public class InvUtils {
             return;
         }
 
-        MC.gameMode.handleInventoryMouseClick(MC.player.containerMenu.containerId, indexToInventorySlot(sourceIndex, screenHandler), hotbarIndex, ClickType.SWAP, MC.player);
+        MC.gameMode.handleInventoryMouseClick(screenHandler.containerId, invIndexToScreenSlot(sourceIndex, screenHandler), hotbarIndex, ClickType.SWAP, MC.player);
     }
 
     public static void quickMove(int index, AbstractContainerMenu screenHandler) {
@@ -34,7 +33,7 @@ public class InvUtils {
             return;
         }
 
-        MC.gameMode.handleInventoryMouseClick(MC.player.containerMenu.containerId, indexToInventorySlot(index, screenHandler), 0, ClickType.QUICK_MOVE, MC.player);
+        MC.gameMode.handleInventoryMouseClick(screenHandler.containerId, invIndexToScreenSlot(index, screenHandler), 0, ClickType.QUICK_MOVE, MC.player);
     }
 
     public static int findEmptyHotbarSlot() {
@@ -45,55 +44,23 @@ public class InvUtils {
         return emptySlot < 9 ? emptySlot : -1;
     }
 
-    // Converts an index in the player's inventory to a slot id for the provided screen handler
-    private static int indexToInventorySlot(int index, AbstractContainerMenu screenHandler) {
-        if (screenHandler == null || index < 0 || index > 40) {
-            return -1;
+    // Converts an index in the player's inventory container to a slot id for the provided screen
+    // Returns -1 if the specified slot is unavailable in the provided screen
+    private static int invIndexToScreenSlot(int index, AbstractContainerMenu screenHandler) {
+        // Loop through all slots in the screen
+        for (Slot slot : screenHandler.slots) {
+            // Skip all slots not in the player's inventory
+            if (!(slot.container instanceof Inventory))
+                continue;
+            // If the container slot matches, return the screen slot
+            if (slot.getContainerSlot() == index)
+                return slot.index;
         }
-
-        boolean playerScreenOpen = isPlayerScreen(screenHandler);
-
-        int invOffset;
-        if (playerScreenOpen) {
-            invOffset = 9;
-        } else {
-            if (index >= 36) {
-                // Armor and offhand slots inaccessible
-                return -1;
-            }
-            invOffset = screenHandler.slots.size() - 36;
-        }
-
-        if (index >= 0 && index <= 8) {
-            // Hotbar
-            return invOffset + 27 + index;
-        }
-
-        if (index >= 9 && index <= 35) {
-            // Main inventory
-            return (index - 9) + invOffset;
-        }
-
-        if (index >= 36 && index <= 39 && playerScreenOpen) {
-            // Armor slots
-            return 44 - index;
-        }
-
-        if (index == 40 && playerScreenOpen) {
-            // Offhand slot
-            return 45;
-        }
-
         return -1;
     }
 
-    // Returns true if the offhand and armor slots are accessible from the current screen
-    private static boolean isPlayerScreen(AbstractContainerMenu screenHandler) {
-        return screenHandler instanceof InventoryMenu || screenHandler instanceof CreativeModeInventoryScreen.ItemPickerMenu;
-    }
-
     public static boolean canSwapSlot(int slotIndex, AbstractContainerMenu screenHandler) {
-        return !(slotIndex >= 36 && slotIndex <= 40 && !isPlayerScreen(screenHandler));
+        return invIndexToScreenSlot(slotIndex, screenHandler) != -1;
     }
 
     public static boolean doesKitFit(Inventory inventory, List<ItemStack> kit) {
