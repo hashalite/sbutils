@@ -2,22 +2,30 @@ package net.xolt.sbutils.config.gui.controllers;
 
 import dev.isxander.yacl3.api.Controller;
 import dev.isxander.yacl3.api.Option;
-import dev.isxander.yacl3.api.StateManager;
-import dev.isxander.yacl3.api.controller.ControllerBuilder;
+import net.minecraft.client.gui.GuiGraphics;
 import dev.isxander.yacl3.api.utils.Dimension;
 import dev.isxander.yacl3.gui.AbstractWidget;
 import dev.isxander.yacl3.gui.YACLScreen;
 import dev.isxander.yacl3.gui.controllers.ControllerWidget;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+//? if >=1.21.11 {
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+//? }
+//? yacl: >=3.6.0 {
+import dev.isxander.yacl3.api.StateManager;
+//? }
+//? yacl: >=3.0.0 {
+import dev.isxander.yacl3.api.controller.ControllerBuilder;
+//? }
 
 public abstract class MultiValueController<T> implements Controller<T> {
     private final Option<T> option;
@@ -32,10 +40,28 @@ public abstract class MultiValueController<T> implements Controller<T> {
         this.controllers = controllers;
     }
 
-    protected static <T> Controller<T> dummyController(@Nullable String name, Function<Option<T>, ControllerBuilder<T>> controller, T def, Supplier<T> get, Consumer<T> set) {
+    //? yacl: <3.0.0
+    //@SuppressWarnings("unchecked")
+    protected static <T> Controller<T> dummyController(@Nullable String name,
+                                                       Function<Option<T>,
+                                                       //? yacl: >=3.0.0 {
+                                                               ControllerBuilder<T>> controller,
+                                                       //? } else
+                                                               //Controller<T>> controller,
+                                                       T def,
+                                                       Supplier<T> get,
+                                                       Consumer<T> set) {
+        //? yacl: >=3.0.0 {
         return Option.<T>createBuilder()
+        //? } else
+        //return Option.<T>createBuilder((Class<T>)def.getClass())
                 .name(name != null ? Component.translatable(name) : Component.literal(""))
+                //? yacl: >=3.6.0 {
                 .stateManager(StateManager.createInstant(def, get, set))
+                //? } else {
+                /*.binding(def, get, set)
+                .instant(true)
+                *///? }
                 .controller(controller).build().controller();
     }
 
@@ -80,58 +106,110 @@ public abstract class MultiValueController<T> implements Controller<T> {
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        //? if >=1.21.11 {
+        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        //? } else
+        //public boolean mouseClicked(double mouseX, double mouseY, int button) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.mouseClicked(mouseX, mouseY, button);
+                result = result ||
+                        //? if >=1.21.11 {
+                        element.mouseClicked(mouseButtonEvent, doubleClick);
+                        //? } else
+                        //element.mouseClicked(mouseX, mouseY, button);
             return result;
         }
 
         @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        //? if >=1.21.11 {
+        public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
+        //? } else
+        //public boolean mouseReleased(double mouseX, double mouseY, int button) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.mouseReleased(mouseX, mouseY, button);
+                result = result ||
+                        //? if >=1.21.11 {
+                        element.mouseReleased(mouseButtonEvent);
+                        //? } else
+                        //element.mouseReleased(mouseX, mouseY, button);
             return result;
         }
 
         @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        //? if >=1.21.11 {
+        public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double dx, double dy) {
+        //? } else
+        //public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+                result = result ||
+                        //? if >=1.21.11 {
+                        element.mouseDragged(mouseButtonEvent, dx, dy);
+                        //? } else
+                        //element.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
             return result;
         }
 
         @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        public boolean mouseScrolled(double mouseX, double mouseY,
+                                     //? yacl: >=3.6.0 {
+                                     double horizontalAmount, double verticalAmount
+                                     //? } else
+                                     //double delta
+        ) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+                result = result || element.mouseScrolled(mouseX, mouseY,
+                        //? yacl: >=3.6.0 {
+                        horizontalAmount, verticalAmount
+                        //? } else
+                        //delta
+                );
             return result;
         }
 
         @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        //? if >=1.21.11 {
+        public boolean keyPressed(KeyEvent keyEvent) {
+        //? } else
+        //public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.keyPressed(keyCode, scanCode, modifiers);
+                result = result ||
+                        //? if >=1.21.11 {
+                        element.keyPressed(keyEvent);
+                        //? } else
+                        //element.keyPressed(keyCode, scanCode, modifiers);
             return result;
         }
 
         @Override
-        public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        //? if >=1.21.11 {
+        public boolean keyReleased(KeyEvent keyEvent) {
+        //? } else
+        //public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.keyReleased(keyCode, scanCode, modifiers);
+                result = result ||
+                        //? if >=1.21.11 {
+                        element.keyReleased(keyEvent);
+                        //? } else
+                        //element.keyReleased(keyCode, scanCode, modifiers);
             return result;
         }
 
         @Override
-        public boolean charTyped(char chr, int modifiers) {
+        //? if >=1.21.11 {
+        public boolean charTyped(CharacterEvent characterEvent) {
+        //? } else
+        //public boolean charTyped(char chr, int modifiers) {
             boolean result = false;
             for (AbstractWidget element : elements)
-                result = result || element.charTyped(chr, modifiers);
+                result = result ||
+                        //? if >=1.21.11 {
+                        element.charTyped(characterEvent);
+                        //? } else
+                        //element.charTyped(chr, modifiers);
             return result;
         }
 

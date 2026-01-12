@@ -2,11 +2,8 @@ package net.xolt.sbutils.util;
 
 import java.util.*;
 
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -14,7 +11,23 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
+//? if >=1.21 {
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+//? }
+//? if >=1.20.6 {
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+//? } else {
+/*import net.minecraft.nbt.StringTag;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+*///? }
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -96,24 +109,101 @@ public class InvUtils {
     }
 
     public static Map<Enchantment, Integer> getEnchantments(ItemStack itemStack) {
+        //? if >=1.20.6 {
         ItemEnchantments itemEnchantments = itemStack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
         ItemEnchantments storedEnchantments = itemStack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
         Map<Enchantment, Integer> enchantments = new HashMap<>();
         itemEnchantments.keySet().forEach(enchantment -> {
-            enchantments.put(enchantment.value(), itemEnchantments.getLevel(enchantment));
+            enchantments.put(enchantment.value(), itemEnchantments.getLevel(
+                    enchantment
+                            //? if <1.21
+                            //.value()
+            ));
         });
         storedEnchantments.keySet().forEach(enchantment -> {
-            enchantments.put(enchantment.value(), itemEnchantments.getLevel(enchantment));
+            enchantments.put(enchantment.value(), itemEnchantments.getLevel(
+                    enchantment
+                            //? if <1.21
+                            //.value()
+            ));
         });
         return enchantments;
+        //? } else
+        //return EnchantmentHelper.getEnchantments(itemStack);
     }
 
+    //? if >=1.21 {
     public static Enchantment getEnchantment(ResourceKey<Enchantment> enchantment) {
         assert MC.level != null;
-        Registry<Enchantment> registry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Registry<Enchantment>
+                registry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         Optional<Holder.Reference<Enchantment>> optionalEnchantment = registry.get(enchantment);
         if (optionalEnchantment.isEmpty())
             return null;
         return optionalEnchantment.get().value();
+    }
+    //? } else {
+    /*// For compatibility with <1.21
+    public static Enchantment getEnchantment(Enchantment enchantment) {
+        return enchantment;
+    }
+    *///? }
+
+    public static List<Component> getItemLore(ItemStack item) {
+        List<Component> result = new ArrayList<>();
+        //? if >1.20.4 {
+        ItemLore lore = item.get(DataComponents.LORE);
+
+        if (lore == null)
+            return result;
+
+        result = lore.lines();
+        //? } else {
+        /*CompoundTag nbt = item.getTag();
+        if (nbt == null || !nbt.contains(ItemStack.TAG_DISPLAY))
+            return result;
+
+        CompoundTag displayNbt = nbt.getCompound(ItemStack.TAG_DISPLAY);
+        if (!displayNbt.contains(ItemStack.TAG_LORE))
+            return result;
+
+        ListTag nbtList = displayNbt.getList(ItemStack.TAG_LORE, Tag.TAG_STRING);
+        for (int i = 0; i < nbtList.size(); i++) {
+            result.add(Component.Serializer.fromJson(nbtList.getString(i)));
+        }
+        *///? }
+        return result;
+    }
+
+    public static void setItemLore(ItemStack item, List<Component> lore) {
+        //? if >1.20.4 {
+        ItemLore itemLore = new ItemLore(lore, lore);
+        item.set(DataComponents.LORE, itemLore);
+        //? } else {
+        /*ListTag nbtList = new ListTag();
+        lore.stream().map(line -> StringTag.valueOf(Component.Serializer.toJson(line))).forEach((nbtList::add));
+        item.addTagElement(ItemStack.TAG_LORE, nbtList);
+        *///? }
+    }
+
+    public static int getSelectedSlot(LocalPlayer player) {
+        //? if >=1.21.11 {
+        return player.getInventory().getSelectedSlot();
+        //? } else
+        //return player.getInventory().selected;
+    }
+
+    public static void setSelectedSlot(LocalPlayer player, int slot) {
+        //? if >=1.21.11 {
+        player.getInventory().setSelectedSlot(slot);
+        //? } else
+        //player.getInventory().selected = slot;
+    }
+
+    public static ItemStack getSelectedItem(LocalPlayer player) {
+        //? if >=1.21.11 {
+        return player.getInventory().getSelectedItem();
+        //? } else
+        //return player.getInventory().getSelected();
     }
 }

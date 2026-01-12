@@ -48,6 +48,11 @@ public class DeathCoords extends Feature<ModConfig> {
 
         GlobalPos lastDeathGlobalPos = lastDeathPosOptional.get();
         BlockPos lastDeathPos = lastDeathGlobalPos.pos();
-        ChatUtils.printWithPlaceholders("message.sbutils.deathCoords.deathCoords", lastDeathGlobalPos.dimension().location().toShortLanguageKey(), lastDeathPos.getX(), lastDeathPos.getY(), lastDeathPos.getZ());
+        ChatUtils.printWithPlaceholders("message.sbutils.deathCoords.deathCoords", lastDeathGlobalPos.dimension()
+                //? if >=1.21.11 {
+                .identifier()
+                //? } else
+                //.location()
+                .toShortLanguageKey(), lastDeathPos.getX(), lastDeathPos.getY(), lastDeathPos.getZ());
     }
 }

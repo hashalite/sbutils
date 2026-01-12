@@ -1,5 +1,6 @@
 package net.xolt.sbutils.feature.features;
 
+import net.minecraft.client.player.LocalPlayer;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -8,8 +9,8 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.PickaxeItem;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.argument.TimeArgumentType;
@@ -20,6 +21,16 @@ import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.TextUtils;
+//? if >=1.21.11 {
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.level.block.Block;
+//? } else {
+/*import net.minecraft.world.item.PickaxeItem;
+ *///? }
 
 import java.util.List;
 
@@ -68,17 +79,19 @@ public class AutoMine extends Feature<ModConfig> {
 
     private int onTimerSetCommand(double time) {
         disableAt = System.currentTimeMillis() + (long)(time * 1000.0);
-        ModConfig.HANDLER.instance().autoMine.enabled = true;
+        ModConfig.instance().autoMine.enabled = true;
         ChatUtils.printWithPlaceholders("message.sbutils.autoMine.enabledFor", Component.translatable("text.sbutils.config.category.autoMine"), TextUtils.formatTime(time));
         return Command.SINGLE_SUCCESS;
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoMine.enabled || MC.player == null)
+        if (!ModConfig.instance().autoMine.enabled || MC.player == null)
             return;
 
+        LocalPlayer player = MC.player;
+
         if (disableAt != -1 && System.currentTimeMillis() >= disableAt) {
-            ModConfig.HANDLER.instance().autoMine.enabled = false;
+            ModConfig.instance().autoMine.enabled = false;
             ModConfig.HANDLER.save();
             MC.options.keyAttack.setDown(false);
             ChatUtils.printChangedSetting("text.sbutils.config.category.autoMine", false);
@@ -86,15 +99,19 @@ public class AutoMine extends Feature<ModConfig> {
             return;
         }
 
-        ItemStack holding = MC.player.getInventory().getSelected();
+        ItemStack holding = player.getInventory()
+                //? if >=1.21.11 {
+                .getSelectedItem();
+                //? } else
+                //.getSelected();
         int minDurability = getMinDurability();
 
-        if (ModConfig.HANDLER.instance().autoMine.autoSwitch && !SbUtils.FEATURES.get(AutoFix.class).fixing() && holding.getItem() instanceof PickaxeItem && holding.getMaxDamage() - holding.getDamageValue() <= minDurability) {
+        if (ModConfig.instance().autoMine.autoSwitch && !SbUtils.FEATURES.get(AutoFix.class).fixing() && isPickaxe(holding.getItem()) && holding.getMaxDamage() - holding.getDamageValue() <= minDurability) {
             int newPickaxeSlot = findNewPickaxe();
             if (newPickaxeSlot != -1) {
-                InvUtils.swapToHotbar(newPickaxeSlot, MC.player.getInventory().selected, MC.player.containerMenu);
-            } else if (!ModConfig.HANDLER.instance().autoFix.enabled) {
-                ModConfig.HANDLER.instance().autoMine.enabled = false;
+                InvUtils.swapToHotbar(newPickaxeSlot, InvUtils.getSelectedSlot(player), player.containerMenu);
+            } else if (!ModConfig.instance().autoFix.enabled) {
+                ModConfig.instance().autoMine.enabled = false;
                 ModConfig.HANDLER.save();
                 ChatUtils.printMessage("message.sbutils.autoMine.noPickaxe");
                 return;
@@ -127,11 +144,11 @@ public class AutoMine extends Feature<ModConfig> {
         if (MC.player == null)
             return -1;
 
-        int minDurability = Math.max(ModConfig.HANDLER.instance().autoMine.switchDurability, ModConfig.HANDLER.instance().toolSaver.enabled ? ModConfig.HANDLER.instance().toolSaver.durability : 0);
+        int minDurability = Math.max(ModConfig.instance().autoMine.switchDurability, ModConfig.instance().toolSaver.enabled ? ModConfig.instance().toolSaver.durability : 0);
 
         for (int i = 0; i < MC.player.getInventory().getContainerSize(); i++) {
             ItemStack itemStack = MC.player.getInventory().getItem(i);
-            if (!(itemStack.getItem() instanceof PickaxeItem))
+            if (!isPickaxe(itemStack.getItem()))
                 continue;
 
 
@@ -142,10 +159,21 @@ public class AutoMine extends Feature<ModConfig> {
     }
 
     private static int getMinDurability() {
-        return Math.max(ModConfig.HANDLER.instance().autoMine.autoSwitch ? ModConfig.HANDLER.instance().autoMine.switchDurability : -1, ModConfig.HANDLER.instance().toolSaver.enabled ? ModConfig.HANDLER.instance().toolSaver.durability : -1);
+        return Math.max(ModConfig.instance().autoMine.autoSwitch ? ModConfig.instance().autoMine.switchDurability : -1, ModConfig.instance().toolSaver.enabled ? ModConfig.instance().toolSaver.durability : -1);
     }
 
     public static boolean shouldMine() {
         return MC.player != null && !MC.isPaused() && !SbUtils.FEATURES.get(AutoFix.class).fixing() && !ToolSaver.shouldCancelAttack();
+    }
+
+    public static boolean isPickaxe(Item item) {
+        //? if >=1.21.11 {
+        Tool tool = item.components().get(DataComponents.TOOL);
+        if (tool == null)
+            return false;
+        HolderGetter<Block> holderGetter = BuiltInRegistries.BLOCK;
+        return tool.rules().stream().anyMatch((rule) -> rule.blocks().equals(holderGetter.getOrThrow(BlockTags.MINEABLE_WITH_PICKAXE)));
+        //? } else
+        //return item instanceof PickaxeItem;
     }
 }

@@ -57,24 +57,24 @@ public class AutoReply extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoReply.enabled || MC.getConnection() == null)
+        if (!ModConfig.instance().autoReply.enabled || MC.getConnection() == null)
             return;
 
-        if (ModConfig.HANDLER.instance().autoReply.statusHud && MC.player != null)
+        if (ModConfig.instance().autoReply.statusHud && MC.player != null)
             MC.gui.setOverlayMessage(Component.translatable("message.sbutils.autoReply.statusHud").withStyle(ChatFormatting.RED), false);
 
-        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.HANDLER.instance().autoReply.delay * 1000.0)
+        if (System.currentTimeMillis() - lastMsgSentAt >= ModConfig.instance().autoReply.delay * 1000.0)
             sendMessage();
     }
 
     public void processMessage(Component message) {
-        if (!ModConfig.HANDLER.instance().autoReply.enabled)
+        if (!ModConfig.instance().autoReply.enabled)
             return;
 
         Matcher incomingMsg = RegexFilters.incomingMsgFilter.matcher(message.getString());
         if (incomingMsg.matches()) {
             String player = incomingMsg.group(2);
-            if (System.currentTimeMillis() - playersLastResponse.getOrDefault(player, 0L) > ModConfig.HANDLER.instance().autoReply.playerCooldown * 1000)
+            if (System.currentTimeMillis() - playersLastResponse.getOrDefault(player, 0L) > ModConfig.instance().autoReply.playerCooldown * 1000)
                 queueResponse(player);
         }
     }
@@ -87,7 +87,7 @@ public class AutoReply extends Feature<ModConfig> {
         if (MC.getConnection() == null || msgQueue.isEmpty())
             return;
         String player = msgQueue.poll();
-        SbUtils.COMMAND_SENDER.sendCommand("msg " + player + " " + ModConfig.HANDLER.instance().autoReply.response);
+        SbUtils.COMMAND_SENDER.sendCommand("msg " + player + " " + ModConfig.instance().autoReply.response);
         lastMsgSentAt = System.currentTimeMillis();
         playersLastResponse.put(player, lastMsgSentAt);
     }

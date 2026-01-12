@@ -18,6 +18,7 @@ import net.xolt.sbutils.config.binding.ListOptionBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.RegexFilters;
+import net.xolt.sbutils.util.SoundUtils;
 
 import java.awt.*;
 import java.util.List;
@@ -65,7 +66,7 @@ public class Mentions extends Feature<ModConfig> {
     }
 
     public static void processMessage(Component message) {
-        if (!ModConfig.HANDLER.instance().mentions.enabled || !ModConfig.HANDLER.instance().mentions.playSound || !isValidMessage(message) || !mentioned(message))
+        if (!ModConfig.instance().mentions.enabled || !ModConfig.instance().mentions.playSound || !isValidMessage(message) || !mentioned(message))
             return;
         playSound();
     }
@@ -77,12 +78,17 @@ public class Mentions extends Feature<ModConfig> {
         Component newMessage = message;
 
         Matcher playerMsgMatcher = RegexFilters.playerMsgFilter.matcher(message.getString());
-        int prefixLen = ModConfig.HANDLER.instance().mentions.excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
+        int prefixLen = ModConfig.instance().mentions.excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
 
-        if (ModConfig.HANDLER.instance().mentions.currentAccount)
-            newMessage = highlight(newMessage, MC.player.getGameProfile().getName(), prefixLen);
+        if (ModConfig.instance().mentions.currentAccount)
+            newMessage = highlight(newMessage, MC.player.getGameProfile()
+                    //? if >=1.21.11 {
+                    .name(),
+                    //? } else
+                    //.getName(),
+                    prefixLen);
 
-        for (String alias : ModConfig.HANDLER.instance().mentions.aliases) {
+        for (String alias : ModConfig.instance().mentions.aliases) {
             if (!alias.equals(""))
                 newMessage = highlight(newMessage, alias, prefixLen);
         }
@@ -96,16 +102,21 @@ public class Mentions extends Feature<ModConfig> {
 
         String msgString = message.getString().toLowerCase(Locale.ROOT);
 
-        if (ModConfig.HANDLER.instance().mentions.excludeSender) {
+        if (ModConfig.instance().mentions.excludeSender) {
             Matcher matcher = RegexFilters.playerMsgFilter.matcher(msgString);
             if (matcher.matches())
                 msgString = msgString.replace(matcher.group(1), "");
         }
 
-        if (ModConfig.HANDLER.instance().mentions.currentAccount && msgString.contains(MC.player.getGameProfile().getName().toLowerCase()))
+        if (ModConfig.instance().mentions.currentAccount && msgString.contains(MC.player.getGameProfile()
+                //? if >=1.21.11 {
+                .name()
+                //? } else
+                //.getName()
+                .toLowerCase()))
             return true;
 
-        for (String alias : ModConfig.HANDLER.instance().mentions.aliases)
+        for (String alias : ModConfig.instance().mentions.aliases)
             if (!alias.isEmpty() && msgString.contains(alias.toLowerCase()))
                 return true;
 
@@ -113,24 +124,39 @@ public class Mentions extends Feature<ModConfig> {
     }
 
     public static boolean isValidMessage(Component message) {
-        if (ModConfig.HANDLER.instance().mentions.excludeServerMsgs &&
+        if (ModConfig.instance().mentions.excludeServerMsgs &&
                 !RegexFilters.playerMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.incomingMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches()) {
             return false;
         }
 
-        if (ModConfig.HANDLER.instance().mentions.excludeSelfMsgs) {
+        if (ModConfig.instance().mentions.excludeSelfMsgs) {
             if (RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches())
                 return false;
 
             ClickEvent clickEvent = message.getStyle().getClickEvent();
-            if (MC.player == null || clickEvent == null || clickEvent.getAction() != ClickEvent.Action.SUGGEST_COMMAND)
+            if (MC.player == null || clickEvent == null || clickEvent
+                    //? if >=1.21.11 {
+                    .action()
+                    //? } else
+                    //.getAction()
+                    != ClickEvent.Action.SUGGEST_COMMAND)
                 return true;
 
-            String sender = clickEvent.getValue().replace("/visit ", "");
+            String sender =
+                    //? if >=1.21.11 {
+                    ((ClickEvent.SuggestCommand)clickEvent).command()
+                    //? } else
+                    //clickEvent.getValue()
+                    .replace("/visit ", "");
 
-            if (sender.equals(MC.player.getGameProfile().getName()))
+            if (sender.equals(MC.player.getGameProfile()
+                    //? if >=1.21.11 {
+                    .name()
+                    //? } else
+                    //.getName()
+            ))
                 return false;
         }
 
@@ -180,7 +206,7 @@ public class Mentions extends Feature<ModConfig> {
             int endIndex = beginningIndex + lowerTarget.length();
             String preText = format + stringText.substring(index, beginningIndex);
             result.append(Component.literal(preText).setStyle(oldStyle));
-            result.append(Component.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.HANDLER.instance().mentions.highlightColor.getRGB())));
+            result.append(Component.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.instance().mentions.highlightColor.getRGB())));
             int formatSignIndex = preText.lastIndexOf("\u00a7");
             if (formatSignIndex != -1 && formatSignIndex + 2 <= preText.length())
                 format = preText.substring(formatSignIndex, formatSignIndex + 2);
@@ -197,6 +223,6 @@ public class Mentions extends Feature<ModConfig> {
         if (MC.player == null)
             return;
 
-        MC.player.playNotifySound(ModConfig.HANDLER.instance().mentions.sound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
+        SoundUtils.playNotifSound(ModConfig.instance().mentions.sound.getSound(), SoundSource.MASTER);
     }
 }

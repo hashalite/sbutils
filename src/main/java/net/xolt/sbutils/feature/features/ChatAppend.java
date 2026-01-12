@@ -41,17 +41,20 @@ public class ChatAppend extends Feature<ModConfig> {
     }
 
     public static ServerboundChatPacket processSentMessage(ServerboundChatPacket packet) {
-        if (!ModConfig.HANDLER.instance().chatAppend.addPrefix && !ModConfig.HANDLER.instance().chatAppend.addSuffix)
+        if (!ModConfig.instance().chatAppend.addPrefix && !ModConfig.instance().chatAppend.addSuffix)
             return packet;
 
         String message = packet.message();
 
-        if (ModConfig.HANDLER.instance().chatAppend.addPrefix)
-            message = ModConfig.HANDLER.instance().chatAppend.prefix + message;
+        if (ModConfig.instance().chatAppend.addPrefix)
+            message = ModConfig.instance().chatAppend.prefix + message;
 
-        if (ModConfig.HANDLER.instance().chatAppend.addSuffix)
-            message = message + ModConfig.HANDLER.instance().chatAppend.suffix;
+        if (ModConfig.instance().chatAppend.addSuffix)
+            message = message + ModConfig.instance().chatAppend.suffix;
 
-        return new ServerboundChatPacket(message, packet.timeStamp(), packet.salt(), packet.signature(), packet.lastSeenMessages());
+        return new ServerboundChatPacket(message, packet.timeStamp(), packet.salt(), packet.signature(),
+                //? if <1.19.4
+                //packet.signedPreview(),
+                packet.lastSeenMessages());
     }
 }

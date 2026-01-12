@@ -1,23 +1,19 @@
 package net.xolt.sbutils.feature.features;
 
+import net.minecraft.client.player.LocalPlayer;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.AirItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -29,6 +25,12 @@ import net.xolt.sbutils.systems.CommandSender;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
+//? if >=1.21 {
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.component.DataComponents;
+//? } else if >=1.19.4 {
+/*import net.minecraft.core.registries.BuiltInRegistries;
+ *///? }
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +94,8 @@ public class EnchantAll extends Feature<ModConfig> {
         if (MC.player == null)
             return;
 
+        LocalPlayer player = MC.player;
+
         if (enchanting || unenchanting) {
             ChatUtils.printMessage("message.sbutils.enchantAll.pleaseWait", ChatFormatting.RED);
             return;
@@ -99,7 +103,7 @@ public class EnchantAll extends Feature<ModConfig> {
 
         enchanting = !unenchant;
         unenchanting = unenchant;
-        prevSelectedSlot = MC.player.getInventory().selected;
+        prevSelectedSlot = InvUtils.getSelectedSlot(player);
         inventory = inv;
 
         if (done()) {
@@ -111,15 +115,15 @@ public class EnchantAll extends Feature<ModConfig> {
             return;
         }
 
-        if (inv && !(MC.player.getMainHandItem().getItem() instanceof AirItem) && getEnchantsForItem(MC.player.getMainHandItem(), unenchant).isEmpty()) {
+        if (inv && !(MC.player.getMainHandItem().getItem() instanceof AirItem) && getEnchantsForItem(player.getMainHandItem(), unenchant).isEmpty()) {
             int enchantableSlot = findEnchantableSlot(unenchant);
             if (enchantableSlot < 8) {
-                MC.player.getInventory().selected = prevSelectedSlot = enchantableSlot;
+                InvUtils.setSelectedSlot(player, prevSelectedSlot = enchantableSlot);
                 return;
             }
             int emptySlot = InvUtils.findEmptyHotbarSlot();
             if (emptySlot != -1)
-                MC.player.getInventory().selected = prevSelectedSlot = emptySlot;
+                InvUtils.setSelectedSlot(player, prevSelectedSlot = emptySlot);
         }
     }
 
@@ -127,8 +131,10 @@ public class EnchantAll extends Feature<ModConfig> {
         if ((!enchanting && !unenchanting) || awaitingResponse || MC.player == null)
             return;
 
+        LocalPlayer player = MC.player;
+
         if (noPermission) {
-            if (ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL && enchanting) {
+            if (ModConfig.instance().enchantAll.mode == ModConfig.EnchantMode.ALL && enchanting) {
                 ChatUtils.printMessage("message.sbutils.enchantAll.noEnchantAllPermission", ChatFormatting.RED);
             } else {
                 ChatUtils.printMessage("message.sbutils.enchantAll.noEnchantPermission", ChatFormatting.RED);
@@ -137,7 +143,7 @@ public class EnchantAll extends Feature<ModConfig> {
             return;
         }
 
-        if (MC.player.getInventory().selected != prevSelectedSlot) {
+        if (InvUtils.getSelectedSlot(player) != prevSelectedSlot) {
             ChatUtils.printMessage("message.sbutils.enchantAll.cancelSlotSwitch", ChatFormatting.RED);
             reset();
             return;
@@ -148,16 +154,16 @@ public class EnchantAll extends Feature<ModConfig> {
                 AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
                 if (!InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
                     return;
-                InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selected, currentScreenHandler);
+                InvUtils.swapToHotbar(itemPrevSlot, InvUtils.getSelectedSlot(player), currentScreenHandler);
             }
             ChatUtils.printMessage("message.sbutils.enchantAll.complete");
             reset();
             return;
         }
 
-        if (commandCount >= ModConfig.HANDLER.instance().enchantAll.cooldownFrequency) {
+        if (commandCount >= ModConfig.instance().enchantAll.cooldownFrequency) {
             cooldown = true;
-            ChatUtils.printWithPlaceholders("message.sbutils.enchantAll.cooldown", ModConfig.HANDLER.instance().enchantAll.cooldownTime);
+            ChatUtils.printWithPlaceholders("message.sbutils.enchantAll.cooldown", ModConfig.instance().enchantAll.cooldownTime);
             commandCount = 0;
         }
 
@@ -206,7 +212,8 @@ public class EnchantAll extends Feature<ModConfig> {
         if (MC.player == null)
             return;
 
-        ItemStack hand = MC.player.getMainHandItem();
+        LocalPlayer player = MC.player;
+        ItemStack hand = player.getMainHandItem();
         List<Enchantment> enchants = getEnchantsForItem(hand, unenchant);
 
         if (enchants.isEmpty()) {
@@ -217,16 +224,16 @@ public class EnchantAll extends Feature<ModConfig> {
             }
             int enchantableSlot = findEnchantableSlot(unenchant);
             if (enchantableSlot != -1) {
-                AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
+                AbstractContainerMenu currentScreenHandler = player.containerMenu;
                 if (itemPrevSlot != -1) {
                     if (!InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler))
                         return;
-                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selected, currentScreenHandler);
+                    InvUtils.swapToHotbar(itemPrevSlot, InvUtils.getSelectedSlot(player), currentScreenHandler);
                     itemPrevSlot = -1;
                 }
                 if (!InvUtils.canSwapSlot(enchantableSlot, currentScreenHandler))
                     return;
-                InvUtils.swapToHotbar(enchantableSlot, MC.player.getInventory().selected, currentScreenHandler);
+                InvUtils.swapToHotbar(enchantableSlot, InvUtils.getSelectedSlot(player), currentScreenHandler);
                 itemPrevSlot = enchantableSlot;
                 pause = true;
             }
@@ -259,13 +266,13 @@ public class EnchantAll extends Feature<ModConfig> {
     private int delayLeft() {
         long delay;
         if (cooldown)
-            delay = (long)(ModConfig.HANDLER.instance().enchantAll.cooldownTime * 1000.0);
+            delay = (long)(ModConfig.instance().enchantAll.cooldownTime * 1000.0);
         else if (pause)
             delay = 250L;
         else
-            delay = (long)(ModConfig.HANDLER.instance().enchantAll.delay * 1000.0);
+            delay = (long)(ModConfig.instance().enchantAll.delay * 1000.0);
 
-        if (ModConfig.HANDLER.instance().enchantAll.tpsSync)
+        if (ModConfig.instance().enchantAll.tpsSync)
             delay = (int)((double)delay / (SbUtils.TPS_ESTIMATOR.getCappedTickRate() / 20.0));
 
         return (int)Math.max(delay - (System.currentTimeMillis() - lastActionPerformedAt), 0L);
@@ -300,7 +307,7 @@ public class EnchantAll extends Feature<ModConfig> {
     }
 
     private void sendNextEnchant(List<Enchantment> enchants, boolean unenchant) {
-        if (!unenchant && ModConfig.HANDLER.instance().enchantAll.mode == ModConfig.EnchantMode.ALL) {
+        if (!unenchant && ModConfig.instance().enchantAll.mode == ModConfig.EnchantMode.ALL) {
             sendEnchantAllCommand();
             return;
         }
@@ -309,8 +316,15 @@ public class EnchantAll extends Feature<ModConfig> {
     }
 
     private void sendEnchantCommand(Enchantment enchantment, boolean unenchant) {
-        Registry<Enchantment> enchantmentRegistry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-        ResourceLocation enchant = enchantmentRegistry.getKey(enchantment);
+        Identifier enchant =
+            //? if >=1.19.4 {
+                //? if >=1.21 {
+                MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+                //? } else
+                //BuiltInRegistries.ENCHANTMENT
+                        .getKey(enchantment);
+            //? } else
+                //Registry.ENCHANTMENT.getKey(enchantment);
         if (enchant == null || MC.getConnection() == null)
             return;
         String enchantName = enchant.getPath().replaceAll("_", "");
@@ -345,14 +359,24 @@ public class EnchantAll extends Feature<ModConfig> {
     private static List<Enchantment> getEnchantsForItem(ItemStack itemStack, boolean unenchant) {
         Item item = itemStack.getItem();
 
-
-        if (!itemStack.has(DataComponents.ENCHANTABLE))
+        if (!itemStack.
+                //? if >=1.21 {
+                has(DataComponents.ENCHANTABLE)
+                //? } else
+                //getItem().isEnchantable(itemStack)
+        )
             return new ArrayList<>();
 
         Map<Enchantment, Integer> itemsEnchants = InvUtils.getEnchantments(itemStack);
         List<Enchantment> enchantments = new ArrayList<>();
         assert MC.level != null;
-        Registry<Enchantment> enchantmentRegistry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Registry<Enchantment> enchantmentRegistry =
+                //? if >=1.21 {
+                MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+                 //? } else if >=1.19.4 {
+                /*BuiltInRegistries.ENCHANTMENT;
+                 *///? } else
+                //Registry.ENCHANTMENT;
         if (!unenchant) {
             for (Enchantment enchantment : enchantmentRegistry) {
                 if (enchantment.canEnchant(new ItemStack(item)))
@@ -372,7 +396,7 @@ public class EnchantAll extends Feature<ModConfig> {
         enchantments.remove(InvUtils.getEnchantment(Enchantments.BINDING_CURSE));
         enchantments.remove(InvUtils.getEnchantment(Enchantments.VANISHING_CURSE));
 
-        if (ModConfig.HANDLER.instance().enchantAll.excludeFrost && !unenchant)
+        if (ModConfig.instance().enchantAll.excludeFrost && !unenchant)
             enchantments.remove(InvUtils.getEnchantment(Enchantments.FROST_WALKER));
 
         return enchantments;
@@ -382,7 +406,7 @@ public class EnchantAll extends Feature<ModConfig> {
         if (MC.player == null)
             return false;
 
-        return ModConfig.HANDLER.instance().enchantAll.excludeFrost &&
+        return ModConfig.instance().enchantAll.excludeFrost &&
                 InvUtils.getEnchantments(MC.player.getMainHandItem()).containsKey(InvUtils.getEnchantment(Enchantments.FROST_WALKER));
     }
 }

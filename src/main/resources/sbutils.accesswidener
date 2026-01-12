@@ -1,3 +1,12 @@
 accessWidener v2 named
+#? minecraft: >=1.21 {
 accessible class net/minecraft/client/resources/MapTextureManager$MapInstance
 accessible method net/minecraft/client/resources/MapTextureManager getOrCreateMapInstance (Lnet/minecraft/world/level/saveddata/maps/MapId;Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData;)Lnet/minecraft/client/resources/MapTextureManager$MapInstance;
+#? } else  {
+#accessible class net/minecraft/client/gui/MapRenderer$MapInstance
+##? minecraft: >1.20.4 {
+#accessible method net/minecraft/client/gui/MapRenderer getOrCreateMapInstance (Lnet/minecraft/world/level/saveddata/maps/MapId;Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData;)Lnet/minecraft/client/gui/MapRenderer$MapInstance;
+##? } else {
+##accessible method net/minecraft/client/gui/MapRenderer getOrCreateMapInstance (ILnet/minecraft/world/level/saveddata/maps/MapItemSavedData;)Lnet/minecraft/client/gui/MapRenderer$MapInstance;
+##? }
+#? }

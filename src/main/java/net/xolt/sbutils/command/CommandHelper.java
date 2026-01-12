@@ -41,9 +41,9 @@ public class CommandHelper {
     public static <C> LiteralArgumentBuilder<FabricClientCommandSource> toggle(String command, Feature<C> feature, OptionBinding<C, Boolean> optionBinding, ConfigClassHandler<C> configHandler) {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
-                    optionBinding.set(configHandler.instance(), !optionBinding.get(configHandler.instance()));
+                    optionBinding.set(configHandler, !optionBinding.get(configHandler));
                     ModConfig.HANDLER.save();
-                    ChatUtils.printChangedSetting(feature.getNameTranslation(), optionBinding.get(configHandler.instance()));
+                    ChatUtils.printChangedSetting(feature.getNameTranslation(), optionBinding.get(configHandler));
                     return Command.SINGLE_SUCCESS;
                 });
     }
@@ -56,7 +56,7 @@ public class CommandHelper {
         return getter(command, optionBinding, configHandler)
                 .then(ClientCommandManager.literal("set")
                         .executes(context -> {
-                            optionBinding.set(configHandler.instance(), "");
+                            optionBinding.set(configHandler, "");
                             ModConfig.HANDLER.save();
                             ChatUtils.printChangedSetting(optionBinding.getTranslation(), "");
                             return Command.SINGLE_SUCCESS;
@@ -99,7 +99,7 @@ public class CommandHelper {
         }
 
         Consumer<T> add = (value) -> {
-            ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+            ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler));
 
             if (list.size() >= maxSize) {
                 ChatUtils.printWithPlaceholders("message.sbutils.listSizeError", maxSize, Component.translatable(optionBinding.getTranslation()));
@@ -112,16 +112,16 @@ public class CommandHelper {
             }
 
             list.add(value);
-            optionBinding.set(configHandler.instance(), list);
+            optionBinding.set(configHandler, list);
             ModConfig.HANDLER.save();
             ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(optionBinding.getTranslation()));
             ChatUtils.printListSetting(optionBinding.getTranslation(), list, indexed);
         };
 
         if (indexed)
-            return customIndexedList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler.instance()), add,
+            return customIndexedList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler), add,
                     (index) -> {
-                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler));
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
                             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(optionBinding.getTranslation()));
@@ -129,13 +129,13 @@ public class CommandHelper {
                         }
 
                         T removed = list.remove(adjustedIndex);
-                        optionBinding.set(configHandler.instance(), list);
+                        optionBinding.set(configHandler, list);
                         ModConfig.HANDLER.save();
                         ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", removed, Component.translatable(optionBinding.getTranslation()));
                         ChatUtils.printListSetting(optionBinding.getTranslation(), list, true);
                     },
                     (index, value) -> {
-                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+                        ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler));
                         int adjustedIndex = index - 1;
                         if (adjustedIndex >= list.size() || adjustedIndex < 0) {
                             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable(optionBinding.getTranslation()));
@@ -153,18 +153,18 @@ public class CommandHelper {
                         }
 
                         list.add(index, value);
-                        optionBinding.set(configHandler.instance(), list);
+                        optionBinding.set(configHandler, list);
                         ModConfig.HANDLER.save();
                         ChatUtils.printWithPlaceholders("message.sbutils.listAddSuccess", value, Component.translatable(optionBinding.getTranslation()));
                         ChatUtils.printListSetting(optionBinding.getTranslation(), list, true);
                     }
             );
 
-        return customList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler.instance()), add,
+        return customList(command, unit, optionBinding.getTranslation(), argumentType, getArgument, () -> optionBinding.get(configHandler), add,
                 (value) -> {
-                    ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler.instance()));
+                    ArrayList<T> list = new ArrayList<>(optionBinding.get(configHandler));
                     boolean result = list.remove(value);
-                    optionBinding.set(configHandler.instance(), list);
+                    optionBinding.set(configHandler, list);
                     ModConfig.HANDLER.save();
                     if (result) {
                         ChatUtils.printWithPlaceholders("message.sbutils.listDelSuccess", value, Component.translatable(optionBinding.getTranslation()));
@@ -247,7 +247,7 @@ public class CommandHelper {
     public static <C, T> LiteralArgumentBuilder<FabricClientCommandSource> getter(String command, OptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler) {
         return ClientCommandManager.literal(command)
                 .executes(context -> {
-                    ChatUtils.printSetting(optionBinding.getTranslation(), optionBinding.get(configHandler.instance()));
+                    ChatUtils.printSetting(optionBinding.getTranslation(), optionBinding.get(configHandler));
                     return Command.SINGLE_SUCCESS;
                 });
     }
@@ -255,9 +255,9 @@ public class CommandHelper {
     public static <C, T> RequiredArgumentBuilder<FabricClientCommandSource, T> setter(String argument, OptionBinding<C, T> optionBinding, ConfigClassHandler<C> configHandler, ArgumentType<T> argumentType, BiFunction<CommandContext<FabricClientCommandSource>, String, T> getArgument) {
         return ClientCommandManager.argument(argument, argumentType)
                 .executes(context -> {
-                    optionBinding.set(configHandler.instance(), getArgument.apply(context, argument));
+                    optionBinding.set(configHandler, getArgument.apply(context, argument));
                     ModConfig.HANDLER.save();
-                    ChatUtils.printChangedSetting(optionBinding.getTranslation(), optionBinding.get(configHandler.instance()));
+                    ChatUtils.printChangedSetting(optionBinding.getTranslation(), optionBinding.get(configHandler));
                     return Command.SINGLE_SUCCESS;
                 });
     }

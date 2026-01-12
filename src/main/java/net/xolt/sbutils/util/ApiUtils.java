@@ -1,13 +1,20 @@
 package net.xolt.sbutils.util;
 
 import com.google.gson.*;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.systems.ServerDetector;
+//? if >=1.21 {
+import net.minecraft.core.Holder;
+//? }
+//? if >=1.19.4 {
+import net.minecraft.core.registries.BuiltInRegistries;
+//? }
+//? if <1.19.4 {
+/*import net.minecraft.core.Registry;
+ *///? }
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -37,15 +44,23 @@ public class ApiUtils {
                 onResponse.accept(result);
                 return;
             }
-            for (JsonElement itemElement : jsonResponse.getAsJsonArray("buyable").asList()) {
+            for (JsonElement itemElement : jsonResponse.getAsJsonArray("buyable")
+                    //? if >= 1.19.4
+                    .asList()
+            ) {
                 JsonObject itemObject = itemElement.getAsJsonObject();
                 if (!itemObject.has("item"))
                     continue;
-                Optional<Holder.Reference<Item>> optionalItem = BuiltInRegistries.ITEM.get(ResourceLocation.withDefaultNamespace(itemObject.get("item").getAsString().toLowerCase()));
+                //? if >=1.21 {
+                Optional<Holder.Reference<Item>> optionalItem = BuiltInRegistries.ITEM.get(Identifier.withDefaultNamespace(itemObject.get("item").getAsString().toLowerCase()));
                 if (optionalItem.isEmpty())
                     // Invalid item id supplied by API
                     continue;
                 Item item = optionalItem.get().value();
+                //? } else if >=1.19.4 {
+                /*Item item = BuiltInRegistries.ITEM.get(new Identifier(itemObject.get("item").getAsString().toLowerCase()));
+                *///? } else
+                //Item item = Registry.ITEM.get(new Identifier(itemObject.get("item").getAsString().toLowerCase()));
                 ItemStack itemStack = new ItemStack(item);
                 result.add(itemStack);
             }

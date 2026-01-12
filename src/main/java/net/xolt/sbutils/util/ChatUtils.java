@@ -32,7 +32,7 @@ public class ChatUtils {
     }
 
     public static void printMessage(String message, int color, boolean showPrefix) {
-        printMessage(Component.translatable(message).withColor(color), showPrefix);
+        printMessage(TextUtils.applyColor(Component.translatable(message), color), showPrefix);
     }
 
     public static void printMessage(Component message) {
@@ -48,8 +48,8 @@ public class ChatUtils {
             return;
         }
 
-        MutableComponent sbutilsText = Component.literal("sbutils").withColor(ModConfig.HANDLER.instance().sbutilsColor.getRGB());
-        MutableComponent prefix = TextUtils.insertPlaceholders(Component.literal(ModConfig.HANDLER.instance().prefixFormat + " ").withColor(ModConfig.HANDLER.instance().prefixColor.getRGB()), sbutilsText);
+        MutableComponent sbutilsText = TextUtils.applyColor(Component.literal("sbutils"), ModConfig.instance().sbutilsColor.getRGB());
+        MutableComponent prefix = TextUtils.insertPlaceholders(TextUtils.applyColor(Component.literal(ModConfig.instance().prefixFormat + " "), ModConfig.instance().prefixColor.getRGB()), sbutilsText);
 
         MC.player.displayClientMessage(prefix.append(message), false);
     }
@@ -59,11 +59,11 @@ public class ChatUtils {
     }
     
     public static void sendTitle(String message, int color) {
-        sendTitle(Component.translatable(message).withColor(color), 5, 30, 5);
+        sendTitle(TextUtils.applyColor(Component.translatable(message), color), 5, 30, 5);
     }
 
     public static void sendTitle(String message, int color, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        sendTitle(Component.translatable(message).withColor(color), fadeInTicks, stayTicks, fadeOutTicks);
+        sendTitle(TextUtils.applyColor(Component.translatable(message), color), fadeInTicks, stayTicks, fadeOutTicks);
     }
 
     public static void sendTitle(Component message) {
@@ -121,7 +121,7 @@ public class ChatUtils {
 
     public static <T> void printList(List<T> items, boolean numbered) {
         for (int i = 0; i < items.size(); i++) {
-            MutableComponent prefix = Component.literal(" " + (numbered ? (i + 1) + ". " : "- ")).withColor(TextUtils.getValueColor());
+            MutableComponent prefix = TextUtils.applyColor(Component.literal(" " + (numbered ? (i + 1) + ". " : "- ")), TextUtils.getValueColor());
             printMessage(prefix.append(TextUtils.format(items.get(i))), false);
         }
     }

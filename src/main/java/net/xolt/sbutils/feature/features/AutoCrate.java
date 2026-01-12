@@ -2,25 +2,18 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -34,8 +27,10 @@ import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
+//? if <1.19.4 {
+/*import net.minecraft.world.phys.Vec3;
+ *///? }
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -78,23 +73,23 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.HANDLER.instance().autoCrate.delay * 1000 || MC.player == null || cleaning) {
+        if (!ModConfig.instance().autoCrate.enabled || waitingForCrate || System.currentTimeMillis() - crateClosedAt < ModConfig.instance().autoCrate.delay * 1000 || MC.player == null || cleaning) {
             return;
         }
 
         BlockPos cratePos = findCrate();
 
-        if (cratePos == null || !cratePos.closerToCenterThan(MC.player.position(), ModConfig.HANDLER.instance().autoCrate.distance)) {
+        if (cratePos == null || !cratePos.closerToCenterThan(MC.player.position(), ModConfig.instance().autoCrate.distance)) {
             ChatUtils.printMessage("message.sbutils.autoCrate.crateTooFar");
             disable();
             return;
         }
 
         if (MC.player.getInventory().getFreeSlot() == -1) {
-            if (ModConfig.HANDLER.instance().autoCrate.cleaner) {
+            if (ModConfig.instance().autoCrate.cleaner) {
                 // cleaning must be set before clean() is called, in case callback is called immediately
                 cleaning = true;
-                SbUtils.FEATURES.get(InvCleaner.class).clean(ModConfig.HANDLER.instance().autoCrate.itemsToClean, this::onCleaningCallback);
+                SbUtils.FEATURES.get(InvCleaner.class).clean(ModConfig.instance().autoCrate.itemsToClean, this::onCleaningCallback);
                 return;
             }
             ChatUtils.printMessage("message.sbutils.autoCrate.inventoryFull");
@@ -102,7 +97,7 @@ public class AutoCrate extends Feature<ModConfig> {
             return;
         }
 
-        if (!isItemKey(MC.player.getInventory().getSelected()) && !moveKeysToHand()) {
+        if (!isItemKey(InvUtils.getSelectedItem(MC.player)) && !moveKeysToHand()) {
             ChatUtils.printMessage("message.sbutils.autoCrate.finished");
             disable();
             return;
@@ -127,7 +122,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     public void onServerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !waitingForCrate) {
+        if (!ModConfig.instance().autoCrate.enabled || !waitingForCrate) {
             return;
         }
         waitingForCrate = false;
@@ -135,7 +130,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     public void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoCrate.enabled || !(MC.screen instanceof ContainerScreen) || cleaning) {
+        if (!ModConfig.instance().autoCrate.enabled || !(MC.screen instanceof ContainerScreen) || cleaning) {
             return;
         }
 
@@ -145,7 +140,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     private void disable() {
-        enabled.set(ModConfig.HANDLER.instance(), false);
+        enabled.set(ModConfig.instance(), false);
         ModConfig.HANDLER.save();
     }
 
@@ -161,7 +156,7 @@ public class AutoCrate extends Feature<ModConfig> {
             return false;
         }
 
-        if (isItemKey(player.getInventory().getSelected())) {
+        if (isItemKey(InvUtils.getSelectedItem(player))) {
             return true;
         }
 
@@ -172,18 +167,18 @@ public class AutoCrate extends Feature<ModConfig> {
 
         // If there is a key in the hotbar, swap to it
         if (keySlot < 9) {
-            player.getInventory().selected = keySlot;
+            InvUtils.setSelectedSlot(player, keySlot);
             return true;
         }
 
-        if (!player.getInventory().getSelected().isEmpty()) {
+        if (!InvUtils.getSelectedItem(player).isEmpty()) {
             int emptySlot = InvUtils.findEmptyHotbarSlot();
             if (emptySlot != -1) {
-                player.getInventory().selected = emptySlot;
+                InvUtils.setSelectedSlot(player, emptySlot);
             }
         }
 
-        InvUtils.swapToHotbar(keySlot, player.getInventory().selected, player.containerMenu);
+        InvUtils.swapToHotbar(keySlot, InvUtils.getSelectedSlot(player), player.containerMenu);
 
         return true;
     }
@@ -213,16 +208,13 @@ public class AutoCrate extends Feature<ModConfig> {
         if (!itemStack.getItem().equals(Items.TRIPWIRE_HOOK))
             return false;
 
-        ItemLore lore = itemStack.get(DataComponents.LORE);
+        List<Component> lore = InvUtils.getItemLore(itemStack);
 
-        if (lore == null)
-            return false;
-
-        if (lore.lines().isEmpty()) {
+        if (lore.isEmpty()) {
             return false;
         }
 
-        return getKeyFilter().matcher(lore.lines().get(0).getString()).matches();
+        return getKeyFilter().matcher(lore.get(0).getString()).matches();
     }
 
     private static boolean useKey(BlockPos cratePos) {
@@ -230,12 +222,17 @@ public class AutoCrate extends Feature<ModConfig> {
             return false;
         }
 
-        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(cratePos.getCenter(), Direction.UP, cratePos, false));
+        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(
+                //? if >=1.19.4 {
+                cratePos.getCenter(),
+                //? } else
+                //Vec3.atCenterOf(cratePos),
+                Direction.UP, cratePos, false));
         return true;
     }
 
     private static Pattern getKeyFilter() {
-        switch(ModConfig.HANDLER.instance().autoCrate.mode) {
+        switch(ModConfig.instance().autoCrate.mode) {
             case COMMON:
                 return RegexFilters.commonKeyFilter;
             case RARE:
@@ -250,7 +247,7 @@ public class AutoCrate extends Feature<ModConfig> {
     }
 
     private static Pattern getCrateFilter() {
-        switch(ModConfig.HANDLER.instance().autoCrate.mode) {
+        switch(ModConfig.instance().autoCrate.mode) {
             case COMMON:
                 return RegexFilters.commonCrateFilter;
             case RARE:

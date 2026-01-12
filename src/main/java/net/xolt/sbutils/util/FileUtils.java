@@ -4,9 +4,12 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.saveddata.maps.MapId;
+//? if >= 1.21.11 {
+import net.minecraft.util.Util;
+//? } else {
+/*import net.minecraft.Util;
+ *///? }
 
 import java.io.File;
 import java.io.IOException;
@@ -163,12 +166,12 @@ public class FileUtils {
         }
     }
 
-    public static boolean saveMapImage(MapId mapId, String servername, NativeImage image) {
+    public static boolean saveMapImage(int mapId, String servername, NativeImage image) {
         File serverDir = new File(mapSaverDir + File.separator + servername);
-        File imagePath = new File(serverDir + File.separator + servername + "-" + mapId.id() + ".png");
+        File imagePath = new File(serverDir + File.separator + servername + "-" + mapId + ".png");
         int suffix = 2;
         while (imagePath.exists())
-            imagePath = new File(serverDir + File.separator + servername + "-" + mapId.id() + "-" + suffix++ + ".png");
+            imagePath = new File(serverDir + File.separator + servername + "-" + mapId + "-" + suffix++ + ".png");
         try {
             serverDir.mkdir();
             image.writeToFile(imagePath);

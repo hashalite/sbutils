@@ -3,9 +3,6 @@ package net.xolt.sbutils.systems;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
-import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
-import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
-import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.util.ChatUtils;
 
 import java.util.*;
@@ -31,8 +28,23 @@ public class CommandSender {
         entries.add(new CommandQueueEntry(command, timeOutCallback, expiryTime, responseMatchers));
     }
 
+    public static boolean sendNow(String command) {
+        //? if >=1.19.4 {
+        if (MC.getConnection() == null) {
+         //? } else
+        //if (MC.player == null) {
+            return false;
+        }
+
+        //? if >=1.19.4 {
+        MC.getConnection().sendCommand(command);
+         //? } else
+        //MC.player.commandSigned(command, null);
+        return true;
+    }
+
     public void tick() {
-        if (entries.isEmpty() || MC.getConnection() == null)
+        if (entries.isEmpty())
             return;
         CommandQueueEntry entry = entries.getFirst();
         long currentTime = System.currentTimeMillis();
@@ -46,7 +58,10 @@ public class CommandSender {
         if (awaitingResponse)
             return;
 
-        MC.getConnection().sendCommand(entry.command);
+        if(!sendNow(entry.command)) {
+            return;
+        }
+
         lastCommandSentAt = currentTime;
         if (!entry.responseMatchers.isEmpty()) {
             awaitingResponse = true;
@@ -62,7 +77,12 @@ public class CommandSender {
     public void onContainerSetData(ClientboundContainerSetContentPacket packet) {
         if (!awaitingResponse || entries.isEmpty())
             return;
-        if (!(MC.screen instanceof AbstractContainerScreen<?> screen) || screen.getMenu().containerId != packet.getContainerId())
+        if (!(MC.screen instanceof AbstractContainerScreen<?> screen) || screen.getMenu().containerId != packet
+                //? if >=1.21.11 {
+                .containerId()
+                //? } else
+                //.getContainerId()
+        )
             return;
 
         CommandQueueEntry entry = entries.getFirst();

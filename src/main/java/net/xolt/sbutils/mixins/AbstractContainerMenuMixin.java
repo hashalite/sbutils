@@ -19,7 +19,7 @@ public class AbstractContainerMenuMixin {
 
     @ModifyVariable(method = "setItem", at = @At("HEAD"), argsOnly = true)
     private ItemStack onSetStackInSlot(ItemStack stack) {
-        if (ModConfig.HANDLER.instance().noGmt.enabled && MC.screen instanceof ContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.screen.getTitle().getString()).matches()) {
+        if (ModConfig.instance().noGmt.enabled && MC.screen instanceof ContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.screen.getTitle().getString()).matches()) {
             return NoGMT.replaceTimeInLore(stack);
         }
         return stack;
@@ -27,7 +27,7 @@ public class AbstractContainerMenuMixin {
 
     @ModifyVariable(method = "initializeContents", at = @At("HEAD"), argsOnly = true)
     private List<ItemStack> onSetStackInSlot(List<ItemStack> stacks) {
-        if (ModConfig.HANDLER.instance().noGmt.enabled && MC.screen instanceof ContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.screen.getTitle().getString()).matches()) {
+        if (ModConfig.instance().noGmt.enabled && MC.screen instanceof ContainerScreen && RegexFilters.mailGuiFilter.matcher(MC.screen.getTitle().getString()).matches()) {
             return NoGMT.replaceTimeInLores(stacks);
         }
         return stacks;

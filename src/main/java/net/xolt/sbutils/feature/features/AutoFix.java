@@ -3,6 +3,7 @@ package net.xolt.sbutils.feature.features;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -70,7 +71,7 @@ public class AutoFix extends Feature<ModConfig> {
     }
 
     private void onInfoCommand() {
-        if (!ModConfig.HANDLER.instance().autoFix.enabled) {
+        if (!ModConfig.instance().autoFix.enabled) {
             ChatUtils.printSetting("text.sbutils.config.category.autoFix", false);
             return;
         }
@@ -98,7 +99,7 @@ public class AutoFix extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoFix.enabled || SbUtils.FEATURES.get(EnchantAll.class).active() || MC.player == null)
+        if (!ModConfig.instance().autoFix.enabled || SbUtils.FEATURES.get(EnchantAll.class).active() || MC.player == null)
             return;
 
         long currentTime = System.currentTimeMillis();
@@ -115,12 +116,12 @@ public class AutoFix extends Feature<ModConfig> {
         if (waitingForResponse)
             return;
 
-        if (tries > ModConfig.HANDLER.instance().autoFix.maxRetries) {
+        if (tries > ModConfig.instance().autoFix.maxRetries) {
             ChatUtils.printWithPlaceholders("message.sbutils.autoFix.maxTriesReached", tries);
-            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND) {
+            if (ModConfig.instance().autoFix.mode == ModConfig.FixMode.HAND) {
                 returnAndSwapBack();
             }
-            ModConfig.HANDLER.instance().autoFix.enabled = false;
+            ModConfig.instance().autoFix.enabled = false;
             ModConfig.HANDLER.save();
             reset();
         }
@@ -144,7 +145,7 @@ public class AutoFix extends Feature<ModConfig> {
     }
 
     public void onUpdateInventory() {
-        if (!ModConfig.HANDLER.instance().autoFix.enabled || fixing)
+        if (!ModConfig.instance().autoFix.enabled || fixing)
             return;
 
         findMostDamaged = true;
@@ -158,23 +159,24 @@ public class AutoFix extends Feature<ModConfig> {
         if (MC.player == null || itemPrevSlot == -1)
             return;
 
-        if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL) {
+        LocalPlayer player = MC.player;
+
+        if (ModConfig.instance().autoFix.mode == ModConfig.FixMode.ALL) {
             sendFixCommand();
             return;
         }
 
         if (!fixing) {
-            AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
+            AbstractContainerMenu currentScreenHandler = player.containerMenu;
             if (InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)) {
                 fixing = true;
-                prevSelectedSlot = MC.player.getInventory().selected;
+                prevSelectedSlot = InvUtils.getSelectedSlot(player);
 
                 if (itemPrevSlot < 9) {
-                    MC.player.getInventory().selected = itemPrevSlot;
-                    selectedSlot = itemPrevSlot;
+                    InvUtils.setSelectedSlot(player, selectedSlot = itemPrevSlot);
                 } else {
-                    InvUtils.swapToHotbar(itemPrevSlot, MC.player.getInventory().selected, currentScreenHandler);
-                    selectedSlot = MC.player.getInventory().selected;
+                    InvUtils.swapToHotbar(itemPrevSlot, InvUtils.getSelectedSlot(player), currentScreenHandler);
+                    selectedSlot = InvUtils.getSelectedSlot(player);
                 }
 
                 lastActionPerformedAt = System.currentTimeMillis();
@@ -182,7 +184,7 @@ public class AutoFix extends Feature<ModConfig> {
             return;
         }
 
-        if (MC.player.getInventory().selected != findMostDamaged()) {
+        if (InvUtils.getSelectedSlot(player) != findMostDamaged()) {
             reset();
             return;
         }
@@ -204,9 +206,9 @@ public class AutoFix extends Feature<ModConfig> {
         Matcher fixNoPermsMatcher = RegexFilters.noPermission.matcher(messageString);
         if (fixNoPermsMatcher.matches()) {
             ChatUtils.printMessage("message.sbutils.autoFix.noFixPermission");
-            ModConfig.HANDLER.instance().autoFix.enabled = false;
+            ModConfig.instance().autoFix.enabled = false;
             ModConfig.HANDLER.save();
-            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
+            if (ModConfig.instance().autoFix.mode == ModConfig.FixMode.HAND)
                 returnAndSwapBack();
             reset();
             return;
@@ -214,9 +216,9 @@ public class AutoFix extends Feature<ModConfig> {
 
         Matcher fixFailMatcher = RegexFilters.fixFailedFilter.matcher(messageString);
         if (fixFailMatcher.matches()) {
-            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.ALL) {
+            if (ModConfig.instance().autoFix.mode == ModConfig.FixMode.ALL) {
                 ChatUtils.printMessage("message.sbutils.autoFix.noFixAllPermission");
-                ModConfig.HANDLER.instance().autoFix.enabled = false;
+                ModConfig.instance().autoFix.enabled = false;
                 ModConfig.HANDLER.save();
             }
             reset();
@@ -228,7 +230,7 @@ public class AutoFix extends Feature<ModConfig> {
             String secondsText = fixTimeoutMatcher.group(6);
             int minutes = minutesText == null || minutesText.isEmpty() ? 0 : Integer.parseInt(minutesText);
             int seconds = secondsText == null || secondsText.isEmpty() ? 0 : Integer.parseInt(secondsText);
-            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
+            if (ModConfig.instance().autoFix.mode == ModConfig.FixMode.HAND)
                 returnAndSwapBack();
             reset();
             lastActionPerformedAt = calculateLastCommandSentAt(((long)minutes * 60000) + ((long)seconds * 1000) + 2000);
@@ -237,7 +239,7 @@ public class AutoFix extends Feature<ModConfig> {
 
         Matcher fixSuccessMatcher = RegexFilters.fixSuccessFilter.matcher(messageString);
         if (fixSuccessMatcher.matches()) {
-            if (ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND)
+            if (ModConfig.instance().autoFix.mode == ModConfig.FixMode.HAND)
                 returnAndSwapBack();
             reset();
             lastActionPerformedAt = System.currentTimeMillis();
@@ -247,8 +249,8 @@ public class AutoFix extends Feature<ModConfig> {
     private void sendFixCommand() {
         if (MC.getConnection() == null)
             return;
-        String command = ModConfig.HANDLER.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
-        SbUtils.COMMAND_SENDER.sendCommand(command, () -> {}, ModConfig.HANDLER.instance().autoFix.retryDelay, new CommandSender.CommandResponseMatcher(this::onFixResponse, RegexFilters.noPermission, RegexFilters.fixFailedFilter, RegexFilters.fixTimeoutFilter, RegexFilters.fixSuccessFilter));
+        String command = ModConfig.instance().autoFix.mode == ModConfig.FixMode.HAND ? "fix" : "fix all";
+        SbUtils.COMMAND_SENDER.sendCommand(command, () -> {}, ModConfig.instance().autoFix.retryDelay, new CommandSender.CommandResponseMatcher(this::onFixResponse, RegexFilters.noPermission, RegexFilters.fixFailedFilter, RegexFilters.fixTimeoutFilter, RegexFilters.fixSuccessFilter));
         tries++;
         lastActionPerformedAt = System.currentTimeMillis();
         waitingForResponse = true;
@@ -258,12 +260,14 @@ public class AutoFix extends Feature<ModConfig> {
         if (MC.player == null)
             return;
 
-        AbstractContainerMenu currentScreenHandler = MC.player.containerMenu;
+        LocalPlayer player = MC.player;
+
+        AbstractContainerMenu currentScreenHandler = player.containerMenu;
         if (itemPrevSlot == -1 || (itemPrevSlot >= 9 && !InvUtils.canSwapSlot(itemPrevSlot, currentScreenHandler)))
             return;
 
         InvUtils.swapToHotbar(itemPrevSlot, selectedSlot, currentScreenHandler);
-        MC.player.getInventory().selected = prevSelectedSlot;
+        InvUtils.setSelectedSlot(player, prevSelectedSlot);
     }
 
     private int delayLeft() {
@@ -303,7 +307,7 @@ public class AutoFix extends Feature<ModConfig> {
 
             double maxDamage = itemStack.getMaxDamage();
 
-            if (ModConfig.HANDLER.instance().autoFix.percent > -1 && (maxDamage - (double)itemStack.getDamageValue()) / maxDamage > ModConfig.HANDLER.instance().autoFix.percent)
+            if (ModConfig.instance().autoFix.percent > -1 && (maxDamage - (double)itemStack.getDamageValue()) / maxDamage > ModConfig.instance().autoFix.percent)
                 continue;
 
             if (itemStack.getDamageValue() > mostDamage) {
@@ -315,7 +319,7 @@ public class AutoFix extends Feature<ModConfig> {
     }
 
     private static int delay() {
-        return (int)(ModConfig.HANDLER.instance().autoFix.delay * 1000.0);
+        return (int)(ModConfig.instance().autoFix.delay * 1000.0);
     }
 
     private static long calculateLastCommandSentAt(long timeLeft) {

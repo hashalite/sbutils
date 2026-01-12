@@ -19,7 +19,6 @@ import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.ListOptionBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.config.binding.constraints.ListConstraints;
-import net.xolt.sbutils.config.binding.constraints.StringConstraints;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 
@@ -66,7 +65,7 @@ public class AutoCommand extends Feature<ModConfig> {
     }
 
     private static int onToggleCommand(int index) {
-        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
+        List<AutoCommandEntry> autoCommands = ModConfig.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoCommand.commands"));
@@ -80,7 +79,7 @@ public class AutoCommand extends Feature<ModConfig> {
     }
 
     private static int onSetDelayCommand(int index, double newDelay) {
-        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
+        List<AutoCommandEntry> autoCommands = ModConfig.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoCommand.commands"));
@@ -95,7 +94,7 @@ public class AutoCommand extends Feature<ModConfig> {
     }
 
     private static int onSetCommandCommand(int index, String newCommand) {
-        List<AutoCommandEntry> autoCommands = ModConfig.HANDLER.instance().autoCommand.commands;
+        List<AutoCommandEntry> autoCommands = ModConfig.instance().autoCommand.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= autoCommands.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.autoCommand.commands"));
@@ -110,10 +109,10 @@ public class AutoCommand extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoCommand.enabled)
+        if (!ModConfig.instance().autoCommand.enabled)
             return;
 
-        if (System.currentTimeMillis() - lastCommandSentAt < ModConfig.HANDLER.instance().autoCommand.minDelay * 1000)
+        if (System.currentTimeMillis() - lastCommandSentAt < ModConfig.instance().autoCommand.minDelay * 1000)
             return;
 
         sendCommands();
@@ -123,7 +122,7 @@ public class AutoCommand extends Feature<ModConfig> {
         if (MC.getConnection() == null)
             return;
 
-        for (AutoCommandEntry command : ModConfig.HANDLER.instance().autoCommand.commands) {
+        for (AutoCommandEntry command : ModConfig.instance().autoCommand.commands) {
             if (command.enabled && !cmdQueue.contains(command))
                 cmdQueue.offer(command);
             else if (!command.enabled)

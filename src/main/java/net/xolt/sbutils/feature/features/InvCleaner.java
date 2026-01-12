@@ -6,9 +6,8 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.SbUtils;
@@ -25,6 +24,11 @@ import net.xolt.sbutils.systems.CommandSender;
 import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import org.jetbrains.annotations.Nullable;
+//? if >=1.19.4 {
+import net.minecraft.core.registries.BuiltInRegistries;
+        //? } else {
+/*import net.minecraft.core.Registry;
+ *///? }
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -59,7 +63,7 @@ public class InvCleaner extends Feature<ModConfig> {
     @Override
     public void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         final LiteralCommandNode<FabricClientCommandSource> invCleanerNode = dispatcher.register(
-                CommandHelper.runnable(command, () -> clean(ModConfig.HANDLER.instance().invCleaner.itemsToClean, null))
+                CommandHelper.runnable(command, () -> clean(ModConfig.instance().invCleaner.itemsToClean, null))
                         .then(CommandHelper.stringList("items", "item", itemsToClean, ModConfig.HANDLER))
                         .then(CommandHelper.doubl("clickDelay", "seconds", clickDelay, ModConfig.HANDLER))
                         .then(CommandHelper.doubl("slotCooldown", "seconds", slotCooldown, ModConfig.HANDLER))
@@ -86,7 +90,7 @@ public class InvCleaner extends Feature<ModConfig> {
         if (openedDisposal)
             return;
 
-        if (System.currentTimeMillis() - lastClick < ModConfig.HANDLER.instance().invCleaner.clickDelay * 1000)
+        if (System.currentTimeMillis() - lastClick < ModConfig.instance().invCleaner.clickDelay * 1000)
             return;
 
         doClean();
@@ -100,7 +104,7 @@ public class InvCleaner extends Feature<ModConfig> {
             long currentTime = System.currentTimeMillis();
             if (!garbageFilter.test(MC.player.getInventory().getItem(i)))
                 continue;
-            if (currentTime - slotLastClicked[i] < ModConfig.HANDLER.instance().invCleaner.slotCooldown * 1000) {
+            if (currentTime - slotLastClicked[i] < ModConfig.instance().invCleaner.slotCooldown * 1000) {
                 slotOnCooldown = true;
                 continue;
             }
@@ -180,8 +184,28 @@ public class InvCleaner extends Feature<ModConfig> {
     }
 
     private static List<Item> itemsFromStrings(List<String> strings) {
-        List<String> validItems = strings.stream().filter(string -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.withDefaultNamespace(string))).toList();
-        return validItems.stream().map((item) -> BuiltInRegistries.ITEM.get(ResourceLocation.withDefaultNamespace(item)).get().value()).toList();
+        List<String> validItems = strings.stream().filter(string ->
+                //? if >=1.19.4 {
+                BuiltInRegistries.ITEM
+                //? } else
+                //Registry.ITEM
+                        .containsKey(
+                            //? if >=1.21 {
+                            Identifier.withDefaultNamespace(string)
+                            //? } else
+                            //new Identifier(string)
+        )).toList();
+        return validItems.stream().map((item) ->
+                //? if >=1.19.4 {
+                BuiltInRegistries.ITEM
+                //? } else
+                //Registry.ITEM
+                        .get(
+                            //? if >=1.21 {
+                            Identifier.withDefaultNamespace(item)).get().value()
+                            //? } else
+                            //new Identifier(item))
+        ).toList();
     }
 
     public static void showCleanFailedCritical(String dependantFeatureName) {

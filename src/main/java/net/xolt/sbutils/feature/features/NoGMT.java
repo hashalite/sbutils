@@ -4,18 +4,17 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.ItemLore;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
+import net.xolt.sbutils.util.InvUtils;
 import net.xolt.sbutils.util.RegexFilters;
 
 import java.time.LocalDateTime;
@@ -70,7 +69,7 @@ public class NoGMT extends Feature<ModConfig> {
     }
 
     public static boolean shouldModify(Component message) {
-        return ModConfig.HANDLER.instance().noGmt.enabled && RegexFilters.emailFilter.matcher(message.getString()).matches();
+        return ModConfig.instance().noGmt.enabled && RegexFilters.emailFilter.matcher(message.getString()).matches();
     }
 
     public static List<ItemStack> replaceTimeInLores(List<ItemStack> stacks) {
@@ -81,29 +80,26 @@ public class NoGMT extends Feature<ModConfig> {
         if (!(stack.getItem().equals(Items.BOOK)) && !(stack.getItem().equals(Items.WRITABLE_BOOK)))
             return stack;
 
-        ItemLore lore = stack.get(DataComponents.LORE);
+        List<Component> lore = InvUtils.getItemLore(stack);
 
-        if (lore == null)
-            return stack;
-
-        for (int j = 0; j < lore.lines().size(); ++j) {
-            Component loreLine = lore.lines().get(j);
+        for (int j = 0; j < lore.size(); ++j) {
+            Component loreLine = lore.get(j);
             if (loreLine == null)
                 continue;
             Matcher matcher = RegexFilters.mailLoreFilter.matcher(loreLine.getString());
             if (matcher.matches()) {
                 Component newLoreLine = replaceGmtTime(loreLine, matcher.group(1), MAIL_DATE_FORMAT);
-                lore.lines().set(j, newLoreLine);
+                lore.set(j, newLoreLine);
             }
         }
 
         ItemStack result = stack.copy();
-        result.set(DataComponents.LORE, lore);
+        InvUtils.setItemLore(result, lore);
         return result;
     }
 
     private static Component replaceGmtTime(Component text, String target, DateTimeFormatter format) {
-        String zoneStr = ModConfig.HANDLER.instance().noGmt.timeZone;
+        String zoneStr = ModConfig.instance().noGmt.timeZone;
         ZoneId localZone;
         try {
             localZone = ZoneId.of(zoneStr.replaceAll(" ", ""), ZoneId.SHORT_IDS);
@@ -113,7 +109,7 @@ public class NoGMT extends Feature<ModConfig> {
 
         ZonedDateTime gmtTime = LocalDateTime.parse(target, format).atZone(ZoneId.of("GMT"));
         String newTimeStr = format.format(gmtTime.withZoneSameInstant(localZone));
-        if (ModConfig.HANDLER.instance().noGmt.showTimeZone)
+        if (ModConfig.instance().noGmt.showTimeZone)
             newTimeStr += " (" + localZone.getDisplayName(TextStyle.SHORT, Locale.getDefault()) + ")";
         return replaceText(text, target, newTimeStr);
     }

@@ -20,6 +20,10 @@ import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ApiUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
+import net.xolt.sbutils.util.SoundUtils;
+//? if <1.20 {
+/*import net.minecraft.client.gui.GuiComponent;
+*///? }
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,14 +89,49 @@ public class Notifier extends Feature<ModConfig> {
         if (traderItems == null || showTraderItemsTicks <= 0 || MC.getConnection() == null)
             return;
 
-        guiGraphics.drawCenteredString(MC.font, Component.translatable("message.sbutils.notifier.traderItems"), guiGraphics.guiWidth() / 2, guiGraphics.guiHeight() - 88, ModConfig.HANDLER.instance().messageColor.getRGB());
+        //? if >=1.20 {
+        int guiWidth = guiGraphics.guiWidth();
+        int guiHeight = guiGraphics.guiHeight();
+        //? } else {
+        /*int guiWidth = MC.getWindow().getGuiScaledWidth();
+        int guiHeight = MC.getWindow().getGuiScaledHeight();
+        *///? }
+
+        //? if >=1.20 {
+        guiGraphics.drawCenteredString(
+        //? } else
+        //GuiComponent.drawCenteredString(guiGraphics,
+                MC.font, Component.translatable("message.sbutils.notifier.traderItems"), guiWidth / 2, guiHeight - 88, ModConfig.instance().messageColor.getRGB());
         int itemsWidth = traderItems.size() * 16;
         for (int i = 0; i < traderItems.size(); i++) {
-            int x = (i * 16) + ((guiGraphics.guiWidth() - itemsWidth) / 2);
-            guiGraphics.renderItem(traderItems.get(i), x, guiGraphics.guiHeight() - 75);
+            int x = (i * 16) + ((guiWidth - itemsWidth) / 2);
+            //? if >=1.20 {
+            guiGraphics.renderItem(
+            //? } else {
+            /*MC.getItemRenderer().renderGuiItem(
+                    //? if >=1.19.4
+                    guiGraphics,
+            *///? }
+                    traderItems.get(i), x, guiHeight - 75);
         }
-        guiGraphics.renderOutline(((guiGraphics.guiWidth() - itemsWidth) / 2) - 2, guiGraphics.guiHeight() - 77, itemsWidth + 4, 20, ModConfig.HANDLER.instance().messageColor.getRGB());
+        //? if >=1.20 {
+        guiGraphics.renderOutline(
+        //? } else if >=1.19.4 {
+        /*GuiComponent.renderOutline(guiGraphics,
+        *///? } else
+        //renderOutline(guiGraphics,
+                ((guiWidth - itemsWidth) / 2) - 2, guiHeight - 77, itemsWidth + 4, 20, ModConfig.instance().messageColor.getRGB());
     }
+
+    //? if <1.19.4 {
+    /*// Copied from 1.19.4 GuiComponent.java
+    private static void renderOutline(GuiGraphics poseStack, int x, int y, int width, int height, int color) {
+        GuiComponent.fill(poseStack, x, y, x + width, y + 1, color);
+        GuiComponent.fill(poseStack, x, y + height - 1, x + width, y + height, color);
+        GuiComponent.fill(poseStack, x, y + 1, x + 1, y + height - 1, color);
+        GuiComponent.fill(poseStack, x + width - 1, y + 1, x + width, y + height - 1, color);
+    }
+    *///?}
 
     public void processMessage(Component message) {
         if (!enabled())
@@ -103,7 +142,7 @@ public class Notifier extends Feature<ModConfig> {
         if (RegexFilters.vpLlamaFilter.matcher(stringMessage).matches())
             doLlamaNotification();
         else if (RegexFilters.wanderingTraderFilter.matcher(stringMessage).matches()) {
-            if (ModConfig.HANDLER.instance().notifier.showTraderItems)
+            if (ModConfig.instance().notifier.showTraderItems)
                 displayTraderItems();
             doTraderNotification();
         } else if (RegexFilters.incomingTransactionFilter.matcher(stringMessage).matches()) {
@@ -114,7 +153,14 @@ public class Notifier extends Feature<ModConfig> {
     }
 
     public static Component modifyMessage(Component message) {
-        MutableComponent result = message.copy().withStyle(message.getStyle().withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/notifier trader checkItems")));
+        MutableComponent result = message.copy().withStyle(message.getStyle().withClickEvent(
+                //? if >=1.21.11 {
+                new ClickEvent.RunCommand(
+                //? } else
+                //new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                        "/notifier trader checkItems"
+                )
+        ));
         List<Component> siblings = new ArrayList<>(result.getSiblings());
         result.getSiblings().clear();
         for (Component sibling : siblings)
@@ -125,7 +171,7 @@ public class Notifier extends Feature<ModConfig> {
 
 
     public static boolean shouldModify(Component message) {
-        return ModConfig.HANDLER.instance().notifier.showTradesOnClick && RegexFilters.wanderingTraderFilter.matcher(message.getString()).matches();
+        return ModConfig.instance().notifier.showTradesOnClick && RegexFilters.wanderingTraderFilter.matcher(message.getString()).matches();
     }
 
     private void displayTraderItems() {
@@ -138,37 +184,37 @@ public class Notifier extends Feature<ModConfig> {
     }
 
     private static void doLlamaNotification() {
-        if (ModConfig.HANDLER.instance().notifier.playLlamaSound && MC.player != null)
-            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.traderSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
+        if (ModConfig.instance().notifier.playLlamaSound)
+            SoundUtils.playNotifSound(ModConfig.instance().notifier.llamaSound.getSound(), SoundSource.MASTER);
 
-        if (ModConfig.HANDLER.instance().notifier.showLlamaTitle)
+        if (ModConfig.instance().notifier.showLlamaTitle)
             ChatUtils.sendPlaceholderTitle("message.sbutils.notifier.sighted", Component.translatable("message.sbutils.notifier.vpLlama"));
     }
 
     private static void doTraderNotification() {
-        if (ModConfig.HANDLER.instance().notifier.playTraderSound && MC.player != null)
-            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.traderSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
+        if (ModConfig.instance().notifier.playTraderSound)
+            SoundUtils.playNotifSound(ModConfig.instance().notifier.traderSound.getSound(), SoundSource.MASTER);
 
-        if (ModConfig.HANDLER.instance().notifier.showTraderTitle)
+        if (ModConfig.instance().notifier.showTraderTitle)
             ChatUtils.sendPlaceholderTitle("message.sbutils.notifier.sighted", Component.translatable("message.sbutils.notifier.wanderingTrader"));
     }
 
     private static void doShopNotification() {
-        if (ModConfig.HANDLER.instance().notifier.playShopSound && MC.player != null)
-            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.shopSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
+        if (ModConfig.instance().notifier.playShopSound)
+            SoundUtils.playNotifSound(ModConfig.instance().notifier.shopSound.getSound(), SoundSource.MASTER);
     }
 
     private static void doVisitNotification() {
-        if (ModConfig.HANDLER.instance().notifier.playVisitSound && MC.player != null)
-            MC.player.playNotifySound(ModConfig.HANDLER.instance().notifier.visitSound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
+        if (ModConfig.instance().notifier.playVisitSound && MC.player != null)
+            SoundUtils.playNotifSound(ModConfig.instance().notifier.visitSound.getSound(), SoundSource.MASTER);
     }
 
     private static boolean enabled() {
-        return ModConfig.HANDLER.instance().notifier.showLlamaTitle ||
-                ModConfig.HANDLER.instance().notifier.playLlamaSound ||
-                ModConfig.HANDLER.instance().notifier.showTraderTitle ||
-                ModConfig.HANDLER.instance().notifier.playTraderSound ||
-                ModConfig.HANDLER.instance().notifier.playShopSound ||
-                ModConfig.HANDLER.instance().notifier.playVisitSound;
+        return ModConfig.instance().notifier.showLlamaTitle ||
+                ModConfig.instance().notifier.playLlamaSound ||
+                ModConfig.instance().notifier.showTraderTitle ||
+                ModConfig.instance().notifier.playTraderSound ||
+                ModConfig.instance().notifier.playShopSound ||
+                ModConfig.instance().notifier.playVisitSound;
     }
 }

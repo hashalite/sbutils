@@ -47,11 +47,11 @@ public class TextUtils {
     }
 
     public static int getMessageColor() {
-        return ModConfig.HANDLER.instance().messageColor.getRGB();
+        return ModConfig.instance().messageColor.getRGB();
     }
 
     public static int getValueColor() {
-        return ModConfig.HANDLER.instance().valueColor.getRGB();
+        return ModConfig.instance().valueColor.getRGB();
     }
 
     public static int getBooleanColor(boolean bool) {
@@ -82,23 +82,23 @@ public class TextUtils {
         if (input instanceof MutableComponent text) {
             result = text;
             if (result.getStyle().isEmpty())
-                result = result.withColor(getValueColor());
+                result = applyColor(result, getValueColor());
         } else if (input instanceof Boolean bool) {
             result = formatEnabledDisabled(bool);
         } else if (input instanceof NameableEnum nameableEnum) {
-            result = nameableEnum.getDisplayName().copy().withColor(getValueColor());
+            result = applyColor(nameableEnum.getDisplayName().copy(), getValueColor());
         } else if (input instanceof Number) {
-            result = Component.literal(String.valueOf(input)).withColor(getValueColor());
+            result = applyColor(Component.literal(String.valueOf(input)), getValueColor());
         } else if (input instanceof String string) {
-            result = Component.literal(!string.isEmpty() ? string : "nothing").withColor(!string.isEmpty() ? getValueColor() : getMessageColor());
+            result = applyColor(Component.literal(!string.isEmpty() ? string : "nothing"), !string.isEmpty() ? getValueColor() : getMessageColor());
             if (((String) input).isEmpty())
                 result = result.withStyle(ChatFormatting.ITALIC);
         } else if (input instanceof Color color) {
-            result = Component.literal("#" + String.format("%06x", color.getRGB() & 0x00FFFFFF)).withColor(color.getRGB());
+            result = applyColor(Component.literal("#" + String.format("%06x", color.getRGB() & 0x00FFFFFF)), color.getRGB());
         } else if (input instanceof ModConfig.MultiValue multiValue) {
             result = multiValue.format();
         } else {
-            result = Component.literal(String.valueOf(input)).withColor(getValueColor());
+            result = applyColor(Component.literal(String.valueOf(input)), getValueColor());
         }
         return result;
     }
@@ -111,11 +111,11 @@ public class TextUtils {
     }
 
     public static MutableComponent formatEnabledDisabled(boolean bool) {
-        return Component.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled").withColor(getBooleanColor(bool));
+        return applyColor(Component.translatable(bool ? "message.sbutils.enabled" : "message.sbutils.disabled"), getBooleanColor(bool));
     }
 
     public static MutableComponent formatOnlineOffline(boolean online) {
-        return Component.translatable(online ? "message.sbutils.online" : "message.sbutils.offline").withColor(getBooleanColor(online));
+        return applyColor(Component.translatable(online ? "message.sbutils.online" : "message.sbutils.offline"), getBooleanColor(online));
     }
 
     public static String formatTime(double seconds) {
@@ -128,5 +128,12 @@ public class TextUtils {
 
     public static String formatTime(long millis) {
         return formatTime((double)millis/1000.0);
+    }
+
+    public static MutableComponent applyColor(MutableComponent target, int color) {
+        //? if >=1.20 {
+        return target.withColor(color);
+        //? } else
+        //return target.withStyle(style -> style.withColor(color));
     }
 }

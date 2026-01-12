@@ -2,7 +2,6 @@ package net.xolt.sbutils.util;
 
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import net.minecraft.network.chat.MutableComponent;
-import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.OptionBinding;
 
 import java.util.List;
@@ -40,7 +39,12 @@ public class ChatFilter<C> {
     }
 
     public boolean isEnabled() {
-        return option.get(configHandler.instance());
+        return option.get(
+                //? yacl: >=3.2.0 {
+                configHandler.instance()
+                //? } else
+                //configHandler.getConfig()
+        );
     }
 
     public MutableComponent format() {

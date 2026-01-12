@@ -24,10 +24,10 @@ public class ConnectionMixin {
         SbUtils.FEATURES.get(AutoMine.class).onDisconnect();
         SbUtils.FEATURES.get(AutoKit.class).onDisconnect();
 
-        if (ModConfig.HANDLER.instance().autoSilk.enabled || ModConfig.HANDLER.instance().autoCrate.enabled || ModConfig.HANDLER.instance().autoMine.enabled) {
-            ModConfig.HANDLER.instance().autoSilk.enabled = false;
-            ModConfig.HANDLER.instance().autoCrate.enabled = false;
-            ModConfig.HANDLER.instance().autoMine.enabled = false;
+        if (ModConfig.instance().autoSilk.enabled || ModConfig.instance().autoCrate.enabled || ModConfig.instance().autoMine.enabled) {
+            ModConfig.instance().autoSilk.enabled = false;
+            ModConfig.instance().autoCrate.enabled = false;
+            ModConfig.instance().autoMine.enabled = false;
             ModConfig.HANDLER.save();
         }
     }

@@ -9,7 +9,6 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.*;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.world.InteractionHand;
@@ -20,9 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.block.EnchantingTableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.xolt.sbutils.SbUtils;
@@ -33,6 +30,18 @@ import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.InvUtils;
+//? if >=1.21 {
+import net.minecraft.core.registries.Registries;
+//? } else if >=1.19.4 {
+/*import net.minecraft.core.registries.BuiltInRegistries;
+ *///? } else {
+/*import net.minecraft.world.phys.Vec3;
+ *///? }
+//? if >=1.20.6 {
+import net.minecraft.world.level.block.EnchantingTableBlock;
+//? } else {
+/*import net.minecraft.world.level.block.EnchantmentTableBlock;
+ *///? }
 
 import java.util.List;
 
@@ -88,14 +97,14 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     public void onPlayerCloseScreen() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled || !(MC.screen instanceof EnchantmentScreen))
+        if (!ModConfig.instance().autoSilk.enabled || !(MC.screen instanceof EnchantmentScreen))
             return;
 
         reset();
     }
 
     public void onEnchantUpdate() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled)
+        if (!ModConfig.instance().autoSilk.enabled)
             return;
 
         if (state.equals(EnchantState.WAIT_FOR_TOOL_ENCHANTS)) {
@@ -108,7 +117,7 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     public void onUpdateInvSlot(ClientboundContainerSetSlotPacket packet) {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled)
+        if (!ModConfig.instance().autoSilk.enabled)
             return;
 
         if (state.equals(EnchantState.WAIT_FOR_ENCHANTING) && packet.getSlot() == 0 && !InvUtils.getEnchantments(packet.getItem()).isEmpty())
@@ -116,10 +125,10 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoSilk.enabled || MC.player == null || cleaning)
+        if (!ModConfig.instance().autoSilk.enabled || MC.player == null || cleaning)
             return;
 
-        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.HANDLER.instance().autoSilk.delay * 1000.0)
+        if (System.currentTimeMillis() - lastActionPerformedAt < ModConfig.instance().autoSilk.delay * 1000.0)
             return;
 
         if (!(MC.screen instanceof EnchantmentScreen)) {
@@ -131,7 +140,7 @@ public class AutoSilk extends Feature<ModConfig> {
 
         if (state == EnchantState.INSERT_LAPIS) {
             if (countFreeSlots(screenHandler) < 1) {
-                if (ModConfig.HANDLER.instance().autoSilk.cleaner) {
+                if (ModConfig.instance().autoSilk.cleaner) {
                     // cleaning must be set before clean() is called, in case callback is called immediately
                     cleaning = true;
                     SbUtils.FEATURES.get(InvCleaner.class).cleanPredicate(AutoSilk::shouldCleanStack, this::onCleanCallback);
@@ -149,8 +158,8 @@ public class AutoSilk extends Feature<ModConfig> {
                 disable();
                 return;
             }
-            Item targetTool = ModConfig.HANDLER.instance().autoSilk.targetTool.getTool();
-            if (!ModConfig.HANDLER.instance().autoSilk.booksOnly && findInEnchantScreen(targetTool, true, screenHandler) == null) {
+            Item targetTool = ModConfig.instance().autoSilk.targetTool.getTool();
+            if (!ModConfig.instance().autoSilk.booksOnly && findInEnchantScreen(targetTool, true, screenHandler) == null) {
                 ChatUtils.printWithPlaceholders("message.sbutils.autoSilk.noTools", Component.translatable(targetTool.getDescriptionId()));
                 disable();
                 return;
@@ -193,7 +202,7 @@ public class AutoSilk extends Feature<ModConfig> {
                 enchantPickaxe();
                 break;
             case RETURN_ITEM_AND_CONTINUE:
-                returnItem(ModConfig.HANDLER.instance().autoSilk.bookPriority && !toolChecked ? EnchantState.INSERT_TOOL : EnchantState.INSERT_BOOK);
+                returnItem(ModConfig.instance().autoSilk.bookPriority && !toolChecked ? EnchantState.INSERT_TOOL : EnchantState.INSERT_BOOK);
                 break;
             case INSERT_BOOK:
                 insertBook();
@@ -226,7 +235,7 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     private void insertTool() {
-        insertItem(ModConfig.HANDLER.instance().autoSilk.targetTool.getTool());
+        insertItem(ModConfig.instance().autoSilk.targetTool.getTool());
     }
 
     private void enchantPickaxe() {
@@ -241,7 +250,7 @@ public class AutoSilk extends Feature<ModConfig> {
         if (screenHandler == null)
             return;
 
-        EnchantState startingItem = ModConfig.HANDLER.instance().autoSilk.bookPriority || ModConfig.HANDLER.instance().autoSilk.booksOnly ? EnchantState.INSERT_BOOK : EnchantState.INSERT_TOOL;
+        EnchantState startingItem = ModConfig.instance().autoSilk.bookPriority || ModConfig.instance().autoSilk.booksOnly ? EnchantState.INSERT_BOOK : EnchantState.INSERT_TOOL;
 
         if (item.equals(Items.LAPIS_LAZULI) && screenHandler.getGoldCount() >= 3) {
             state = startingItem;
@@ -300,7 +309,14 @@ public class AutoSilk extends Feature<ModConfig> {
         int[] enchantments = screenHandler.enchantClue;
         int silkIndex = -1;
         assert MC.level != null;
-        Registry<Enchantment> enchantmentRegistry = MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Registry<Enchantment> enchantmentRegistry =
+                //? if >=1.21 {
+                MC.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+                //? } else if >=1.19.4 {
+                /*BuiltInRegistries.ENCHANTMENT;
+                *///? } else
+                //Registry.ENCHANTMENT;
+
         IdMap<Holder<Enchantment>> idMap = enchantmentRegistry.asHolderIdMap();
         for (int i = 0; i < enchantments.length; i++) {
             Holder<Enchantment> enchantmentHolder = idMap.byId(enchantments[i]);
@@ -315,7 +331,7 @@ public class AutoSilk extends Feature<ModConfig> {
             }
         }
 
-        if (!ModConfig.HANDLER.instance().autoSilk.booksOnly && silkIndex == -1 && (!book || (ModConfig.HANDLER.instance().autoSilk.bookPriority && !toolChecked))) {
+        if (!ModConfig.instance().autoSilk.booksOnly && silkIndex == -1 && (!book || (ModConfig.instance().autoSilk.bookPriority && !toolChecked))) {
             // Either tool has no Silk Touch, so we should return and continue to book
             // Or bookPriority is enabled and book has no Silk Touch, so we should return and continue to tool
             // Unless tool has already been checked
@@ -334,7 +350,7 @@ public class AutoSilk extends Feature<ModConfig> {
         if (MC.player.experienceLevel < screenHandler.costs[silkIndex]) {
             ChatUtils.printMessage("message.sbutils.autoSilk.notEnoughExperience");
             reset();
-            ModConfig.HANDLER.instance().autoSilk.enabled = false;
+            ModConfig.instance().autoSilk.enabled = false;
             ModConfig.HANDLER.save();
             return;
         }
@@ -344,7 +360,7 @@ public class AutoSilk extends Feature<ModConfig> {
     }
 
     private void disable() {
-        ModConfig.HANDLER.instance().autoSilk.enabled = false;
+        ModConfig.instance().autoSilk.enabled = false;
         ModConfig.HANDLER.save();
         if (autoSilkButton != null)
             autoSilkButton.setValue(false);
@@ -375,7 +391,12 @@ public class AutoSilk extends Feature<ModConfig> {
                 for (int z = playerPos.getZ() - range; z <= playerPos.getZ() + range; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockState state = MC.level.getBlockState(pos);
-                    if (state.getBlock() instanceof EnchantingTableBlock)
+                    if (state.getBlock() instanceof
+                            //? if > 1.20.4 {
+                            EnchantingTableBlock
+                            //? } else
+                            //EnchantmentTableBlock
+                    )
                         tablePos = pos;
                 }
             }
@@ -384,7 +405,12 @@ public class AutoSilk extends Feature<ModConfig> {
         if (tablePos == null)
             return false;
 
-        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(tablePos.getCenter(), Direction.UP, tablePos, false));
+        MC.gameMode.useItemOn(MC.player, InteractionHand.MAIN_HAND, new BlockHitResult(
+                //? if >=1.19.4 {
+                tablePos.getCenter(),
+                //? } else
+                //Vec3.atCenterOf(tablePos),
+                Direction.UP, tablePos, false));
         return true;
     }
 
@@ -397,8 +423,13 @@ public class AutoSilk extends Feature<ModConfig> {
             if (ignoreEnchantingSlots && slot.index < 2)
                 continue;
             ItemStack itemStack = slot.getItem();
-            if (itemStack.getItem().equals(item) && !EnchantmentHelper.hasAnyEnchantments(itemStack)) {
-                if (itemStack.getItem().getDefaultMaxStackSize() == 1)
+            if (itemStack.getItem().equals(item) && InvUtils.getEnchantments(itemStack).isEmpty()) {
+                if (itemStack.getItem()
+                        //? if >1.20.4 {
+                        .getDefaultMaxStackSize()
+                        //? } else
+                        //.getMaxStackSize()
+                        == 1)
                     return slot;
                 if (result == null) {
                     result = slot;

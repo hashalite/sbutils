@@ -1,5 +1,6 @@
 package net.xolt.sbutils.feature.features;
 
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -8,7 +9,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -25,6 +25,9 @@ import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.util.FileUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
+//? if < 1.21.11 {
+/*import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+ *///? }
 
 import java.util.*;
 
@@ -93,7 +96,7 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     private void onInfoCommand() {
-        if (!ModConfig.HANDLER.instance().autoAdvert.enabled) {
+        if (!ModConfig.instance().autoAdvert.enabled) {
             ChatUtils.printSetting("text.sbutils.config.category.autoAdvert", false);
             return;
         }
@@ -103,7 +106,7 @@ public class AutoAdvert extends Feature<ModConfig> {
             return;
         }
 
-        if (ModConfig.HANDLER.instance().autoAdvert.useWhitelist && !userWhitelisted()) {
+        if (ModConfig.instance().autoAdvert.useWhitelist && !userWhitelisted()) {
             ChatUtils.printMessage("message.sbutils.autoAdvert.notWhitelisted");
             return;
         }
@@ -213,13 +216,16 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoAdvert.enabled || MC.getConnection() == null)
+        if (!ModConfig.instance().autoAdvert.enabled || MC.getConnection() == null)
             return;
 
-        if (MC.screen instanceof ReceivingLevelScreen)
+        if (MC.screen instanceof LevelLoadingScreen
+                //? if <1.21.11
+                //|| MC.screen instanceof ReceivingLevelScreen
+        )
             joinedAt = System.currentTimeMillis();
 
-        if (!SbUtils.SERVER_DETECTOR.isOnSkyblock() || (ModConfig.HANDLER.instance().autoAdvert.useWhitelist && !userWhitelisted()))
+        if (!SbUtils.SERVER_DETECTOR.isOnSkyblock() || (ModConfig.instance().autoAdvert.useWhitelist && !userWhitelisted()))
             return;
 
         if (delayLeft() > 0)
@@ -227,7 +233,7 @@ public class AutoAdvert extends Feature<ModConfig> {
 
         List<String> newAdList = getAdList();
         if (findNextAd(newAdList, -1) == -1) {
-            ModConfig.HANDLER.instance().autoAdvert.enabled = false;
+            ModConfig.instance().autoAdvert.enabled = false;
             ModConfig.HANDLER.save();
             reset();
             ChatUtils.printWithPlaceholders("message.sbutils.autoAdvert.noAds", getAdFile());
@@ -241,7 +247,7 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     public void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().autoAdvert.enabled)
+        if (!ModConfig.instance().autoAdvert.enabled)
             return;
 
         joinedAt = System.currentTimeMillis();
@@ -252,15 +258,23 @@ public class AutoAdvert extends Feature<ModConfig> {
     }
 
     private void sendAd() {
+        //? if >=1.19.4 {
         if (MC.getConnection() == null)
+        //? } else
+        //if (MC.player == null)
             return;
 
-        MC.getConnection().sendChat(prevAdList.get(adIndex));
+        String ad = prevAdList.get(adIndex);
+
+        //? if >=1.19.4 {
+        MC.getConnection().sendChat(ad);
+        //? } else
+        //MC.player.chatSigned(ad, null);
     }
 
     private int delayLeft() {
         long delay = (long)(delay() * 1000.0);
-        long initialDelay = (long)(ModConfig.HANDLER.instance().autoAdvert.initialDelay * 1000.0);
+        long initialDelay = (long)(ModConfig.instance().autoAdvert.initialDelay * 1000.0);
 
         int delayLeft = (int)Math.max(delay - (System.currentTimeMillis() - lastAdSentAt), 0L);
         int initialDelayLeft = (int)Math.max(initialDelay - (System.currentTimeMillis() - joinedAt), 0L);
@@ -270,9 +284,9 @@ public class AutoAdvert extends Feature<ModConfig> {
 
     private double delay() {
         return switch(SERVER_DETECTOR.getCurrentServer()) {
-            case ECONOMY -> ecoDelay.get(ModConfig.HANDLER.instance());
-            case CLASSIC -> classicDelay.get(ModConfig.HANDLER.instance());
-            default -> sbDelay.get(ModConfig.HANDLER.instance());
+            case ECONOMY -> ecoDelay.get(ModConfig.instance());
+            case CLASSIC -> classicDelay.get(ModConfig.instance());
+            default -> sbDelay.get(ModConfig.instance());
         };
     }
 
@@ -387,13 +401,13 @@ public class AutoAdvert extends Feature<ModConfig> {
         else
             switch (SbUtils.SERVER_DETECTOR.getCurrentServer()) {
                 case SKYBLOCK:
-                    adFile = ModConfig.HANDLER.instance().autoAdvert.sbFile;
+                    adFile = ModConfig.instance().autoAdvert.sbFile;
                     break;
                 case ECONOMY:
-                    adFile = ModConfig.HANDLER.instance().autoAdvert.ecoFile;
+                    adFile = ModConfig.instance().autoAdvert.ecoFile;
                     break;
                 case CLASSIC:
-                    adFile = ModConfig.HANDLER.instance().autoAdvert.classicFile;
+                    adFile = ModConfig.instance().autoAdvert.classicFile;
                     break;
                 default:
                     return null;
@@ -410,10 +424,15 @@ public class AutoAdvert extends Feature<ModConfig> {
         if (MC.player == null)
             return false;
 
-        return getWhitelist().contains(MC.player.getGameProfile().getName());
+        return getWhitelist().contains(MC.player.getGameProfile()
+                //? if >=1.21.11 {
+                .name()
+                //? } else
+                //.getName()
+        );
     }
 
     private static List<String> getWhitelist() {
-        return ModConfig.HANDLER.instance().autoAdvert.whitelist;
+        return ModConfig.instance().autoAdvert.whitelist;
     }
 }

@@ -23,10 +23,10 @@
   "mixins": [
     "sbutils.mixins.json"
   ],
-  "accessWidener":  "sbutils.accesswidener",
+  "accessWidener": "sbutils.accesswidener",
   "depends": {
     "fabricloader": ">=0.12.11",
     "fabric": "*",
-    "minecraft": "1.21.4"
+    "minecraft": "${minecraft}"
   }
 }

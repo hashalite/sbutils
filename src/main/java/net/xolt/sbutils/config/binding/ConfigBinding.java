@@ -1,5 +1,6 @@
 package net.xolt.sbutils.config.binding;
 
+import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
@@ -59,12 +60,26 @@ public abstract class ConfigBinding<C, T> {
         return get.apply(instance);
     }
 
+    public T get(ConfigClassHandler<C> instance) {
+        //? yacl: >=3.2.0 {
+        return get(instance.instance());
+        //? } else
+        //return get(instance.getConfig());
+    }
+
     public void set(C instance, T newValue) {
         T oldValue = get.apply(instance);
         T validated = constraints == null ? newValue : constraints.validate(newValue);
         set.accept(instance, validated);
         for (BiConsumer<T, T> listener : listeners)
             listener.accept(oldValue, validated);
+    }
+
+    public void set(ConfigClassHandler<C> instance, T newValue) {
+        //? yacl: >=3.2.0 {
+        set(instance.instance(), newValue);
+         //? } else
+        //set(instance.getConfig(), newValue);
     }
 
     public void addListener(BiConsumer<T, T> listener) {

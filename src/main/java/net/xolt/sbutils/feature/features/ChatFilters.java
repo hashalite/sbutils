@@ -22,7 +22,6 @@ import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.xolt.sbutils.SbUtils.LOGGER;
 import static net.xolt.sbutils.config.ModConfig.ChatFiltersConfig.CustomFilter;
 
 import java.util.ArrayList;
@@ -104,7 +103,7 @@ public class ChatFilters extends Feature<ModConfig> {
     }
 
     private int onSetRegexCommand(int index, String newRegex) {
-        List<CustomFilter> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
+        List<CustomFilter> filters = ModConfig.instance().chatFilters.customFilters;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= filters.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.chatFilters.customFilters"));
@@ -121,7 +120,7 @@ public class ChatFilters extends Feature<ModConfig> {
     }
 
     private int onToggleCommand(int index) {
-        List<CustomFilter> filters = ModConfig.HANDLER.instance().chatFilters.customFilters;
+        List<CustomFilter> filters = ModConfig.instance().chatFilters.customFilters;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= filters.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.chatFilters.customFilters"));
@@ -149,7 +148,7 @@ public class ChatFilters extends Feature<ModConfig> {
     public void recompileCustomRegex() {
         chatCustomRegex.clear();
         titleCustomRegex.clear();
-        for (CustomFilter filter : ModConfig.HANDLER.instance().chatFilters.customFilters) {
+        for (CustomFilter filter : ModConfig.instance().chatFilters.customFilters) {
             if (!filter.enabled)
                 continue;
 

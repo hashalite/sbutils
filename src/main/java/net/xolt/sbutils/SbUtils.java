@@ -20,6 +20,9 @@ import net.xolt.sbutils.util.FileUtils;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+//? if >=1.21.11 {
+import net.minecraft.resources.Identifier;
+//? }
 
 import java.awt.*;
 import java.util.List;
@@ -92,14 +95,14 @@ public class SbUtils implements ClientModInitializer {
     }
 
     private static void registerKeybindings() {
-        configKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.config", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_BACKSLASH, "category.sbutils.sbutils"));
-        islandKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.island", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        ehomeKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.ehome", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        jumpKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.jump", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        backKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.back", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        craftKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.craft", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        echestKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.echest", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
-        trashKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.sbutils.trash", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.sbutils.sbutils"));
+        configKey = KeyBindingHelper.registerKeyBinding(createKeymapping("config", GLFW.GLFW_KEY_BACKSLASH));
+        islandKey = KeyBindingHelper.registerKeyBinding(createKeymapping("island", GLFW.GLFW_KEY_UNKNOWN));
+        ehomeKey = KeyBindingHelper.registerKeyBinding(createKeymapping("ehome", GLFW.GLFW_KEY_UNKNOWN));
+        jumpKey = KeyBindingHelper.registerKeyBinding(createKeymapping("jump", GLFW.GLFW_KEY_UNKNOWN));
+        backKey = KeyBindingHelper.registerKeyBinding(createKeymapping("back", GLFW.GLFW_KEY_UNKNOWN));
+        craftKey = KeyBindingHelper.registerKeyBinding(createKeymapping("craft", GLFW.GLFW_KEY_UNKNOWN));
+        echestKey = KeyBindingHelper.registerKeyBinding(createKeymapping("echest", GLFW.GLFW_KEY_UNKNOWN));
+        trashKey = KeyBindingHelper.registerKeyBinding(createKeymapping("trash", GLFW.GLFW_KEY_UNKNOWN));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (configKey.consumeClick()) {
@@ -111,33 +114,43 @@ public class SbUtils implements ClientModInitializer {
             }
 
             while (islandKey.consumeClick()) {
-                MC.getConnection().sendCommand("is");
+                CommandSender.sendNow("is");
             }
 
             while (ehomeKey.consumeClick()) {
-                MC.getConnection().sendCommand("ehome");
+                CommandSender.sendNow("ehome");
             }
 
             while (jumpKey.consumeClick()) {
-                MC.getConnection().sendCommand("jump");
+                CommandSender.sendNow("jump");
             }
 
             while (backKey.consumeClick()) {
-                MC.getConnection().sendCommand("back");
+                CommandSender.sendNow("back");
             }
 
             while (craftKey.consumeClick()) {
-                MC.getConnection().sendCommand("wb");
+                CommandSender.sendNow("wb");
             }
 
             while (echestKey.consumeClick()) {
-                MC.getConnection().sendCommand("ec");
+                CommandSender.sendNow("ec");
             }
 
             while (trashKey.consumeClick()) {
-                MC.getConnection().sendCommand("trash");
+                CommandSender.sendNow("trash");
             }
         });
+    }
+
+    private static KeyMapping createKeymapping(String title, int key) {
+        return new KeyMapping("key.sbutils." + title, InputConstants.Type.KEYSYM, key,
+                //? if >=1.21.11
+                new KeyMapping.Category(Identifier.parse(
+                        "category.sbutils.sbutils"
+                //? if >=1.21.11
+                ))
+        );
     }
 
     public static List<? extends ConfigBinding<ModConfig, ?>> getGlobalConfigBindings() {

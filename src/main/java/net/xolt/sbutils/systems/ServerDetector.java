@@ -2,14 +2,17 @@ package net.xolt.sbutils.systems;
 
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.AutoAdvert;
 import net.xolt.sbutils.feature.features.AutoKit;
+//? if >=1.21.11 {
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+//? } else {
+/*import net.minecraft.commands.SharedSuggestionProvider;
+ *///? }
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -97,7 +100,11 @@ public class ServerDetector {
             return null;
         }
 
-        for (CommandNode<SharedSuggestionProvider> node : connection.getCommands().getRoot().getChildren()) {
+        //? if >=1.21.11 {
+        for (CommandNode<ClientSuggestionProvider> node
+        //? } else
+        //for (CommandNode<SharedSuggestionProvider> node
+                : connection.getCommands().getRoot().getChildren()) {
             switch (node.getName()) {
                 case "crophoppers:crophoppers":
                     return SbServer.ECONOMY;

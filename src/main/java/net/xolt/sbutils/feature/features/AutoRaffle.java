@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
@@ -52,7 +51,7 @@ public class AutoRaffle extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().autoRaffle.enabled || MC.getConnection() == null)
+        if (!ModConfig.instance().autoRaffle.enabled || MC.getConnection() == null)
             return;
 
         if (waitingToBuy && checkForGrass)
@@ -64,17 +63,17 @@ public class AutoRaffle extends Feature<ModConfig> {
     }
 
     public void onUpdateInventory() {
-        if (ModConfig.HANDLER.instance().autoRaffle.enabled && waitingToBuy)
+        if (ModConfig.instance().autoRaffle.enabled && waitingToBuy)
             checkForGrass = true;
     }
 
     public void processMessage(Component message) {
-        if (ModConfig.HANDLER.instance().autoRaffle.enabled && RegexFilters.raffleEndFilter.matcher(message.getString()).matches())
+        if (ModConfig.instance().autoRaffle.enabled && RegexFilters.raffleEndFilter.matcher(message.getString()).matches())
             reset();
     }
 
     public void onJoinGame() {
-        if (ModConfig.HANDLER.instance().autoRaffle.enabled)
+        if (ModConfig.instance().autoRaffle.enabled)
             reset();
     }
 
@@ -98,7 +97,7 @@ public class AutoRaffle extends Feature<ModConfig> {
         if (MC.getConnection() == null)
             return;
 
-        int numTickets = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.sbTickets, 1), 2);
+        int numTickets = Math.min(Math.max(ModConfig.instance().autoRaffle.sbTickets, 1), 2);
         int grassCount = getGrassCount();
         if (grassCount < 1) {
             waitingToBuy = true;
@@ -120,7 +119,7 @@ public class AutoRaffle extends Feature<ModConfig> {
         if (MC.getConnection() == null)
             return;
 
-        int buyAmount = Math.min(Math.max(ModConfig.HANDLER.instance().autoRaffle.ecoTickets, 1), 5);
+        int buyAmount = Math.min(Math.max(ModConfig.instance().autoRaffle.ecoTickets, 1), 5);
         ChatUtils.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
         SbUtils.COMMAND_SENDER.sendCommand("raffle buy " + buyAmount);
         waitingToBuy = false;

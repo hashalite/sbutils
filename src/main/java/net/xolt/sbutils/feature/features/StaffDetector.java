@@ -16,6 +16,7 @@ import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ApiUtils;
 import net.xolt.sbutils.util.ChatUtils;
+import net.xolt.sbutils.util.SoundUtils;
 import net.xolt.sbutils.util.TextUtils;
 
 import java.util.*;
@@ -53,7 +54,7 @@ public class StaffDetector extends Feature<ModConfig> {
     }
 
     public void onPlayerLeave(PlayerInfo player) {
-        if (!ModConfig.HANDLER.instance().staffDetector.detectLeave || !isStaff(player))
+        if (!ModConfig.instance().staffDetector.detectLeave || !isStaff(player))
             return;
 
         showStaffNotification(player, false);
@@ -63,8 +64,8 @@ public class StaffDetector extends Feature<ModConfig> {
 
         checkForNoStaff = true;
 
-        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
-            MC.player.playNotifySound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
+        if (ModConfig.instance().staffDetector.playSound)
+            SoundUtils.playNotifSound(ModConfig.instance().staffDetector.sound.getSound(), SoundSource.MASTER);
     }
 
     public void afterPlayerLeave() {
@@ -78,31 +79,52 @@ public class StaffDetector extends Feature<ModConfig> {
     }
 
     public void onPlayerJoin(PlayerInfo player) {
-        if (!ModConfig.HANDLER.instance().staffDetector.detectJoin || !isStaff(player))
+        if (!ModConfig.instance().staffDetector.detectJoin || !isStaff(player))
             return;
 
         showStaffNotification(player, true);
-        if (MC.player != null && ModConfig.HANDLER.instance().staffDetector.playSound)
-            MC.player.playNotifySound(ModConfig.HANDLER.instance().staffDetector.sound.getSound(), SoundSource.MASTER, 1.0F, 1.0F);
+        if (ModConfig.instance().staffDetector.playSound)
+            SoundUtils.playNotifSound(ModConfig.instance().staffDetector.sound.getSound(), SoundSource.MASTER);
     }
 
     private void showStaffNotification(PlayerInfo player, boolean joined) {
         MutableComponent message = Component.translatable("message.sbutils.staffDetector.notification");
-        String position = staffList.get(player.getProfile().getId());
-        MutableComponent staff = Component.literal(player.getProfile().getName() + (position.isEmpty() ? "" : " (" + position + ")"));
+        String position = staffList.get(player.getProfile()
+                //? if >=1.21.11 {
+                .id()
+                //? } else
+                //.getId()
+        );
+        MutableComponent staff = Component.literal(player.getProfile()
+                //? if >=1.21.11 {
+                .name()
+                //? } else
+                //.getName()
+                + (position.isEmpty() ? "" : " (" + position + ")")
+        );
         MutableComponent status = TextUtils.formatOnlineOffline(joined);
         ChatUtils.printWithPlaceholders(message, staff, status);
     }
 
     private boolean isStaff(PlayerInfo player) {
-        return staffList.containsKey(player.getProfile().getId());
+        return staffList.containsKey(player.getProfile()
+                //? if >=1.21.11 {
+                .id()
+                //? } else
+                //.getId()
+        );
     }
 
     public boolean staffOnline() {
         if (MC.getConnection() == null)
             return false;
 
-        for (PlayerInfo playerListEntry : MC.getConnection().getListedOnlinePlayers())
+        for (PlayerInfo playerListEntry : MC.getConnection()
+                //? if >=1.19.4 {
+                .getListedOnlinePlayers()
+                //? } else
+                //.getOnlinePlayers()
+        )
             if (isStaff(playerListEntry))
                 return true;
 

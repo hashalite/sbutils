@@ -3,14 +3,26 @@ package net.xolt.sbutils.config;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import dev.isxander.yacl3.api.NameableEnum;
+//? yacl: >=3.2.0 {
+import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
+import net.minecraft.resources.Identifier;
+//? } else {
+/*import net.minecraft.network.chat.Style;
+import dev.isxander.yacl3.config.GsonConfigClassHandler;
+*///? }
+//? yacl: <=3.0.0
+//import net.xolt.sbutils.config.yacl.CustomGsonConfigClassHandler;
+//? if >=1.19.4 {
+import net.minecraft.core.registries.BuiltInRegistries;
+//? } else {
+/*import net.minecraft.core.Registry;
+*///? }
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.StringRepresentable;
@@ -28,13 +40,40 @@ import java.util.List;
 
 public class ModConfig {
 
-    public static final ConfigClassHandler<ModConfig> HANDLER = ConfigClassHandler.createBuilder(ModConfig.class)
-            .id(ResourceLocation.fromNamespaceAndPath("sbutils", "config"))
+    public static final ConfigClassHandler<ModConfig> HANDLER =
+    //? yacl: >=3.2.0 {
+    ConfigClassHandler.createBuilder(ModConfig.class)
+            //? if >=1.21 {
+            .id(Identifier.fromNamespaceAndPath("sbutils", "config"))
+            //? } else
+            //.id(new Identifier("sbutils", "config"))
             .serializer(config -> GsonConfigSerializerBuilder.create(config)
                     .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
                     .appendGsonBuilder(builder -> builder.setFieldNamingPolicy(FieldNamingPolicy.IDENTITY))
                     .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
                     .build()).build();
+    //? } else if yacl: >=3.0.0 {
+     /*GsonConfigClassHandler.createBuilder(ModConfig.class)
+            .setPath(FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"))
+            .overrideGsonBuilder(new GsonBuilder()
+                    .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
+                    .setPrettyPrinting()
+                    .serializeNulls()
+                    .registerTypeHierarchyAdapter(Component.class, new Component.Serializer())
+                    .registerTypeHierarchyAdapter(Style.class, new Style.Serializer())
+                    .registerTypeHierarchyAdapter(Color.class, new GsonConfigClassHandler.ColorTypeAdapter())
+            )
+            .build();
+    *///? } else {
+    /*new CustomGsonConfigClassHandler<>(ModConfig.class, FabricLoader.getInstance().getGameDir().resolve("sbutils").resolve("sbutils.json"));
+    *///? }
+
+    public static ModConfig instance() {
+        //? yacl: >=3.2.0 {
+        return HANDLER.instance();
+        //? } else
+        //return HANDLER.getConfig();
+    }
 
     // Mod Settings
 
@@ -90,7 +129,7 @@ public class ModConfig {
             @Override public MutableComponent format() {
                 Long cmdLastSentAt = SbUtils.FEATURES.get(AutoCommand.class).getCmdLastSentAt(this);
                 MutableComponent delayLeftText;
-                if (!ModConfig.HANDLER.instance().autoCommand.enabled || !enabled || cmdLastSentAt == null) {
+                if (!ModConfig.instance().autoCommand.enabled || !enabled || cmdLastSentAt == null) {
                     delayLeftText = Component.literal("N/A");
                 } else {
                     long delayLeftMillis = (long)(delay * 1000.0) - (System.currentTimeMillis() - cmdLastSentAt);
@@ -404,7 +443,12 @@ public class ModConfig {
 
         @Override
         public String getSerializedName() {
-            return BuiltInRegistries.ITEM.getKey(tool).getPath();
+            return
+                    //? if >=1.19.4 {
+                    BuiltInRegistries
+                    //? } else
+                    //Registry
+                    .ITEM.getKey(tool).getPath();
         }
     }
 
@@ -436,30 +480,37 @@ public class ModConfig {
         DISPENSER(SoundEvents.DISPENSER_FAIL),
         BUTTON(SoundEvents.STONE_BUTTON_CLICK_ON),
         ANVIL_LAND(SoundEvents.ANVIL_LAND),
-        BANJO(SoundEvents.NOTE_BLOCK_BANJO.value()),
-        BASEDRUM(SoundEvents.NOTE_BLOCK_BASEDRUM.value()),
-        BASS(SoundEvents.NOTE_BLOCK_BASS.value()),
-        BELL(SoundEvents.NOTE_BLOCK_BELL.value()),
-        BIT(SoundEvents.NOTE_BLOCK_BIT.value()),
-        CHIME(SoundEvents.NOTE_BLOCK_CHIME.value()),
-        COW_BELL(SoundEvents.NOTE_BLOCK_COW_BELL.value()),
-        DIDGERIDOO(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value()),
-        FLUTE(SoundEvents.NOTE_BLOCK_FLUTE.value()),
-        GUITAR(SoundEvents.NOTE_BLOCK_GUITAR.value()),
-        HARP(SoundEvents.NOTE_BLOCK_HARP.value()),
-        HAT(SoundEvents.NOTE_BLOCK_HAT.value()),
-        IRON_XYLOPHONE(SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE.value()),
-        PLING(SoundEvents.NOTE_BLOCK_PLING.value()),
-        SNARE(SoundEvents.NOTE_BLOCK_SNARE.value()),
-        XYLOPHONE(SoundEvents.NOTE_BLOCK_XYLOPHONE.value());
+        BANJO(SoundEvents.NOTE_BLOCK_BANJO),
+        BASEDRUM(SoundEvents.NOTE_BLOCK_BASEDRUM),
+        BASS(SoundEvents.NOTE_BLOCK_BASS),
+        BELL(SoundEvents.NOTE_BLOCK_BELL),
+        BIT(SoundEvents.NOTE_BLOCK_BIT),
+        CHIME(SoundEvents.NOTE_BLOCK_CHIME),
+        COW_BELL(SoundEvents.NOTE_BLOCK_COW_BELL),
+        DIDGERIDOO(SoundEvents.NOTE_BLOCK_DIDGERIDOO),
+        FLUTE(SoundEvents.NOTE_BLOCK_FLUTE),
+        GUITAR(SoundEvents.NOTE_BLOCK_GUITAR),
+        HARP(SoundEvents.NOTE_BLOCK_HARP),
+        HAT(SoundEvents.NOTE_BLOCK_HAT),
+        IRON_XYLOPHONE(SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE),
+        PLING(SoundEvents.NOTE_BLOCK_PLING),
+        SNARE(SoundEvents.NOTE_BLOCK_SNARE),
+        XYLOPHONE(SoundEvents.NOTE_BLOCK_XYLOPHONE);
         private final SoundEvent sound;
 
         NotifSound(SoundEvent sound) {
             this.sound = sound;
         }
 
+        NotifSound(Holder.Reference<SoundEvent> sound) {
+            this.sound = sound.value();
+        }
+
         public String getSerializedName() {
+            //? if >=1.21 {
             return sound.location().toShortLanguageKey();
+            //? } else
+            //return sound.getLocation().toShortLanguageKey();
         }
 
         public Component getDisplayName() {

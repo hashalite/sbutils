@@ -2,7 +2,6 @@ package net.xolt.sbutils.feature.features;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.player.LocalPlayer;
@@ -10,12 +9,8 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.MushroomCow;
-import net.minecraft.world.entity.animal.Sheep;
-import net.minecraft.world.entity.animal.SnowGolem;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
@@ -28,6 +23,17 @@ import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.util.ChatUtils;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+//? if >=1.21.11 {
+import net.minecraft.world.entity.animal.cow.MushroomCow;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
+//? } else {
+/*import net.minecraft.world.entity.animal.MushroomCow;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.SnowGolem;
+import net.minecraft.world.entity.vehicle.MinecartTNT;
+*///? }
 
 import java.util.List;
 
@@ -59,7 +65,7 @@ public class ToolSaver extends Feature<ModConfig> {
 
     public void onBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
         if (shouldCancelBlockInteract(player, hand, hitResult)) {
-            cir.setReturnValue(InteractionResult.PASS);
+            cir.setReturnValue(null);
             notifyBlocked();
         }
     }
@@ -93,7 +99,7 @@ public class ToolSaver extends Feature<ModConfig> {
     }
 
     private static boolean shouldCancelBlockInteract(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled)
+        if (!ModConfig.instance().toolSaver.enabled)
             return false;
 
         ItemStack item = player.getItemInHand(hand);
@@ -108,7 +114,7 @@ public class ToolSaver extends Feature<ModConfig> {
     }
 
     private static boolean shouldCancelEntityInteract(Player player, Entity entity, InteractionHand hand) {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled)
+        if (!ModConfig.instance().toolSaver.enabled)
             return false;
 
         ItemStack item = player.getItemInHand(hand);
@@ -127,7 +133,7 @@ public class ToolSaver extends Feature<ModConfig> {
     }
 
     public static boolean shouldCancelAttack() {
-        if (!ModConfig.HANDLER.instance().toolSaver.enabled || MC.player == null)
+        if (!ModConfig.instance().toolSaver.enabled || MC.player == null)
             return false;
 
         ItemStack holding = MC.player.getMainHandItem();
@@ -142,6 +148,6 @@ public class ToolSaver extends Feature<ModConfig> {
         if (item.isEmpty() || !item.isDamageableItem())
             return false;
 
-        return item.getMaxDamage() - item.getDamageValue() <= ModConfig.HANDLER.instance().toolSaver.durability;
+        return item.getMaxDamage() - item.getDamageValue() <= ModConfig.instance().toolSaver.durability;
     }
 }

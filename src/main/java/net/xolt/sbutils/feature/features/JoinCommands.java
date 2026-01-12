@@ -66,7 +66,7 @@ public class JoinCommands extends Feature<ModConfig> {
     }
 
     private static int onSetCommandCommand(int index, String newCommand) {
-        List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.HANDLER.instance().joinCommands.commands;
+        List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.instance().joinCommands.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= joinCommands.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.joinCommands.commands"));
@@ -81,7 +81,7 @@ public class JoinCommands extends Feature<ModConfig> {
     }
 
     private static int onSetAccountsCommand(int index, String newAccounts) {
-        List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.HANDLER.instance().joinCommands.commands;
+        List<ModConfig.JoinCommandsConfig.JoinCommandsEntry> joinCommands = ModConfig.instance().joinCommands.commands;
         int adjustedIndex = index - 1;
         if (adjustedIndex >= joinCommands.size() || adjustedIndex < 0) {
             ChatUtils.printWithPlaceholders("message.sbutils.invalidListIndex", index, Component.translatable("text.sbutils.config.option.joinCommands.commands"));
@@ -95,10 +95,10 @@ public class JoinCommands extends Feature<ModConfig> {
     }
 
     public void tick() {
-        if (!ModConfig.HANDLER.instance().joinCommands.enabled || !SbUtils.SERVER_DETECTOR.isOnSkyblock() || commandQueue.isEmpty())
+        if (!ModConfig.instance().joinCommands.enabled || !SbUtils.SERVER_DETECTOR.isOnSkyblock() || commandQueue.isEmpty())
             return;
 
-        int delay = (int)((joinedAt > lastCommandSentAt ? ModConfig.HANDLER.instance().joinCommands.initialDelay : ModConfig.HANDLER.instance().joinCommands.delay) * 1000.0);
+        int delay = (int)((joinedAt > lastCommandSentAt ? ModConfig.instance().joinCommands.initialDelay : ModConfig.instance().joinCommands.delay) * 1000.0);
 
         if (System.currentTimeMillis() - Math.max(joinedAt, lastCommandSentAt) >= delay) {
             sendJoinCommand(commandQueue);
@@ -111,7 +111,7 @@ public class JoinCommands extends Feature<ModConfig> {
     }
 
     public void onJoinGame() {
-        if (!ModConfig.HANDLER.instance().joinCommands.enabled || ModConfig.HANDLER.instance().joinCommands.commands.isEmpty() || MC.player == null)
+        if (!ModConfig.instance().joinCommands.enabled || ModConfig.instance().joinCommands.commands.isEmpty() || MC.player == null)
             return;
 
         reset();
@@ -127,7 +127,7 @@ public class JoinCommands extends Feature<ModConfig> {
 
     private static List<String> getJoinCommands(Player player) {
         String playerName = player.getName().getString().toLowerCase();
-        return ModConfig.HANDLER.instance().joinCommands.commands.stream().filter((command) -> {
+        return ModConfig.instance().joinCommands.commands.stream().filter((command) -> {
             List<String> accounts = command.getAccounts();
             return accounts.isEmpty() || accounts.stream().map(String::toLowerCase).toList().contains(playerName);
         }).map((command) -> command.command).toList();

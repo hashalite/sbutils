@@ -47,7 +47,7 @@ public abstract class MinecraftMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTickTail(CallbackInfo ci) {
         SbUtils.FEATURES.get(AutoMine.class).tick();
-        if (ModConfig.HANDLER.instance().autoMine.enabled && AutoMine.shouldMine() && (screen != null || overlay != null)) {
+        if (ModConfig.instance().autoMine.enabled && AutoMine.shouldMine() && (screen != null || overlay != null)) {
             missTime = 0;
             continueAttack(true);
         }

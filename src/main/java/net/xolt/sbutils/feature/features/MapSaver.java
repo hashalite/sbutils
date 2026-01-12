@@ -4,14 +4,12 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.resources.MapTextureManager;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
-import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.EntityHitResult;
 import net.xolt.sbutils.command.CommandHelper;
@@ -21,6 +19,15 @@ import net.xolt.sbutils.feature.Feature;
 import net.xolt.sbutils.mixins.MapInstanceAccessor;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.FileUtils;
+import net.xolt.sbutils.util.InvUtils;
+//? if >=1.21 {
+import net.minecraft.client.resources.MapTextureManager;
+//? } else
+//import net.minecraft.client.gui.MapRenderer;
+//? if >1.20.4 {
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.saveddata.maps.MapId;
+//? }
 
 import java.util.List;
 
@@ -52,22 +59,43 @@ public class MapSaver extends Feature<ModConfig> {
             ChatUtils.printMessage("message.sbutils.mapSaver.notHoldingOrInFrame");
             return;
         }
+
+        //? if >1.20.4 {
         MapId mapId = map.get(DataComponents.MAP_ID);
+        //? } else
+        //Integer mapId = MapItem.getMapId(map);
+
+
+
         if (mapId == null) {
             ChatUtils.printMessage("message.sbutils.mapSaver.saveFailed");
             return;
         }
+        int mapIdInt =
+                //? if >1.20.4 {
+                mapId.id();
+                //? } else
+                //mapId;
+
         MapItemSavedData mapData = MapItem.getSavedData(map, MC.level);
+        //? if >=1.21 {
         MapTextureManager.MapInstance mapInstance = MC.getMapTextureManager().getOrCreateMapInstance(mapId, mapData);
+        //? } else
+        //MapRenderer.MapInstance mapInstance = MC.gameRenderer.getMapRenderer().getOrCreateMapInstance(mapId, mapData);
         NativeImage image = ((MapInstanceAccessor)mapInstance).getTexture().getPixels();
         String servername = null;
-        if (MC.getConnection() != null && MC.getConnection().getServerData() != null)
-            servername = MC.getConnection().getServerData().ip;
+        ServerData serverData =
+                //? if >=1.19.4 {
+                MC.getConnection() != null ? MC.getConnection().getServerData() : null;
+                //? } else
+                //MC.getCurrentServer();
+        if (serverData != null)
+            servername = serverData.ip;
         else if (MC.getSingleplayerServer() != null)
             servername = MC.getSingleplayerServer().getWorldData().getLevelName() + " (Singleplayer)";
         else
             servername = "unknown";
-        if (!FileUtils.saveMapImage(mapId, servername, image)) {
+        if (!FileUtils.saveMapImage(mapIdInt, servername, image)) {
             ChatUtils.printMessage("message.sbutils.mapSaver.saveFailed");
             return;
         }
@@ -75,7 +103,10 @@ public class MapSaver extends Feature<ModConfig> {
     }
 
     private static ItemStack getTargetMap() {
-        ItemStack held = MC.player.getInventory().getSelected();
+        if (MC.player == null)
+            return null;
+
+        ItemStack held = InvUtils.getSelectedItem(MC.player);
         if (held.getItem() == Items.FILLED_MAP)
             return held;
         ItemStack framed = null;
