@@ -1,59 +1,15 @@
 package net.xolt.sbutils.systems;
 
-import com.mojang.brigadier.tree.CommandNode;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.AutoAdvert;
 import net.xolt.sbutils.feature.features.AutoKit;
-//? if >=1.21.11 {
-import net.minecraft.client.multiplayer.ClientSuggestionProvider;
-//? } else {
-/*import net.minecraft.commands.SharedSuggestionProvider;
- *///? }
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class ServerDetector {
 
     private SbServer currentServer;
-    private boolean receivedCommandTree;
-    private boolean receivedTabHeader;
-    private boolean receivedAddress;
-    private String tabHeader;
-    private InetAddress skyblockAddress;
-
-    public void onPlayerListHeader(String header) {
-        tabHeader = header;
-        receivedTabHeader = true;
-        if (receivedCommandTree && receivedAddress) {
-            updateServer(determineServer(tabHeader, skyblockAddress));
-        }
-    }
-
-    public void afterCommandTree() {
-        receivedCommandTree = true;
-        if (receivedTabHeader && receivedAddress) {
-            updateServer(determineServer(tabHeader, skyblockAddress));
-        }
-    }
-
-    public void onReceiveSkyblockAddress(InetAddress address) {
-        this.skyblockAddress = address;
-        receivedAddress = true;
-        if (receivedTabHeader && receivedCommandTree) {
-            updateServer(determineServer(tabHeader, skyblockAddress));
-        }
-    }
-
-    private void updateServer(SbServer server) {
-        if (currentServer == server)
-            return;
-        currentServer = server;
-        onSwitchServer(server);
-    }
+    private long lastRequestTs;
 
     public void onDisconnect() {
         reset();
@@ -61,24 +17,33 @@ public class ServerDetector {
 
     public void onJoinGame() {
         reset();
-        getCurrentSkyblockAddress();
+        fetchServer();
     }
 
-    private void getCurrentSkyblockAddress() {
-        Thread socketThread = new Thread(() -> {
-            InetAddress result = null;
-            try {
-                result = InetAddress.getByName("server.skyblock.net");
-            } catch (Exception e) {
-                SbUtils.LOGGER.error("Failed to retrieve current Skyblock ip address.");
-            }
-            this.onReceiveSkyblockAddress(result);
-        });
-        socketThread.start();
+    public void fetchServer() {
+        assert MC.player != null;
+        final long requestTs = System.currentTimeMillis();
+        lastRequestTs = requestTs;
+        SbUtils.API_CLIENT.getPlayer(MC.player.getUUID())
+                .thenAccept((playerInfo) -> {
+                    updateServer(SbServer.get(playerInfo.status.switchGamemode), requestTs);
+                });
+    }
+
+    private void updateServer(SbServer server, long requestTs) {
+        if (currentServer == server || requestTs != lastRequestTs)
+            return;
+
+        currentServer = server;
+        onSwitchServer(server);
     }
 
     public SbServer getCurrentServer() {
         return currentServer;
+    }
+
+    public String getCurrentGamemode() {
+        return currentServer.gamemodeId;
     }
 
     public boolean isOnSkyblock() {
@@ -87,43 +52,6 @@ public class ServerDetector {
 
     private void reset() {
         currentServer = null;
-        receivedCommandTree = false;
-        receivedTabHeader = false;
-        receivedAddress = false;
-        tabHeader = null;
-        skyblockAddress = null;
-    }
-
-    private static SbServer determineServer(String tabHeader, InetAddress skyblockAddress) {
-        ClientPacketListener connection = MC.getConnection();
-        if (connection == null || !(connection.getConnection().getRemoteAddress() instanceof InetSocketAddress address) || !address.getAddress().equals(skyblockAddress)) {
-            return null;
-        }
-
-        //? if >=1.21.11 {
-        for (CommandNode<ClientSuggestionProvider> node
-        //? } else
-        //for (CommandNode<SharedSuggestionProvider> node
-                : connection.getCommands().getRoot().getChildren()) {
-            switch (node.getName()) {
-                case "crophoppers:crophoppers":
-                    return SbServer.ECONOMY;
-                case "mineversesidebar:sidebar":
-                    return SbServer.HUB;
-                case "plugman:plugman":
-                    return SbServer.SKYBLOCK;
-            }
-        }
-
-        if (tabHeader.contains("Skyblock Classic")) {
-            return SbServer.CLASSIC;
-        }
-
-        if (tabHeader.contains("SkyWars")) {
-            return SbServer.SKYWARS;
-        }
-
-        return null;
     }
 
     public static void onSwitchServer(SbServer server) {
@@ -132,20 +60,33 @@ public class ServerDetector {
     }
 
     public enum SbServer {
-        HUB("Hub"),
-        SKYWARS("Skywars"),
-        SKYBLOCK("Skyblock"),
-        ECONOMY("Economy"),
-        CLASSIC("Classic");
+        SKYBLOCK("Skyblock", "skyblock"),
+        ECONOMY("Economy", "economy"),
+        CLASSIC("Classic", "classic"),
+        SKYWARS("Skywars", "skywars"),
+        HUB1("Hub 1", "sb-hub-1"),
+        HUB2("Hub 2", "sb-hub-2");
 
         String name;
+        String gamemodeId;
 
-        SbServer(String name) {
+        SbServer(String name, String gamemodeId) {
             this.name = name;
+            this.gamemodeId = gamemodeId;
+        }
+
+        public static SbServer get(String gamemodeId) {
+            for (SbServer sbServer : SbServer.values()) {
+                if (gamemodeId.equals(sbServer.gamemodeId))
+                    return sbServer;
+            }
+            return null;
         }
 
         public String getName() {
             return name;
         }
+
+        public String getGamemodeId() {return gamemodeId;}
     }
 }

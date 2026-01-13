@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.xolt.sbutils.api.client.ApiClient;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
@@ -35,6 +36,7 @@ public class SbUtils implements ClientModInitializer {
     public static final CommandSender COMMAND_SENDER = new CommandSender();
     public static final ServerDetector SERVER_DETECTOR = new ServerDetector();
     public static final TpsEstimator TPS_ESTIMATOR = new TpsEstimator();
+    public static final ApiClient API_CLIENT = new ApiClient();
     private static final OptionBinding<ModConfig, String> prefixFormat = new OptionBinding<>("sbutils", "prefixFormat", String.class, (config) -> config.prefixFormat, (config, value) -> config.prefixFormat = value);
     private static final OptionBinding<ModConfig, Color> sbutilsColor = new OptionBinding<>("sbutils", "sbutilsColor", Color.class, (config) -> config.sbutilsColor, (config, value) -> config.sbutilsColor = value);
     private static final OptionBinding<ModConfig, Color> prefixColor = new OptionBinding<>("sbutils", "prefixColor", Color.class, (config) -> config.prefixColor, (config, value) -> config.prefixColor = value);

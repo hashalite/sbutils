@@ -9,7 +9,9 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.config.ModConfig;
@@ -17,17 +19,28 @@ import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
-import net.xolt.sbutils.util.ApiUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.RegexFilters;
 import net.xolt.sbutils.util.SoundUtils;
+//? if >=1.21 {
+import net.minecraft.core.Holder;
+//? }
+//? if >=1.19.4 {
+import net.minecraft.core.registries.BuiltInRegistries;
+//? }
+//? if <1.19.4 {
+/*import net.minecraft.core.Registry;
+ *///? }
 //? if <1.20 {
 /*import net.minecraft.client.gui.GuiComponent;
 *///? }
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
+import static net.xolt.sbutils.SbUtils.API_CLIENT;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class Notifier extends Feature<ModConfig> {
@@ -175,12 +188,34 @@ public class Notifier extends Feature<ModConfig> {
     }
 
     private void displayTraderItems() {
-        ApiUtils.getWanderingTrades(SbUtils.SERVER_DETECTOR.getCurrentServer(), this::onReceiveTraderItems);
+        API_CLIENT.getTrader(SbUtils.SERVER_DETECTOR.getCurrentGamemode())
+                .thenApply((response) -> response.buyable.stream()
+                        .map((item) -> itemIdToItem(item.item))
+                        .filter(Objects::nonNull)
+                        .map(ItemStack::new)
+                        .toList())
+                .thenAccept(this::onReceiveTraderItems);
     }
 
     private void onReceiveTraderItems(List<ItemStack> items) {
         traderItems = items;
         showTraderItemsTicks = 100;
+    }
+
+    private static Item itemIdToItem(String itemId) {
+        Item item;
+        //? if >=1.21 {
+        Optional<Holder.Reference<Item>> optionalItem = BuiltInRegistries.ITEM.get(Identifier.withDefaultNamespace(itemId));
+        if (optionalItem.isEmpty())
+            // Invalid item id
+            return null;
+        item = optionalItem.get().value();
+        //? } else if >=1.19.4 {
+        /*item = BuiltInRegistries.ITEM.get(new Identifier(itemId));
+         *///? } else {
+        //item = Registry.ITEM.get(new Identifier(itemId));
+        //? }
+        return item;
     }
 
     private static void doLlamaNotification() {

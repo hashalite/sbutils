@@ -14,13 +14,13 @@ import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
 import net.xolt.sbutils.config.binding.OptionBinding;
 import net.xolt.sbutils.feature.Feature;
-import net.xolt.sbutils.util.ApiUtils;
 import net.xolt.sbutils.util.ChatUtils;
 import net.xolt.sbutils.util.SoundUtils;
 import net.xolt.sbutils.util.TextUtils;
 
 import java.util.*;
 
+import static net.xolt.sbutils.SbUtils.API_CLIENT;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class StaffDetector extends Feature<ModConfig> {
@@ -34,7 +34,15 @@ public class StaffDetector extends Feature<ModConfig> {
 
     public StaffDetector() {
         super("sbutils", "staffDetector", "staffdetect", "sd");
-        ApiUtils.getStaffList(staffList::putAll);
+        API_CLIENT.getStaff()
+                        .thenAccept((response) -> {
+                            Arrays.stream(response).forEach((staffMember) -> {
+                                        staffList.put(
+                                                UUID.fromString(staffMember.uuid),
+                                                staffMember.position
+                                        );
+                                    });
+                        });
     }
 
     @Override

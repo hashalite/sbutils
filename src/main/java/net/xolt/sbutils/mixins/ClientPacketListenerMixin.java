@@ -88,17 +88,6 @@ public abstract class ClientPacketListenerMixin {
 
     *///? }
 
-    @Inject(method = "handleTabListCustomisation", at = @At("HEAD"))
-    private void onPlayerListHeader(ClientboundTabListPacket packet, CallbackInfo ci) {
-        SbUtils.SERVER_DETECTOR.onPlayerListHeader(packet.
-                //? if >1.20.4 {
-                header()
-                //? } else
-                //getHeader()
-                .getString()
-        );
-    }
-
     @Inject(method = "handleOpenSignEditor", at = @At("HEAD"), cancellable = true)
     private void onSignEditorOpen(ClientboundOpenSignEditorPacket packet, CallbackInfo ci) {
         if (AutoPrivate.onSignEditorOpen(packet)) {
@@ -124,11 +113,6 @@ public abstract class ClientPacketListenerMixin {
         SbUtils.FEATURES.get(AutoKit.class).onUpdateInventory();
         SbUtils.FEATURES.get(AutoRaffle.class).onUpdateInventory();
         SbUtils.FEATURES.get(AutoSilk.class).onUpdateInvSlot(packet);
-    }
-
-    @Inject(method = "handleCommands", at = @At("TAIL"))
-    private void afterCommandTree(ClientboundCommandsPacket packet, CallbackInfo ci) {
-        SbUtils.SERVER_DETECTOR.afterCommandTree();
     }
 
     //? if >=1.21.11 {
