@@ -1,6 +1,5 @@
-package net.xolt.sbutils.api.client;
+package net.xolt.sbutils.api;
 
-import net.xolt.sbutils.api.http.DefaultHttpClient;
 import net.xolt.sbutils.api.response.PlayerResponse;
 import net.xolt.sbutils.api.response.StaffMemberResponse;
 import net.xolt.sbutils.api.response.TraderResponse;

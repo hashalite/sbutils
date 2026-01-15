@@ -1,4 +1,4 @@
-package net.xolt.sbutils.api.http;
+package net.xolt.sbutils.api;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
