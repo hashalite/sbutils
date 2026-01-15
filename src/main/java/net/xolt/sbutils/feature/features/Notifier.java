@@ -194,7 +194,12 @@ public class Notifier extends Feature<ModConfig> {
                         .filter(Objects::nonNull)
                         .map(ItemStack::new)
                         .toList())
-                .thenAccept(this::onReceiveTraderItems);
+                .thenAccept(this::onReceiveTraderItems)
+                .exceptionally(e -> {
+                    SbUtils.LOGGER.error("Failed to get trader items");
+                    SbUtils.LOGGER.error(e.getLocalizedMessage());
+                    return null;
+                });
     }
 
     private void onReceiveTraderItems(List<ItemStack> items) {

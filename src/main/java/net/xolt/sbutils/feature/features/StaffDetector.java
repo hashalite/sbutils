@@ -9,6 +9,8 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundSource;
+import net.xolt.sbutils.SbUtils;
+import net.xolt.sbutils.api.response.StaffMemberResponse;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.CommandHelper;
 import net.xolt.sbutils.config.binding.ConfigBinding;
@@ -34,15 +36,7 @@ public class StaffDetector extends Feature<ModConfig> {
 
     public StaffDetector() {
         super("sbutils", "staffDetector", "staffdetect", "sd");
-        API_CLIENT.getStaff()
-                        .thenAccept((response) -> {
-                            Arrays.stream(response).forEach((staffMember) -> {
-                                        staffList.put(
-                                                UUID.fromString(staffMember.uuid),
-                                                staffMember.position
-                                        );
-                                    });
-                        });
+        fetchStaffList();
     }
 
     @Override
@@ -93,6 +87,23 @@ public class StaffDetector extends Feature<ModConfig> {
         showStaffNotification(player, true);
         if (ModConfig.instance().staffDetector.playSound)
             SoundUtils.playNotifSound(ModConfig.instance().staffDetector.sound.getSound(), SoundSource.MASTER);
+    }
+
+    private void fetchStaffList() {
+        API_CLIENT.getStaff()
+                .exceptionally(e -> {
+                    SbUtils.LOGGER.error("Failed to get staff list");
+                    SbUtils.LOGGER.error(e.getLocalizedMessage());
+                    return new StaffMemberResponse[] {};
+                })
+                .thenAccept((response) -> {
+                    Arrays.stream(response).forEach((staffMember) -> {
+                        staffList.put(
+                                UUID.fromString(staffMember.uuid),
+                                staffMember.position
+                        );
+                    });
+                });
     }
 
     private void showStaffNotification(PlayerInfo player, boolean joined) {
