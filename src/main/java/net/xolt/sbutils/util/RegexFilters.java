@@ -29,8 +29,8 @@ public class RegexFilters {
     public static final Pattern tipsFilter = Pattern.compile("\\[Skyblock\\].*");
     public static final Pattern advancementsFilter = Pattern.compile("[\u00a7_ \\[\\]a-zA-Z0-9]+ has made the advancement \\[[ \"?a-zA-Z]+\\]");
     public static final Pattern welcomeFilter = Pattern.compile("Welcome [\u00a7_a-zA-Z0-9]+ to Skyblock!");
-    public static final Pattern friendJoinFilter = Pattern.compile("\\[Friends\\] [\u00a7_a-zA-Z0-9]+ has joined [a-zA-Z0-9]+");
-    public static final Pattern motdFilter = Pattern.compile("============ Welcome to [\u00a7_a-zA-Z0-9]+'s Island ============|\\+ .*");
+    public static final Pattern friendJoinFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ has joined [a-zA-Z0-9]+");
+    public static final Pattern motdFilter = Pattern.compile("=+ Welcome to [\u00a7_a-zA-Z0-9]+'s Island =+|\\+ .*");
     public static final Pattern voteFilter = Pattern.compile("\\[Vote\\] [\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for .*");
     public static final Pattern voteRewardFilter = Pattern.compile("\\[Vote\\] [\u00a7_a-zA-Z0-9]+ was (super |super duper )?lucky and received .*");
     public static final Pattern raffleFilter = Pattern.compile("\\[SBRaffle\\].*");
@@ -43,12 +43,12 @@ public class RegexFilters {
 
     // Chat Logger
     
-    public static final Pattern incomingTransactionFilter = Pattern.compile("Shop transaction completed by [\u00a7_a-zA-Z0-9]+ at X: -?[0-9]+ Y: -?[0-9]+ Z: -?[0-9]+ - Remaining trades: (/|[0-9]+) \\(Owned: (/|[0-9]+x \\[.*\\]), Wanted: (/|[0-9]+x \\[.*\\])\\)"); // Also used by Notifier
+    public static final Pattern incomingTransactionFilter = Pattern.compile("Shop transaction completed by .*"); // Also used by Notifier
     public static final Pattern outgoingTransactionFilter = Pattern.compile("Transaction succeeded.");
     public static final Pattern incomingMsgFilter = Pattern.compile("\\[(\\[.+] )?([§_a-zA-Z0-9]+)(@.+)? -> me] .*");
     public static final Pattern outgoingMsgFilter = Pattern.compile("\\[me -> (\\[.+] )?[\u00a7_a-zA-Z0-9]+(@.+)?] .*");
     public static final Pattern visitFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ is now visiting your island\\."); // Also used by Notifier
-    public static final Pattern dpWinnerFilter = Pattern.compile("(Winner #[0-9]+ is .*!)|(Dropping x[0-9]+ .*)");
+    public static final Pattern dpWinnerFilter = Pattern.compile("(Winner #[0-9]+ is .*)|(Dropping x[0-9]+ .*)");
 
 
     // Notifier
@@ -59,14 +59,14 @@ public class RegexFilters {
     
     // Auto Fix
     
-    public static final Pattern fixSuccessFilter = Pattern.compile("You have successfully repaired your: .*\\.");
+    public static final Pattern fixSuccessFilter = Pattern.compile("You have successfully repaired your: .*");
     public static final Pattern fixTimeoutFilter = Pattern.compile("You cannot type that command for(( ([0-9]+) (minutes|minute))?( ([0-9]+) (seconds|second))?| now)\\.");
     public static final Pattern fixFailedFilter = Pattern.compile("Error: This item cannot be repaired\\.");
 
     
     // Auto Raffle
     
-    public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle\\] Congratulations go to [\u00a7_a-zA-Z0-9]+ for winning [0-9]+ Grass block with [0-9]+ (ticket|tickets)");
+    public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle\\] Congratulations .*");
 
 
     // Auto Crate
@@ -85,7 +85,7 @@ public class RegexFilters {
 
     // Auto Kit
 
-    public static final Pattern kitSuccessFilter = Pattern.compile("Received kit .*\\.");
+    public static final Pattern kitSuccessFilter = Pattern.compile("Received kit .*");
     public static final Pattern kitFailFilter = Pattern.compile("You can't use that kit again for another(( ([0-9]+) (days|day))?( ([0-9]+) (hours|hour))?( ([0-9]+) (minutes|minute))?( ([0-9]+) (seconds|second))?| now)\\.");
     public static final Pattern kitNoPermsFilter = Pattern.compile("Error: You need the .* permission to use that kit\\.");
     public static final Pattern dailyMenuTitle = Pattern.compile("(Skyblock|Economy) \\| Daily Rewards");
