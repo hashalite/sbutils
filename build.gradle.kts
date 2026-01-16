@@ -88,13 +88,13 @@ dependencies {
     }
     include("${yaclGroup}:${yaclArtifact}:${property("yacl_version")}")
 
-    modApi("net.objecthunter", "exp4j", property("exp4j_version") as String)
-    include("net.objecthunter", "exp4j", property("exp4j_version") as String)
+    modApi("net.objecthunter:exp4j:${property("exp4j_version")}")
+    include("net.objecthunter:exp4j:${property("exp4j_version")}")
 }
 
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json") // Useful for interface injection
-    accessWidenerPath = sc.process(rootProject.file("src/main/resources/sbutils.accesswidener"), "build/sbutils.accesswidener")
+    accessWidenerPath = sc.process(rootProject.file("src/main/resources/sbutils.accesswidener"), "build/dev.accesswidener")
 
     decompilerOptions.named("vineflower") {
         options.put("mark-corresponding-synthetics", "1") // Adds names to lambdas - useful for mixins
