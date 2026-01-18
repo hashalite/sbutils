@@ -6,9 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundSource;
 import net.xolt.sbutils.config.ModConfig;
 import net.xolt.sbutils.command.argument.ColorArgumentType;
@@ -21,10 +19,10 @@ import net.xolt.sbutils.util.RegexFilters;
 import net.xolt.sbutils.util.SoundUtils;
 
 import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static net.xolt.sbutils.SbUtils.MC;
 
@@ -33,6 +31,7 @@ public class Mentions extends Feature<ModConfig> {
     private final OptionBinding<ModConfig, Boolean> playSound = new OptionBinding<>("sbutils", "mentions.playSound", Boolean.class, (config) -> config.mentions.playSound, (config, value) -> config.mentions.playSound = value);
     private final OptionBinding<ModConfig, ModConfig.NotifSound> sound = new OptionBinding<>("sbutils", "mentions.sound", ModConfig.NotifSound.class, (config) -> config.mentions.sound, (config, value) -> config.mentions.sound = value);
     private final OptionBinding<ModConfig, Boolean> highlight = new OptionBinding<>("sbutils", "mentions.highlight", Boolean.class, (config) -> config.mentions.highlight, (config, value) -> config.mentions.highlight = value);
+    private final OptionBinding<ModConfig, Boolean> highlightMultiColor = new OptionBinding<>("sbutils", "mentions.highlightMultiColor", Boolean.class, (config) -> config.mentions.highlightMultiColor, (config, value) -> config.mentions.highlightMultiColor = value);
     private final OptionBinding<ModConfig, Color> highlightColor = new OptionBinding<>("sbutils", "mentions.highlightColor", Color.class, (config) -> config.mentions.highlightColor, (config, value) -> config.mentions.highlightColor = value);
     private final OptionBinding<ModConfig, Boolean> excludeServerMsgs = new OptionBinding<>("sbutils", "mentions.excludeServerMsgs", Boolean.class, (config) -> config.mentions.excludeServerMsgs, (config, value) -> config.mentions.excludeServerMsgs = value);
     private final OptionBinding<ModConfig, Boolean> excludeSelfMsgs = new OptionBinding<>("sbutils", "mentions.excludeSelfMsgs", Boolean.class, (config) -> config.mentions.excludeSelfMsgs, (config, value) -> config.mentions.excludeSelfMsgs = value);
@@ -46,7 +45,7 @@ public class Mentions extends Feature<ModConfig> {
 
     @Override
     public List<? extends ConfigBinding<ModConfig, ?>> getConfigBindings() {
-        return List.of(enabled, playSound, sound, highlight, highlightColor, excludeServerMsgs, excludeSelfMsgs, excludeSender, currentAccount, aliases);
+        return List.of(enabled, playSound, sound, highlight, highlightMultiColor, highlightColor, excludeServerMsgs, excludeSelfMsgs, excludeSender, currentAccount, aliases);
     }
 
     @Override
@@ -61,7 +60,8 @@ public class Mentions extends Feature<ModConfig> {
                     .then(CommandHelper.stringList("aliases", "alias", aliases, ModConfig.HANDLER))
                     .then(CommandHelper.genericEnum("sound", "sound", sound, ModConfig.HANDLER))
                     .then(CommandHelper.bool("highlight", highlight, ModConfig.HANDLER)
-                            .then(CommandHelper.getterSetter("color", "color", highlightColor, ModConfig.HANDLER, ColorArgumentType.color(), ColorArgumentType::getColor))));
+                            .then(CommandHelper.getterSetter("color", "color", highlightColor, ModConfig.HANDLER, ColorArgumentType.color(), ColorArgumentType::getColor))
+                            .then(CommandHelper.bool("multiColor", highlightMultiColor, ModConfig.HANDLER))));
         registerAlias(dispatcher, mentionsNode);
     }
 
@@ -75,52 +75,11 @@ public class Mentions extends Feature<ModConfig> {
         if (MC.player == null)
             return message;
 
-        Component newMessage = message;
+        List<Region> mentions = findMentions(message, ModConfig.instance().mentions.highlightMultiColor);
+        if (mentions.isEmpty())
+            return message;
 
-        Matcher playerMsgMatcher = RegexFilters.playerMsgFilter.matcher(message.getString());
-        int prefixLen = ModConfig.instance().mentions.excludeSender && playerMsgMatcher.matches() ? playerMsgMatcher.group(1).length() : 0;
-
-        if (ModConfig.instance().mentions.currentAccount)
-            newMessage = highlight(newMessage, MC.player.getGameProfile()
-                    //? if >=1.21.11 {
-                    .name(),
-                    //? } else
-                    //.getName(),
-                    prefixLen);
-
-        for (String alias : ModConfig.instance().mentions.aliases) {
-            if (!alias.equals(""))
-                newMessage = highlight(newMessage, alias, prefixLen);
-        }
-
-        return newMessage;
-    }
-
-    public static boolean mentioned(Component message) {
-        if (MC.player == null)
-            return false;
-
-        String msgString = message.getString().toLowerCase(Locale.ROOT);
-
-        if (ModConfig.instance().mentions.excludeSender) {
-            Matcher matcher = RegexFilters.playerMsgFilter.matcher(msgString);
-            if (matcher.matches())
-                msgString = msgString.replace(matcher.group(1), "");
-        }
-
-        if (ModConfig.instance().mentions.currentAccount && msgString.contains(MC.player.getGameProfile()
-                //? if >=1.21.11 {
-                .name()
-                //? } else
-                //.getName()
-                .toLowerCase()))
-            return true;
-
-        for (String alias : ModConfig.instance().mentions.aliases)
-            if (!alias.isEmpty() && msgString.contains(alias.toLowerCase()))
-                return true;
-
-        return false;
+        return highlightCompound(message, mentions);
     }
 
     public static boolean isValidMessage(Component message) {
@@ -135,94 +94,216 @@ public class Mentions extends Feature<ModConfig> {
             if (RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches())
                 return false;
 
-            ClickEvent clickEvent = message.getStyle().getClickEvent();
-            if (MC.player == null || clickEvent == null || clickEvent
-                    //? if >=1.21.11 {
-                    .action()
-                    //? } else
-                    //.getAction()
-                    != ClickEvent.Action.SUGGEST_COMMAND)
-                return true;
+            if (MC.player == null)
+                return false;
 
-            String sender =
+            String username = MC.player.getGameProfile()
                     //? if >=1.21.11 {
-                    ((ClickEvent.SuggestCommand)clickEvent).command()
+                    .name();
                     //? } else
-                    //clickEvent.getValue()
-                    .replace("/visit ", "");
+                    //.getName();
 
-            if (sender.equals(MC.player.getGameProfile()
-                    //? if >=1.21.11 {
-                    .name()
-                    //? } else
-                    //.getName()
-            ))
+            String sender = findSender(message);
+
+            if (username.equals(sender))
                 return false;
         }
 
         return true;
     }
 
-    private static Component highlight(Component text, String target, int prefixLen) {
-        int prefixRemaining = prefixLen;
-        MutableComponent highlighted;
-        if (prefixRemaining > 0) {
-            highlighted = MutableComponent.create(text.getContents()).setStyle(text.getStyle());
-            prefixRemaining -= highlighted.getString().length();
-        } else {
-            highlighted = highlight(text.getContents(), text.getStyle(), target);
+    public static String findSender(Component message) {
+        List<Component> flattened = message.toFlatList();
+        for (Component c : flattened) {
+            ClickEvent clickEvent = c.getStyle().getClickEvent();
+            if (clickEvent == null || clickEvent
+                    //? if >=1.21.11 {
+                    .action()
+                    //? } else
+                    //.getAction()
+                    != ClickEvent.Action.RUN_COMMAND)
+                continue;
+
+            String visitCommand =
+                    //? if >=1.21.11 {
+                    ((ClickEvent.RunCommand)clickEvent).command();
+                    //? } else
+                    //clickEvent.getValue();
+
+            return visitCommand.replace("/visit ", "");
+        }
+        return null;
+    }
+
+    public static boolean mentioned(Component message) {
+        return !findMentions(message, true).isEmpty();
+    }
+
+    private static List<Region> findMentions(Component text, boolean includeMultiColor) {
+        List<Region> result = new ArrayList<>();
+        if (MC.player == null)
+            return result;
+
+        List<String> targets = new ArrayList<>(ModConfig.instance().mentions.aliases);
+
+        if (ModConfig.instance().mentions.currentAccount) {
+            String username = MC.player.getGameProfile()
+                    //? if >=1.21.11 {
+                    .name()
+                    //? } else
+                    //.getName()
+                    .toLowerCase();
+            targets.add(username);
         }
 
-        for (Component sibling : text.getSiblings()) {
-            if (prefixRemaining > 0) {
-                highlighted.append(sibling);
-                prefixRemaining -= sibling.getString().length();
+        for (String target : targets)
+            result.addAll(findMentions(text, target, includeMultiColor, ModConfig.instance().mentions.excludeSender));
+
+        return sortAndMergeOverlapping(result);
+    }
+
+    private static List<Region> findMentions(Component text, String target, boolean includeMultiColor, boolean excludeSender) {
+        String string = text.getString().toLowerCase();
+        target = target.toLowerCase();
+
+        int prefixLen = 0;
+        if (excludeSender) {
+            List<Pattern> filters = List.of(RegexFilters.playerMsgFilter, RegexFilters.incomingMsgFilter, RegexFilters.outgoingMsgFilter);
+            for (Pattern filter : filters) {
+                Matcher matcher = filter.matcher(string);
+                if (!matcher.matches())
+                    continue;
+                String prefixOnly = matcher.group(1);
+                prefixLen = prefixOnly.length();
+                string = string.replace(prefixOnly, "");
+                break;
+            }
+        }
+
+        Pattern targetRegex;
+        if (includeMultiColor) {
+            StringBuilder sb = new StringBuilder();
+            for (char c : target.toCharArray()) {
+                String quoted = Pattern.quote(String.valueOf(c));
+                String withColorRegex = "(\u00a7[0-9a-fk-or])*" + quoted;
+                sb.append(withColorRegex);
+            }
+            targetRegex = Pattern.compile(sb.toString());
+        } else {
+            targetRegex = Pattern.compile(Pattern.quote(target));
+        }
+
+        Matcher matcher = targetRegex.matcher(string);
+        List<Region> result = new ArrayList<>();
+        while (matcher.find())
+            result.add(new Region(prefixLen + matcher.start(), prefixLen + matcher.end()));
+
+        return sortAndMergeOverlapping(result);
+    }
+
+    private static Component highlightCompound(Component text, List<Region> regions) {
+        List<Component> flatList = text.toFlatList();
+        MutableComponent highlighted = Component.empty();
+        int stringIndex = 0;
+        for (int i = 0; i < flatList.size(); i++) {
+            Component c = flatList.get(i);
+            int cLen = c.getString().length();
+            int cStart = stringIndex;
+            int cEnd = cStart + cLen;
+            stringIndex = cEnd;
+
+            // If the region does not intersect with this component, add to result and continue
+            List<Region> overlaps = overlaps(new Region(cStart, cEnd), regions);
+            if (overlaps.isEmpty()) {
+                highlighted.append(c);
                 continue;
             }
-            highlighted.append(highlight(sibling, target, 0));
+
+            // Convert regions to indices within the current component, 'c'
+            overlaps = overlaps.stream().map((region) -> new Region(Math.clamp(region.start - cStart, 0, cLen), Math.clamp(region.end - cStart, 0, cLen))).toList();
+
+            // Highlight the matched regions
+            highlighted.append(highlight(c, overlaps));
         }
         return highlighted;
     }
 
-    private static MutableComponent highlight(ComponentContents content, Style oldStyle, String target) {
-        StringBuilder sb = new StringBuilder();
-        content.visit(string -> {
-            sb.append(string);
-            return Optional.empty();
-        });
-        String stringText = sb.toString();
-        String lowerText = stringText.toLowerCase();
-
-        String lowerTarget = target.toLowerCase();
-        if (!lowerText.contains(lowerTarget)) {
-            return Component.literal(stringText).setStyle(oldStyle);
-        }
-
+    private static Component highlight(Component text, List<Region> regions) {
         int index = 0;
-        String format = "";
-        MutableComponent result = Component.literal("");
-        while (lowerText.indexOf(lowerTarget, index) != -1) {
-            int beginningIndex = lowerText.indexOf(lowerTarget, index);
-            int endIndex = beginningIndex + lowerTarget.length();
-            String preText = format + stringText.substring(index, beginningIndex);
-            result.append(Component.literal(preText).setStyle(oldStyle));
-            result.append(Component.literal(stringText.substring(beginningIndex, endIndex)).setStyle(oldStyle.withColor(ModConfig.instance().mentions.highlightColor.getRGB())));
-            int formatSignIndex = preText.lastIndexOf("\u00a7");
-            if (formatSignIndex != -1 && formatSignIndex + 2 <= preText.length())
-                format = preText.substring(formatSignIndex, formatSignIndex + 2);
-            index = endIndex;
+        String cString = text.getString();
+        MutableComponent highlighted = Component.empty();
+        for (Region region : regions) {
+            int start = region.start;
+            int end = region.end;
+            if (index < start)
+                highlighted.append(Component.literal(cString.substring(index, start)).withStyle(text.getStyle()));
+            String toHighlight = cString.substring(start, end);
+            String noColorCodes = toHighlight.replaceAll("\u00a7[0-9a-fk-or]", "");
+            highlighted.append(Component.literal(noColorCodes).withStyle(text.getStyle().withColor(ModConfig.instance().mentions.highlightColor.getRGB())));
+            index = end;
         }
 
-        if (index < stringText.length())
-            result.append(Component.literal(format + stringText.substring(index)).setStyle(oldStyle));
+        if (index < cString.length())
+            highlighted.append(Component.literal(cString.substring(index)).withStyle(text.getStyle()));
 
+        return highlighted;
+    }
+
+    private static List<Region> sortAndMergeOverlapping(List<Region> regions) {
+        if (regions == null || regions.isEmpty())
+            return List.of();
+
+        // Sort by start index
+        regions.sort(Comparator.comparingInt((r) -> r.start));
+
+        List<Region> merged = new ArrayList<>();
+        Region current = regions.getFirst();
+
+        for (int i = 1; i < regions.size(); i++) {
+            Region next = regions.get(i);
+
+            if (next.start <= current.end) {
+                // Overlap: extend the current region
+                current.end = Math.max(current.end, next.end);
+            } else {
+                // No overlap: add current to result and continue
+                merged.add(current);
+                current = next;
+            }
+        }
+
+        // Add the last range
+        merged.add(current);
+
+        return merged;
+    }
+
+    private static List<Region> overlaps(Region region, List<Region> regions) {
+        int cStart = region.start;
+        int cEnd = region.end;
+        List<Region> result = new ArrayList<>();
+        for (Region r : regions) {
+            int start = r.start;
+            int end = r.end;
+            if ((start < cStart && end <= cStart) || (start >= cEnd && end > cEnd)) {
+                continue;
+            }
+            result.add(r);
+        }
         return result;
     }
 
     private static void playSound() {
-        if (MC.player == null)
-            return;
-
         SoundUtils.playNotifSound(ModConfig.instance().mentions.sound.getSound(), SoundSource.MASTER);
+    }
+
+    private static class Region {
+        private int start;
+        private int end;
+
+        public Region(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
     }
 }

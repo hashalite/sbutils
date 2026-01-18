@@ -218,8 +218,8 @@ public class Notifier extends Feature<ModConfig> {
         //? } else if >=1.19.4 {
         /*item = BuiltInRegistries.ITEM.get(new Identifier(itemId));
          *///? } else {
-        //item = Registry.ITEM.get(new Identifier(itemId));
-        //? }
+        /*item = Registry.ITEM.get(new Identifier(itemId));
+        *///? }
         return item;
     }
 

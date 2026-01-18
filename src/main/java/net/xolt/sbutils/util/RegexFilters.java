@@ -45,8 +45,6 @@ public class RegexFilters {
     
     public static final Pattern incomingTransactionFilter = Pattern.compile("Shop transaction completed by .*"); // Also used by Notifier
     public static final Pattern outgoingTransactionFilter = Pattern.compile("Transaction succeeded.");
-    public static final Pattern incomingMsgFilter = Pattern.compile("\\[(\\[.+] )?([§_a-zA-Z0-9]+)(@.+)? -> me] .*");
-    public static final Pattern outgoingMsgFilter = Pattern.compile("\\[me -> (\\[.+] )?[\u00a7_a-zA-Z0-9]+(@.+)?] .*");
     public static final Pattern visitFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ is now visiting your island\\."); // Also used by Notifier
     public static final Pattern dpWinnerFilter = Pattern.compile("(Winner #[0-9]+ is .*)|(Dropping x[0-9]+ .*)");
 

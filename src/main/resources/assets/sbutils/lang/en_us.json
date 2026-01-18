@@ -506,6 +506,8 @@
   "text.sbutils.config.option.mentions.sound.tooltip": "The sound played when something is mentioned in chat.",
   "text.sbutils.config.option.mentions.highlight": "Mention Highlighting",
   "text.sbutils.config.option.mentions.highlight.tooltip": "Whether to change the color of mentions in chat.",
+  "text.sbutils.config.option.mentions.highlightMultiColor": "Highlight Multi-Color",
+  "text.sbutils.config.option.mentions.highlightMultiColor.tooltip": "Whether to highlight mentions containing multiple colors.",
   "text.sbutils.config.option.mentions.highlightColor": "Highlight Color",
   "text.sbutils.config.option.mentions.highlightColor.tooltip": "The color to highlight mentions with.",
   "text.sbutils.config.option.mentions.excludeServerMsgs": "Exclude Server Messages",

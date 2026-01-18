@@ -73,7 +73,7 @@ public class AutoReply extends Feature<ModConfig> {
 
         Matcher incomingMsg = RegexFilters.incomingMsgFilter.matcher(message.getString());
         if (incomingMsg.matches()) {
-            String player = incomingMsg.group(2);
+            String player = incomingMsg.group(3);
             if (System.currentTimeMillis() - playersLastResponse.getOrDefault(player, 0L) > ModConfig.instance().autoReply.playerCooldown * 1000)
                 queueResponse(player);
         }

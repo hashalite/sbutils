@@ -353,10 +353,11 @@ public class ModConfig {
         @SerialEntry public boolean playSound = true;
         @SerialEntry public NotifSound sound = NotifSound.EXPERIENCE;
         @SerialEntry public boolean highlight = true;
+        @SerialEntry public boolean highlightMultiColor = false;
         @SerialEntry public Color highlightColor = new Color(Integer.valueOf("fff700", 16));
         @SerialEntry public boolean excludeServerMsgs = true;
         @SerialEntry public boolean excludeSelfMsgs = true;
-        @SerialEntry public boolean excludeSender = false;
+        @SerialEntry public boolean excludeSender = true;
         @SerialEntry public boolean currentAccount = true;
         @SerialEntry public List<String> aliases = new ArrayList<>();
     }
