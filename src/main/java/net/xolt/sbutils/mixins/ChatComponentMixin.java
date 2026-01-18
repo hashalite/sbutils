@@ -35,9 +35,7 @@ public abstract class ChatComponentMixin {
     @Unique
     private Component modifyChatMessage(Component component) {
         Component result = component;
-        if (ModConfig.instance().mentions.enabled && ModConfig.instance().mentions.highlight && Mentions.isValidMessage(result) && Mentions.mentioned(result)) {
-            result = Mentions.modifyMessage(result);
-        }
+        result = Mentions.modifyMessage(result);
 
         if (NoGMT.shouldModify(result)) {
             result = NoGMT.modifyMessage(result);

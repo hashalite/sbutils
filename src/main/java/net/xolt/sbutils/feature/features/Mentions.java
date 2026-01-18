@@ -74,6 +74,10 @@ public class Mentions extends Feature<ModConfig> {
     }
 
     public static Component modifyMessage(Component message) {
+        if (!ModConfig.instance().mentions.enabled || !ModConfig.instance().mentions.highlight || !isValidMessage(message) || !mentioned(message)) {
+            return message;
+        }
+
         if (MC.player == null)
             return message;
 
@@ -84,37 +88,31 @@ public class Mentions extends Feature<ModConfig> {
         return highlightCompound(message, mentions);
     }
 
-    public static boolean isValidMessage(Component message) {
+    private static boolean isValidMessage(Component message) {
         if (ModConfig.instance().mentions.excludeServerMsgs &&
                 !RegexFilters.playerMsgFilter.matcher(message.getString()).matches() &&
                 !RegexFilters.incomingMsgFilter.matcher(message.getString()).matches() &&
-                !RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches()) {
+                !RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches())
             return false;
-        }
 
-        if (ModConfig.instance().mentions.excludeSelfMsgs) {
-            if (RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches())
-                return false;
+        if (!ModConfig.instance().mentions.excludeSelfMsgs || MC.player == null)
+            return true;
 
-            if (MC.player == null)
-                return false;
+        if (RegexFilters.outgoingMsgFilter.matcher(message.getString()).matches())
+            return false;
 
-            String username = MC.player.getGameProfile()
-                    //? if >=1.21.11 {
-                    .name();
-                    //? } else
-                    //.getName();
+        String username = MC.player.getGameProfile()
+                //? if >=1.21.11 {
+                .name();
+                //? } else
+                //.getName();
 
-            String sender = findSender(message);
+        String sender = findSender(message);
 
-            if (username.equals(sender))
-                return false;
-        }
-
-        return true;
+        return !username.equals(sender);
     }
 
-    public static boolean mentioned(Component message) {
+    private static boolean mentioned(Component message) {
         return !findMentions(message, true).isEmpty();
     }
 
@@ -138,7 +136,7 @@ public class Mentions extends Feature<ModConfig> {
         for (String target : targets)
             result.addAll(findMentions(text, target, includeMultiColor, ModConfig.instance().mentions.excludeSender));
 
-        return sortAndMergeOverlapping(result);
+        return Region.sortAndMergeOverlapping(result);
     }
 
     private static List<Region> findMentions(Component text, String target, boolean includeMultiColor, boolean excludeSender) {
@@ -177,7 +175,7 @@ public class Mentions extends Feature<ModConfig> {
         while (matcher.find())
             result.add(new Region(prefixLen + matcher.start(), prefixLen + matcher.end()));
 
-        return sortAndMergeOverlapping(result);
+        return Region.sortAndMergeOverlapping(result);
     }
 
     private static Component highlightCompound(Component text, List<Region> regions) {
@@ -191,8 +189,8 @@ public class Mentions extends Feature<ModConfig> {
             int cEnd = cStart + cLen;
             stringIndex = cEnd;
 
-            // If the region does not intersect with this component, add to result and continue
-            List<Region> overlaps = overlaps(new Region(cStart, cEnd), regions);
+            // If no regions intersect with this component, add to result and continue
+            List<Region> overlaps = new Region(cStart, cEnd).intersect(regions);
             if (overlaps.isEmpty()) {
                 highlighted.append(c);
                 continue;
@@ -226,50 +224,6 @@ public class Mentions extends Feature<ModConfig> {
             highlighted.append(Component.literal(cString.substring(index)).withStyle(text.getStyle()));
 
         return highlighted;
-    }
-
-    private static List<Region> sortAndMergeOverlapping(List<Region> regions) {
-        if (regions == null || regions.isEmpty())
-            return List.of();
-
-        // Sort by start index
-        regions.sort(Comparator.comparingInt((r) -> r.start));
-
-        List<Region> merged = new ArrayList<>();
-        Region current = regions.getFirst();
-
-        for (int i = 1; i < regions.size(); i++) {
-            Region next = regions.get(i);
-
-            if (next.start <= current.end) {
-                // Overlap: extend the current region
-                current.end = Math.max(current.end, next.end);
-            } else {
-                // No overlap: add current to result and continue
-                merged.add(current);
-                current = next;
-            }
-        }
-
-        // Add the last range
-        merged.add(current);
-
-        return merged;
-    }
-
-    private static List<Region> overlaps(Region region, List<Region> regions) {
-        int cStart = region.start;
-        int cEnd = region.end;
-        List<Region> result = new ArrayList<>();
-        for (Region r : regions) {
-            int start = r.start;
-            int end = r.end;
-            if ((start < cStart && end <= cStart) || (start >= cEnd && end > cEnd)) {
-                continue;
-            }
-            result.add(r);
-        }
-        return result;
     }
 
     public static String findSender(Component message) {
@@ -321,6 +275,48 @@ public class Mentions extends Feature<ModConfig> {
         public Region(int start, int end) {
             this.start = start;
             this.end = end;
+        }
+
+        private List<Region> intersect(List<Region> regions) {
+            List<Region> result = new ArrayList<>();
+            for (Region r : regions) {
+                int start = r.start;
+                int end = r.end;
+                if ((start < this.start && end <= this.start) || (start >= this.end && end > this.end)) {
+                    continue;
+                }
+                result.add(r);
+            }
+            return result;
+        }
+
+        private static List<Region> sortAndMergeOverlapping(List<Region> regions) {
+            if (regions == null || regions.isEmpty())
+                return List.of();
+
+            // Sort by start index
+            regions.sort(Comparator.comparingInt((r) -> r.start));
+
+            List<Region> merged = new ArrayList<>();
+            Region current = regions.getFirst();
+
+            for (int i = 1; i < regions.size(); i++) {
+                Region next = regions.get(i);
+
+                if (next.start <= current.end) {
+                    // Overlap: extend the current region
+                    current.end = Math.max(current.end, next.end);
+                } else {
+                    // No overlap: add current to result and continue
+                    merged.add(current);
+                    current = next;
+                }
+            }
+
+            // Add the last range
+            merged.add(current);
+
+            return merged;
         }
     }
 }
