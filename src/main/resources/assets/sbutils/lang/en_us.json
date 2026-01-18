@@ -133,7 +133,7 @@
 
 
 
-  "category.sbutils.sbutils": "sbutils",
+  "key.category.sbutils.sbutils": "sbutils",
   "key.sbutils.config": "Open Config GUI",
   "key.sbutils.island": "/is",
   "key.sbutils.ehome": "/ehome",

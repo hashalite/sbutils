@@ -43,6 +43,10 @@ public class SbUtils implements ClientModInitializer {
     private static final OptionBinding<ModConfig, Color> messageColor = new OptionBinding<>("sbutils", "messageColor", Color.class, (config) -> config.messageColor, (config, value) -> config.messageColor = value);
     private static final OptionBinding<ModConfig, Color> valueColor = new OptionBinding<>("sbutils", "valueColor", Color.class, (config) -> config.valueColor, (config, value) -> config.valueColor = value);
     public static final ConfigGuiFactory<ModConfig> GUI_FACTORY = new ConfigGuiFactory<>("sbutils", FEATURES, List.of(prefixFormat, sbutilsColor, prefixColor, messageColor, valueColor));
+    //? if >=1.21.11 {
+    private static final KeyMapping.Category CONTROLS_CATEGORY = new KeyMapping.Category(Identifier.fromNamespaceAndPath("sbutils", "sbutils"));
+    //? } else
+    //private static final String CONTROLS_CATEGORY= "key.category.sbutils.sbutils";
 
     public static KeyMapping configKey;
     public static KeyMapping islandKey;
@@ -146,13 +150,7 @@ public class SbUtils implements ClientModInitializer {
     }
 
     private static KeyMapping createKeymapping(String title, int key) {
-        return new KeyMapping("key.sbutils." + title, InputConstants.Type.KEYSYM, key,
-                //? if >=1.21.11
-                new KeyMapping.Category(Identifier.parse(
-                        "category.sbutils.sbutils"
-                //? if >=1.21.11
-                ))
-        );
+        return new KeyMapping("key.sbutils." + title, InputConstants.Type.KEYSYM, key, CONTROLS_CATEGORY);
     }
 
     public static List<? extends ConfigBinding<ModConfig, ?>> getGlobalConfigBindings() {
