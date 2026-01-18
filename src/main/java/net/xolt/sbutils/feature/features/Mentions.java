@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 import static net.xolt.sbutils.SbUtils.MC;
 
 public class Mentions extends Feature<ModConfig> {
+    private static final String VISIT_COMMAND = "/visit ";
+
     private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "mentions.enabled", Boolean.class, (config) -> config.mentions.enabled, (config, value) -> config.mentions.enabled = value);
     private final OptionBinding<ModConfig, Boolean> playSound = new OptionBinding<>("sbutils", "mentions.playSound", Boolean.class, (config) -> config.mentions.playSound, (config, value) -> config.mentions.playSound = value);
     private final OptionBinding<ModConfig, ModConfig.NotifSound> sound = new OptionBinding<>("sbutils", "mentions.sound", ModConfig.NotifSound.class, (config) -> config.mentions.sound, (config, value) -> config.mentions.sound = value);
@@ -110,29 +112,6 @@ public class Mentions extends Feature<ModConfig> {
         }
 
         return true;
-    }
-
-    public static String findSender(Component message) {
-        List<Component> flattened = message.toFlatList();
-        for (Component c : flattened) {
-            ClickEvent clickEvent = c.getStyle().getClickEvent();
-            if (clickEvent == null || clickEvent
-                    //? if >=1.21.11 {
-                    .action()
-                    //? } else
-                    //.getAction()
-                    != ClickEvent.Action.RUN_COMMAND)
-                continue;
-
-            String visitCommand =
-                    //? if >=1.21.11 {
-                    ((ClickEvent.RunCommand)clickEvent).command();
-                    //? } else
-                    //clickEvent.getValue();
-
-            return visitCommand.replace("/visit ", "");
-        }
-        return null;
     }
 
     public static boolean mentioned(Component message) {
@@ -291,6 +270,44 @@ public class Mentions extends Feature<ModConfig> {
             result.add(r);
         }
         return result;
+    }
+
+    public static String findSender(Component message) {
+        List<Component> flattened = message.toFlatList();
+        for (Component c : flattened) {
+            ClickEvent clickEvent = c.getStyle().getClickEvent();
+            if (clickEvent == null)
+                continue;
+
+            ClickEvent.Action action = clickEvent
+                    //? if >=1.21.11 {
+                    .action();
+                    //? } else
+                    //.getAction();
+
+            String command;
+            if (action.equals(ClickEvent.Action.RUN_COMMAND)) {
+                command =
+                        //? if >=1.21.11 {
+                        ((ClickEvent.RunCommand)clickEvent).command();
+                        //? } else
+                        //clickEvent.getValue();
+            } else if (action.equals(ClickEvent.Action.SUGGEST_COMMAND)) {
+                command =
+                        //? if >=1.21.11 {
+                        ((ClickEvent.SuggestCommand)clickEvent).command();
+                        //? } else
+                        //clickEvent.getValue();
+            } else {
+                continue;
+            }
+
+            if (!command.startsWith(VISIT_COMMAND))
+                continue;
+
+            return command.replace(VISIT_COMMAND, "");
+        }
+        return null;
     }
 
     private static void playSound() {
