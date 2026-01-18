@@ -12,7 +12,7 @@ public class RegexFilters {
 
     // Mentions
 
-    public static final Pattern playerMsgFilter = Pattern.compile("(((\u00a7[0-9a-fk-or])*\\[.*\\](\u00a7[0-9a-fk-or])* )*[\u00a7_a-zA-Z0-9]+: ).*");
+    public static final Pattern playerMsgFilter = Pattern.compile("(((§[0-9a-fk-or])*\\[.*](§[0-9a-fk-or])* )*[§._a-zA-Z0-9]+: ).*");
 
 
     // Enchant All
@@ -26,33 +26,35 @@ public class RegexFilters {
     
     // Chat Filters
 
-    public static final Pattern tipsFilter = Pattern.compile("\\[Skyblock\\].*");
-    public static final Pattern advancementsFilter = Pattern.compile("[\u00a7_ \\[\\]a-zA-Z0-9]+ has made the advancement \\[[ \"?a-zA-Z]+\\]");
-    public static final Pattern welcomeFilter = Pattern.compile("Welcome [\u00a7_a-zA-Z0-9]+ to Skyblock!");
-    public static final Pattern friendJoinFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ has joined [a-zA-Z0-9]+");
-    public static final Pattern motdFilter = Pattern.compile("=+ Welcome to [\u00a7_a-zA-Z0-9]+'s Island =+|\\+ .*");
-    public static final Pattern voteFilter = Pattern.compile("\\[Vote\\] [\u00a7_a-zA-Z0-9]+ voted at vote.skyblock.net for .*");
-    public static final Pattern voteRewardFilter = Pattern.compile("\\[Vote\\] [\u00a7_a-zA-Z0-9]+ was (super |super duper )?lucky and received .*");
-    public static final Pattern raffleFilter = Pattern.compile("\\[SBRaffle\\].*");
-    public static final Pattern cratesFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ has just opened a (Rare|Epic|Legendary) Crate!");
-    public static final Pattern perishedInVoidFilter = Pattern.compile("\\[\u2620\\] [0-9]+ players have perished in the void today\\.");
-    public static final Pattern skyChatFilter = Pattern.compile("\\[\u270e\\] .*|The word was [a-z0-9 ]+");
-    public static final Pattern islandTitleFilter = Pattern.compile("(§.)?-=(§.)?[\u00a7_a-zA-Z0-9]+'s Island(§.)?=-");
-    public static final Pattern islandWelcomeFilter = Pattern.compile("============ Welcome to [\u00a7_a-zA-Z0-9]+'s Island ============");
+    public static final Pattern tipsFilter = Pattern.compile("\\[Skyblock].*");
+    public static final Pattern advancementsFilter = Pattern.compile("[§_ \\[\\]a-zA-Z0-9]+ has made the advancement \\[[ \"?a-zA-Z]+]");
+    public static final Pattern welcomeFilter = Pattern.compile("Welcome [§._a-zA-Z0-9]+ to Skyblock!");
+    public static final Pattern friendJoinFilter = Pattern.compile("[§._a-zA-Z0-9]+ has joined [a-zA-Z0-9]+");
+    public static final Pattern motdFilter = Pattern.compile("=+ Welcome to [§._a-zA-Z0-9]+'s Island =+|\\+ .*");
+    public static final Pattern voteFilter = Pattern.compile("\\[Vote] [§._a-zA-Z0-9]+ voted at vote.skyblock.net for .*");
+    public static final Pattern voteRewardFilter = Pattern.compile("\\[Vote] [§._a-zA-Z0-9]+ was (super |super duper )?lucky and received .*");
+    public static final Pattern raffleFilter = Pattern.compile("\\[SBRaffle].*");
+    public static final Pattern cratesFilter = Pattern.compile("[§._a-zA-Z0-9]+ has just opened a (Rare|Epic|Legendary) Crate!");
+    public static final Pattern perishedInVoidFilter = Pattern.compile("\\[☠] [0-9]+ players have perished in the void today\\.");
+    public static final Pattern skyChatFilter = Pattern.compile("\\[✎] .*|The word was [a-z0-9 ]+");
+    public static final Pattern islandTitleFilter = Pattern.compile("(§.)?-=(§.)?[§._a-zA-Z0-9]+'s Island(§.)?=-");
+    public static final Pattern islandWelcomeFilter = Pattern.compile("============ Welcome to [§._a-zA-Z0-9]+'s Island ============");
     
 
     // Chat Logger
     
     public static final Pattern incomingTransactionFilter = Pattern.compile("Shop transaction completed by .*"); // Also used by Notifier
     public static final Pattern outgoingTransactionFilter = Pattern.compile("Transaction succeeded.");
-    public static final Pattern visitFilter = Pattern.compile("[\u00a7_a-zA-Z0-9]+ is now visiting your island\\."); // Also used by Notifier
+    public static final Pattern incomingMsgFilter = Pattern.compile("(\\[(\\[.+] )?([§._a-zA-Z0-9]+)(@.+)? -> me] ).*");
+    public static final Pattern outgoingMsgFilter = Pattern.compile("(\\[me -> (\\[.+] )?[§._a-zA-Z0-9]+(@.+)?] ).*");
+    public static final Pattern visitFilter = Pattern.compile("[§._a-zA-Z0-9]+ is now visiting your island\\."); // Also used by Notifier
     public static final Pattern dpWinnerFilter = Pattern.compile("(Winner #[0-9]+ is .*)|(Dropping x[0-9]+ .*)");
 
 
     // Notifier
 
     public static final Pattern wanderingTraderFilter = Pattern.compile(". A Wandering Trader has been sighted somewhere at spawn offering a limited number of exclusive trades! *");
-    public static final Pattern vpLlamaFilter = Pattern.compile("\\[Vote Party\\] A Vote Party Llama has been sighted at the spawn!");
+    public static final Pattern vpLlamaFilter = Pattern.compile("\\[Vote Party] A Vote Party Llama has been sighted at the spawn!");
     
     
     // Auto Fix
@@ -64,7 +66,7 @@ public class RegexFilters {
     
     // Auto Raffle
     
-    public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle\\] Congratulations .*");
+    public static final Pattern raffleEndFilter = Pattern.compile("\\[SBRaffle] Congratulations .*");
 
 
     // Auto Crate
@@ -93,7 +95,7 @@ public class RegexFilters {
 
     // No GMT
 
-    public static final Pattern emailFilter = Pattern.compile("\\[[0-9]+\\] \\[([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+)\\] .*");
+    public static final Pattern emailFilter = Pattern.compile("\\[[0-9]+] \\[([0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+)] .*");
     public static final Pattern mailGuiFilter = Pattern.compile("Skyblock Mail");
-    public static final Pattern mailLoreFilter = Pattern.compile("Sent at ([0-9]+\\/[0-9]+\\/[0-9]+ [0-9]+:[0-9]+ (?i)(am|pm)(?-i)).*");
+    public static final Pattern mailLoreFilter = Pattern.compile("Sent at ([0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+ (?i)(am|pm)(?-i)).*");
 }
