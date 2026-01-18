@@ -2,6 +2,7 @@ import org.gradle.util.internal.VersionNumber
 
 plugins {
     id("net.fabricmc.fabric-loom-remap")
+    id("maven-publish")
 }
 
 version = "${property("mod_version")}+${sc.current.version}"
@@ -136,5 +137,30 @@ tasks {
         from(remapJar.map { it.archiveFile }, remapSourcesJar.map { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs/${project.property("mod_version")}"))
         dependsOn("build")
+    }
+}
+
+// Publishes builds to a maven repository under `com.example:template:0.1.0+mc`
+publishing {
+    repositories {
+        maven("https://maven.example.com/releases") {
+            name = "myMaven"
+            // To authenticate, create `myMavenUsername` and `myMavenPassword` properties in your Gradle home properties.
+            // See https://stonecutter.kikugie.dev/wiki/tips/properties#defining-properties
+            credentials(PasswordCredentials::class.java)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("mavenJava") {
+            groupId = "${property("mod_group")}"
+            artifactId = property("mod_id") as String
+            version = project.version as String
+
+            from(components["java"])
+        }
     }
 }

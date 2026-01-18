@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class ApiClient {
 
-    private DefaultHttpClient http;
+    protected DefaultHttpClient http;
 
     public ApiClient() {
         this.http = new DefaultHttpClient("https://api.skyblock.net", 20);
