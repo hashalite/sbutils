@@ -62,14 +62,14 @@ public class NoGMT extends Feature<ModConfig> {
     }
 
     public static Component modifyMessage(Component message) {
+        if (!ModConfig.instance().noGmt.enabled)
+            return message;
+
         Matcher matcher = RegexFilters.emailFilter.matcher(message.getString());
         if (!matcher.matches())
             return message;
-        return replaceGmtTime(message, matcher.group(1), EMAIL_DATE_FORMAT);
-    }
 
-    public static boolean shouldModify(Component message) {
-        return ModConfig.instance().noGmt.enabled && RegexFilters.emailFilter.matcher(message.getString()).matches();
+        return replaceGmtTime(message, matcher.group(1), EMAIL_DATE_FORMAT);
     }
 
     public static List<ItemStack> replaceTimeInLores(List<ItemStack> stacks) {

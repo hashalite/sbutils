@@ -166,6 +166,9 @@ public class Notifier extends Feature<ModConfig> {
     }
 
     public static Component modifyMessage(Component message) {
+        if (!ModConfig.instance().notifier.showTradesOnClick || !RegexFilters.wanderingTraderFilter.matcher(message.getString()).matches())
+            return message;
+
         MutableComponent result = message.copy().withStyle(message.getStyle().withClickEvent(
                 //? if >=1.21.11 {
                 new ClickEvent.RunCommand(
@@ -179,12 +182,6 @@ public class Notifier extends Feature<ModConfig> {
         for (Component sibling : siblings)
             result.append(modifyMessage(sibling));
         return result;
-    }
-
-
-
-    public static boolean shouldModify(Component message) {
-        return ModConfig.instance().notifier.showTradesOnClick && RegexFilters.wanderingTraderFilter.matcher(message.getString()).matches();
     }
 
     private void displayTraderItems() {

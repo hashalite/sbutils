@@ -36,15 +36,8 @@ public abstract class ChatComponentMixin {
     private Component modifyChatMessage(Component component) {
         Component result = component;
         result = Mentions.modifyMessage(result);
-
-        if (NoGMT.shouldModify(result)) {
-            result = NoGMT.modifyMessage(result);
-        }
-
-        if (Notifier.shouldModify(result)) {
-            result = Notifier.modifyMessage(result);
-        }
-
+        result = NoGMT.modifyMessage(result);
+        result = Notifier.modifyMessage(result);
         return result;
     }
 }
