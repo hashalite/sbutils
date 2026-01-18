@@ -81,11 +81,12 @@ public class Mentions extends Feature<ModConfig> {
         if (MC.player == null)
             return message;
 
-        List<Region> mentions = findMentions(message, ModConfig.instance().mentions.highlightMultiColor);
+        boolean highlightMultiColor = ModConfig.instance().mentions.highlightMultiColor;
+        List<Region> mentions = findMentions(message, highlightMultiColor);
         if (mentions.isEmpty())
             return message;
 
-        return highlightCompound(message, mentions);
+        return highlightCompound(message, mentions, highlightMultiColor);
     }
 
     private static boolean isValidMessage(Component message) {
@@ -178,7 +179,7 @@ public class Mentions extends Feature<ModConfig> {
         return Region.sortAndMergeOverlapping(result);
     }
 
-    private static Component highlightCompound(Component text, List<Region> regions) {
+    private static Component highlightCompound(Component text, List<Region> regions, boolean includeMultiColor) {
         List<Component> flatList = text.toFlatList();
         MutableComponent highlighted = Component.empty();
         int stringIndex = 0;
@@ -188,9 +189,16 @@ public class Mentions extends Feature<ModConfig> {
             int cStart = stringIndex;
             int cEnd = cStart + cLen;
             stringIndex = cEnd;
+            Region cRegion = new Region(cStart, cEnd);
+
+            List<Region> overlaps;
+            if (includeMultiColor) {
+                overlaps = cRegion.getOverlapping(regions);
+            } else {
+                overlaps = cRegion.getContained(regions);
+            }
 
             // If no regions intersect with this component, add to result and continue
-            List<Region> overlaps = new Region(cStart, cEnd).intersect(regions);
             if (overlaps.isEmpty()) {
                 highlighted.append(c);
                 continue;
@@ -277,7 +285,20 @@ public class Mentions extends Feature<ModConfig> {
             this.end = end;
         }
 
-        private List<Region> intersect(List<Region> regions) {
+        // Returns all regions from 'regions' that are fully contained within this region
+        private List<Region> getContained(List<Region> regions) {
+            List<Region> result = new ArrayList<>();
+            for (Region r : regions) {
+                int start = r.start;
+                int end = r.end;
+                if (start >= this.start && start < this.end && end > this.start && end <= this.end)
+                    result.add(r);
+            }
+            return result;
+        }
+
+        // Return all regions from 'regions' that have any overlap with this region
+        private List<Region> getOverlapping(List<Region> regions) {
             List<Region> result = new ArrayList<>();
             for (Region r : regions) {
                 int start = r.start;
