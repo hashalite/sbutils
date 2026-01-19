@@ -7,6 +7,7 @@ import net.minecraft.network.chat.PlayerChatMessage;
 import net.xolt.sbutils.SbUtils;
 import net.xolt.sbutils.feature.features.*;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -46,6 +47,7 @@ public class ChatListenerMixin {
         onMessage(message, ci);
     }
 
+    @Unique
     private static void onMessage(Component message, CallbackInfo ci) {
         preFilterMessage(message);
         SbUtils.FEATURES.get(ChatFilters.class).onChatMessage(message, ci);
@@ -54,6 +56,7 @@ public class ChatListenerMixin {
         postFilterMessage(message);
     }
 
+    @Unique
     private static void preFilterMessage(Component message) {
         SbUtils.FEATURES.get(ChatLogger.class).processMessage(message);
         SbUtils.FEATURES.get(AutoRaffle.class).processMessage(message);
@@ -62,6 +65,7 @@ public class ChatListenerMixin {
         SbUtils.COMMAND_SENDER.processMessage(message);
     }
 
+    @Unique
     private static void postFilterMessage(Component message) {
         Mentions.processMessage(message);
     }
