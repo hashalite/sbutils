@@ -23,7 +23,7 @@ import static net.xolt.sbutils.SbUtils.MC;
 
 public class AutoRaffle extends Feature<ModConfig> {
     private final OptionBinding<ModConfig, Boolean> enabled = new OptionBinding<>("sbutils", "autoRaffle.enabled", Boolean.class, (config) -> config.autoRaffle.enabled, (config, value) -> config.autoRaffle.enabled = value);
-    private final OptionBinding<ModConfig, Integer> sbTickets = new OptionBinding<>("sbutils", "autoRaffle.sbTickets", Integer.class, (config) -> config.autoRaffle.sbTickets, (config, value) -> config.autoRaffle.sbTickets = value, new NumberConstraints<>(1, 2));
+    private final OptionBinding<ModConfig, Integer> sbTickets = new OptionBinding<>("sbutils", "autoRaffle.sbTickets", Integer.class, (config) -> config.autoRaffle.sbTickets, (config, value) -> config.autoRaffle.sbTickets = value, new NumberConstraints<>(1, 5));
     private final OptionBinding<ModConfig, Integer> ecoTickets = new OptionBinding<>("sbutils", "autoRaffle.ecoTickets", Integer.class, (config) -> config.autoRaffle.ecoTickets, (config, value) -> config.autoRaffle.ecoTickets = value, new NumberConstraints<>(1, 5));
 
     private boolean waitingToBuy;
@@ -97,7 +97,7 @@ public class AutoRaffle extends Feature<ModConfig> {
         if (MC.getConnection() == null)
             return;
 
-        int numTickets = Math.min(Math.max(ModConfig.instance().autoRaffle.sbTickets, 1), 2);
+        int numTickets = ModConfig.instance().autoRaffle.sbTickets;
         int grassCount = getGrassCount();
         if (grassCount < 1) {
             waitingToBuy = true;
@@ -119,7 +119,7 @@ public class AutoRaffle extends Feature<ModConfig> {
         if (MC.getConnection() == null)
             return;
 
-        int buyAmount = Math.min(Math.max(ModConfig.instance().autoRaffle.ecoTickets, 1), 5);
+        int buyAmount = ModConfig.instance().autoRaffle.ecoTickets;
         ChatUtils.printWithPlaceholders("message.sbutils.autoRaffle.buying", buyAmount);
         SbUtils.COMMAND_SENDER.sendCommand("raffle buy " + buyAmount);
         waitingToBuy = false;
