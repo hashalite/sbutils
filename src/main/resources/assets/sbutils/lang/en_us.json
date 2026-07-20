@@ -314,7 +314,7 @@
   "text.sbutils.config.option.autoRaffle.enabled": "Auto Raffle Enabled",
   "text.sbutils.config.option.autoRaffle.enabled.tooltip": "Automatically buys raffle tickets when you log in and when the raffle ends.",
   "text.sbutils.config.option.autoRaffle.sbTickets": "Skyblock Raffle Tickets",
-  "text.sbutils.config.option.autoRaffle.sbTickets.tooltip": "The amount of raffle tickets to purchase on /skyblock. (Max. 2)",
+  "text.sbutils.config.option.autoRaffle.sbTickets.tooltip": "The amount of raffle tickets to purchase on /skyblock. (Max. 5)",
   "text.sbutils.config.option.autoRaffle.ecoTickets": "Economy Raffle Tickets",
   "text.sbutils.config.option.autoRaffle.ecoTickets.tooltip": "The amount of raffle tickets to purchase on /economy. (Max. 5)",
 
